@@ -98,6 +98,19 @@ const Products = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {/* Product Images Grid */}
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {[1, 2, 3, 4].map((item) => (
+                        <div key={item} className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center">
+                          <div className="text-center text-muted-foreground/50">
+                            <div className="w-6 h-6 mx-auto mb-1 rounded border border-dashed border-current flex items-center justify-center">
+                              <span className="text-xs">P</span>
+                            </div>
+                            <p className="text-xs">Product</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                     <ul className="space-y-3">
                       {category.products.map((product, productIndex) => (
                         <li key={productIndex} className="flex items-start">

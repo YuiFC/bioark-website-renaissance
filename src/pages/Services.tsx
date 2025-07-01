@@ -61,6 +61,15 @@ const Services = () => {
               {services.map((service, index) => (
                 <Card key={index} className="group hover:shadow-lg transition-all duration-300 h-full">
                   <CardHeader>
+                    {/* Service Image Placeholder */}
+                    <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center mb-4">
+                      <div className="text-center text-muted-foreground/70">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded border-2 border-dashed border-current flex items-center justify-center">
+                          <span className="text-xs">LAB</span>
+                        </div>
+                        <p className="text-xs">Service Image</p>
+                      </div>
+                    </div>
                     <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${service.gradient} mb-4 flex items-center justify-center`}>
                       <div className="w-6 h-6 bg-white/30 rounded-full" />
                     </div>
