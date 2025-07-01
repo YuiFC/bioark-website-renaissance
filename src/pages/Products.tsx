@@ -10,16 +10,16 @@ const Products = () => {
       title: 'Reagents and Markers',
       description: 'High-quality molecular reagents and markers for research applications',
       products: [
-        '2 × Fast SYBR Green qPCR Master Mix',
-        '2 × SYBR Green qPCR Master Mix',
-        'Western Protein Marker I (Exposure)',
-        'Prestained Protein Marker IV (8-200 kDa)',
-        'BAPoly® In Vitro DNA Transfection Reagent',
-        'BAJet® In Vitro DNA Transfection Reagent',
-        'BioArkLipo® In Vitro Transfection Kit (Ver. II)',
-        'GN15K DNA Marker (500-15000bp)',
-        'GN10K DNA Marker (300-10000bp)',
-        'GN8K DNA Marker (100-8000bp)'
+        { name: '2 × Fast SYBR Green qPCR Master Mix', image: '/images/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg' },
+        { name: '2 × SYBR Green qPCR Master Mix', image: '/images/1-BSY3320_2__SYBR_Green_qPCR_Master_Mix-300x300.jpg' },
+        { name: 'Western Protein Marker I (Exposure)', image: '/images/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg' },
+        { name: 'Prestained Protein Marker IV (8-200 kDa)', image: '/images/BioArk-Logo-Circle-1-300x300.png' },
+        { name: 'BAPoly® In Vitro DNA Transfection Reagent', image: '/images/BAPoly-1-300x300.png' },
+        { name: 'BAJet® In Vitro DNA Transfection Reagent', image: '/images/BAjet-1-300x300.png' },
+        { name: 'BioArkLipo® In Vitro Transfection Kit (Ver. II)', image: '/images/BioArkLipo-1-300x300.png' },
+        { name: 'GN15K DNA Marker (500-15000bp)', image: '/images/BADM3364_GN15K_DNA_Marker-1-300x300.jpg' },
+        { name: 'GN10K DNA Marker (300-10000bp)', image: '/images/BADM3363_GN10K_DNA_Marker-1-300x300.jpg' },
+        { name: 'GN8K DNA Marker (100-8000bp)', image: '/images/BADM3362_GN8K_DNA_Marker-1-300x300.jpg' }
       ],
       gradient: 'from-primary to-accent'
     },
@@ -27,32 +27,32 @@ const Products = () => {
       title: 'Genome Editing',
       description: 'Advanced tools for precise genome modifications',
       products: [
-        'Targeted Knock-In',
-        'Knock-In Tagging',
-        'Gene Knock-Out',
-        'Gene Deletion',
-        'RNA Knock-Down'
+        { name: 'Targeted Knock-In', image: '/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg' },
+        { name: 'Knock-In Tagging', image: '/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg' },
+        { name: 'Gene Knock-Out', image: '/images/Product-1-3-Gene-Knock-out-300x200.jpg' },
+        { name: 'Gene Deletion', image: '/images/Product-1-4-Gene-Deletion-300x180.jpeg' },
+        { name: 'RNA Knock-Down', image: '/images/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png' }
       ],
       gradient: 'from-accent to-secondary'
     },
     {
       title: 'Vector Clones',
       description: 'Custom vector systems for gene expression and delivery',
-      products: ['Custom vector clones and plasmid systems coming soon'],
+      products: [{ name: 'Custom vector clones and plasmid systems coming soon', image: '/images/BioArk-Logo-Circle-1-300x300.png' }],
       gradient: 'from-secondary to-primary',
       comingSoon: true
     },
     {
       title: 'Stable Cell Lines',
       description: 'Engineered cell lines for consistent research applications',
-      products: ['Stable cell line development services available'],
+      products: [{ name: 'Stable cell line development services available', image: '/images/Service-3-Stable-Cell-Line-Services-300x119.jpeg' }],
       gradient: 'from-primary/80 to-accent/80',
       comingSoon: true
     },
     {
       title: 'Lentivirus',
       description: 'Viral packaging solutions for gene delivery',
-      products: ['Lentiviral packaging and production services'],
+      products: [{ name: 'Lentiviral packaging and production services', image: '/images/BioArk-Logo-Circle-1-300x300.png' }],
       gradient: 'from-accent/80 to-secondary/80',
       comingSoon: true
     }
@@ -100,14 +100,13 @@ const Products = () => {
                   <CardContent>
                     {/* Product Images Grid */}
                     <div className="grid grid-cols-2 gap-2 mb-4">
-                      {[1, 2, 3, 4].map((item) => (
-                        <div key={item} className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center">
-                          <div className="text-center text-muted-foreground/50">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded border border-dashed border-current flex items-center justify-center">
-                              <span className="text-xs">P</span>
-                            </div>
-                            <p className="text-xs">Product</p>
-                          </div>
+                      {category.products.slice(0, 4).map((product, productIndex) => (
+                        <div key={productIndex} className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden flex items-center justify-center">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       ))}
                     </div>
@@ -116,7 +115,7 @@ const Products = () => {
                         <li key={productIndex} className="flex items-start">
                           <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 mt-2 flex-shrink-0" />
                           <span className={`text-sm ${category.comingSoon ? 'text-muted-foreground italic' : 'text-foreground'}`}>
-                            {product}
+                            {product.name}
                           </span>
                         </li>
                       ))}

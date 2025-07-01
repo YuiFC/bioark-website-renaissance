@@ -5,16 +5,13 @@ import { Button } from '@/components/ui/button';
 const Hero = () => {
   return (
     <section className="relative py-20 bioark-hero-gradient overflow-hidden">
-      {/* Background Image Placeholder */}
+      {/* Background Image */}
       <div className="absolute inset-0 opacity-10">
-        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-          <div className="text-center text-muted-foreground/50">
-            <div className="w-32 h-32 mx-auto mb-4 rounded-full border-2 border-dashed border-current flex items-center justify-center">
-              <span className="text-xs">DNA/Lab Image</span>
-            </div>
-            <p className="text-sm">Hero Background Image Placeholder</p>
-          </div>
-        </div>
+        <img 
+          src="/images/Screenshot-2025-04-21-183458-1536x552.png" 
+          alt="Genetic research and biotechnology background"
+          className="w-full h-full object-cover"
+        />
       </div>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

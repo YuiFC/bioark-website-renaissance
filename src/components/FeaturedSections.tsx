@@ -7,17 +7,20 @@ const FeaturedSections = () => {
     {
       title: '2 × Fast SYBR Green qPCR Master Mix',
       description: 'High-performance qPCR reagent for rapid and accurate amplification',
-      category: 'Reagents'
+      category: 'Reagents',
+      image: '/images/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg'
     },
     {
       title: 'BAPoly® DNA Transfection Reagent',
       description: 'Advanced transfection solution for efficient gene delivery',
-      category: 'Transfection'
+      category: 'Transfection',
+      image: '/images/BAPoly-1-300x300.png'
     },
     {
       title: 'Western Protein Marker I',
       description: 'Reliable protein markers for Western blot analysis',
-      category: 'Markers'
+      category: 'Markers',
+      image: '/images/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg'
     }
   ];
 
@@ -25,31 +28,33 @@ const FeaturedSections = () => {
     {
       title: 'Targeted Knock-In',
       description: 'Precise gene insertion at specific genomic locations',
-      category: 'Gene Editing'
+      category: 'Gene Editing',
+      image: '/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg'
     },
     {
       title: 'Gene Knock-Out',
       description: 'Complete gene disruption for functional studies',
-      category: 'Gene Editing'
+      category: 'Gene Editing',
+      image: '/images/Product-1-3-Gene-Knock-out-300x200.jpg'
     },
     {
       title: 'RNA Knock-Down',
       description: 'Targeted reduction of gene expression',
-      category: 'Gene Editing'
+      category: 'Gene Editing',
+      image: '/images/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png'
     }
   ];
 
-  const ProductCard = ({ title, description, category }: { title: string; description: string; category: string }) => (
+  const ProductCard = ({ title, description, category, image }: { title: string; description: string; category: string; image: string }) => (
     <Card className="group hover:shadow-lg transition-all duration-300">
       <CardHeader>
-        {/* Product Image Placeholder */}
-        <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center mb-4">
-          <div className="text-center text-muted-foreground/70">
-            <div className="w-12 h-12 mx-auto mb-2 rounded border-2 border-dashed border-current flex items-center justify-center">
-              <span className="text-xs">IMG</span>
-            </div>
-            <p className="text-xs">Product Image</p>
-          </div>
+        {/* Product Image */}
+        <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden flex items-center justify-center mb-4">
+          <img 
+            src={image} 
+            alt={title}
+            className="w-full h-full object-cover"
+          />
         </div>
         <CardTitle className="text-lg group-hover:text-primary transition-colors">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -122,14 +127,13 @@ const FeaturedSections = () => {
               </div>
             </div>
             <div>
-              {/* Custom Solutions Image Placeholder */}
-              <div className="w-full h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg flex items-center justify-center">
-                <div className="text-center text-muted-foreground/70">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-dashed border-current flex items-center justify-center">
-                    <span className="text-sm">LAB</span>
-                  </div>
-                  <p className="text-sm">Custom Research Image Placeholder</p>
-                </div>
+              {/* Custom Solutions Image */}
+              <div className="w-full h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg overflow-hidden flex items-center justify-center">
+                <img 
+                  src="/images/Service-4-Experiment-Services-298x300.jpg" 
+                  alt="Custom research and collaborative work"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>

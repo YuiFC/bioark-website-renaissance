@@ -7,33 +7,58 @@ const Services = () => {
   const services = [
     {
       title: 'Cloning Services',
-      description: 'Expert molecular cloning for custom plasmid construction and vector development',
-      features: ['Custom plasmid design', 'Gene synthesis', 'Vector optimization', 'Quality verification'],
-      gradient: 'from-primary to-accent'
+      description: 'Custom DNA cloning and vector construction services for research applications',
+      image: '/images/Service-1-Custom-Cloning-Services-300x170.jpg',
+      features: [
+        'Plasmid construction and optimization',
+        'Gene synthesis and assembly',
+        'Vector modification and customization',
+        'Quality control and verification'
+      ]
     },
     {
       title: 'Lentivirus Packaging',
-      description: 'Professional viral packaging services for gene delivery applications',
-      features: ['High-titer production', 'Custom vector packaging', 'Quality control testing', 'Rapid turnaround'],
-      gradient: 'from-accent to-secondary'
+      description: 'Professional lentiviral packaging services for gene delivery applications',
+      image: '/images/BioArk-Logo-Circle-1-300x300.png',
+      features: [
+        'High-titer virus production',
+        'Custom packaging protocols',
+        'Quality testing and validation',
+        'Scalable production options'
+      ]
     },
     {
       title: 'Stable Cell Line',
       description: 'Development of stable cell lines for consistent research applications',
-      features: ['Cell line engineering', 'Clone selection', 'Characterization', 'Banking services'],
-      gradient: 'from-secondary to-primary'
+      image: '/images/Service-3-Stable-Cell-Line-Services-300x119.jpeg',
+      features: [
+        'Cell line engineering and selection',
+        'Transfection and integration',
+        'Clonal isolation and characterization',
+        'Long-term stability testing'
+      ]
     },
     {
       title: 'Experiment Services',
-      description: 'Comprehensive experimental support for your research projects',
-      features: ['Custom assay development', 'Data analysis', 'Protocol optimization', 'Technical consultation'],
-      gradient: 'from-primary/80 to-accent/80'
+      description: 'Comprehensive experimental services to support your research goals',
+      image: '/images/Service-4-Experiment-Services-298x300.jpg',
+      features: [
+        'Custom experimental design',
+        'Data analysis and interpretation',
+        'Protocol development',
+        'Research consultation'
+      ]
     },
     {
       title: 'Lab Supplies',
-      description: 'Essential laboratory reagents and consumables for molecular biology',
-      features: ['Quality reagents', 'Competitive pricing', 'Reliable supply chain', 'Technical support'],
-      gradient: 'from-accent/80 to-secondary/80'
+      description: 'High-quality laboratory supplies and consumables for molecular research',
+      image: '/images/Service-5-Lab-Supplies-300x169.png',
+      features: [
+        'Research-grade reagents',
+        'Laboratory consumables',
+        'Specialized equipment',
+        'Custom supply packages'
+      ]
     }
   ];
 
@@ -48,7 +73,7 @@ const Services = () => {
                 Gene Editing and Delivery Services
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Professional molecular services to accelerate your research and development
+                Professional services to accelerate your genetic research and development
               </p>
             </div>
           </div>
@@ -59,31 +84,27 @@ const Services = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {services.map((service, index) => (
-                <Card key={index} className="group hover:shadow-lg transition-all duration-300 h-full">
+                <Card key={index} className="group hover:shadow-lg transition-all duration-300">
                   <CardHeader>
-                    {/* Service Image Placeholder */}
-                    <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center mb-4">
-                      <div className="text-center text-muted-foreground/70">
-                        <div className="w-12 h-12 mx-auto mb-2 rounded border-2 border-dashed border-current flex items-center justify-center">
-                          <span className="text-xs">LAB</span>
-                        </div>
-                        <p className="text-xs">Service Image</p>
-                      </div>
+                    {/* Service Image */}
+                    <div className="w-full h-48 bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden flex items-center justify-center mb-4">
+                      <img 
+                        src={service.image} 
+                        alt={service.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${service.gradient} mb-4 flex items-center justify-center`}>
-                      <div className="w-6 h-6 bg-white/30 rounded-full" />
-                    </div>
-                    <CardTitle className="text-xl text-foreground">{service.title}</CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      {service.description}
-                    </CardDescription>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {service.title}
+                    </CardTitle>
+                    <CardDescription>{service.description}</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex-1">
+                  <CardContent>
                     <ul className="space-y-2">
                       {service.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center text-sm text-muted-foreground">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3" />
-                          {feature}
+                        <li key={featureIndex} className="flex items-start">
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 mt-2 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -94,56 +115,27 @@ const Services = () => {
           </div>
         </section>
 
-        {/* Process Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-4">Our Service Process</h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                From consultation to delivery, we ensure quality and efficiency at every step
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {[
-                { step: '01', title: 'Consultation', description: 'Discuss your project requirements and objectives' },
-                { step: '02', title: 'Planning', description: 'Develop a customized experimental approach' },
-                { step: '03', title: 'Execution', description: 'Perform services with rigorous quality control' },
-                { step: '04', title: 'Delivery', description: 'Provide results with comprehensive documentation' }
-              ].map((item, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bioark-gradient rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white font-bold text-lg">{item.step}</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* CTA Section */}
-        <section className="py-16">
+        <section className="py-16 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Ready to Start Your Project?
+              Ready to Get Started?
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Contact our team to discuss your specific needs and receive a customized service proposal.
+              Contact us to discuss your project requirements and learn how our services can support your research.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/request-quote"
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
               >
-                Get Service Quote
+                Request Service Quote
               </a>
               <a
                 href="/contact"
                 className="inline-flex items-center justify-center px-6 py-3 border border-primary text-base font-medium rounded-md text-primary bg-transparent hover:bg-primary hover:text-white transition-colors"
               >
-                Schedule Consultation
+                Contact Our Team
               </a>
             </div>
           </div>
