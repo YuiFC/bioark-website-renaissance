@@ -14,6 +14,13 @@ import Investors from "./pages/Investors";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
+// Individual Product Pages
+import FastSybrGreenQpcrMasterMix from "./pages/products/FastSybrGreenQpcrMasterMix";
+import SybrGreenQpcrMasterMix from "./pages/products/SybrGreenQpcrMasterMix";
+import WesternProteinMarkerI from "./pages/products/WesternProteinMarkerI";
+import BaPolyTransfectionReagent from "./pages/products/BaPolyTransfectionReagent";
+import TargetedKnockIn from "./pages/products/TargetedKnockIn";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -27,6 +34,14 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:productId" element={<ProductDetail />} />
+          
+          {/* Individual Product Detail Pages */}
+          <Route path="/products/2-fast-sybr-green-qpcr-master-mix" element={<FastSybrGreenQpcrMasterMix />} />
+          <Route path="/products/2-sybr-green-qpcr-master-mix" element={<SybrGreenQpcrMasterMix />} />
+          <Route path="/products/western-protein-marker-i-exposure" element={<WesternProteinMarkerI />} />
+          <Route path="/products/bapoly-in-vitro-dna-transfection-reagent" element={<BaPolyTransfectionReagent />} />
+          <Route path="/products/targeted-knock-in" element={<TargetedKnockIn />} />
+          
           <Route path="/services" element={<Services />} />
           <Route path="/request-quote" element={<RequestQuote />} />
           <Route path="/investors" element={<Investors />} />
