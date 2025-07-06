@@ -46,21 +46,21 @@ const FeaturedSections = () => {
   ];
 
   const ProductCard = ({ title, description, category, image }: { title: string; description: string; category: string; image: string }) => (
-    <Card className="group hover:shadow-lg transition-all duration-300">
+    <Card className="bioark-card group hover:shadow-lg transition-all duration-300">
       <CardHeader>
         {/* Product Image */}
-        <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden flex items-center justify-center mb-4">
+        <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-xl overflow-hidden flex items-center justify-center mb-4">
           <img 
             src={image} 
             alt={title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
           />
         </div>
-        <CardTitle className="text-lg group-hover:text-primary transition-colors">{title}</CardTitle>
+        <CardTitle className="text-lg group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-secondary group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <span className="inline-block px-2 py-1 bg-primary/10 text-primary text-sm rounded-full">
+        <span className="inline-block px-3 py-1 bioark-primary-gradient text-primary-foreground text-sm rounded-full font-medium shadow-sm">
           {category}
         </span>
       </CardContent>

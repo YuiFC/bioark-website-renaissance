@@ -9,82 +9,115 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 15% 98%;
-    --foreground: 210 12% 16%;
+    /* Modern Bio-tech Color Palette */
+    --background: 220 20% 98%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 12% 16%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 12% 16%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 195 85% 25%;
-    --primary-foreground: 210 40% 98%;
+    /* DNA Blue - Primary brand color */
+    --primary: 210 95% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 100% 60%;
 
-    --secondary: 195 25% 45%;
-    --secondary-foreground: 210 40% 98%;
+    /* Cell Green - Secondary color */
+    --secondary: 155 70% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-glow: 155 80% 60%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 96%;
+    --muted-foreground: 215 12% 45%;
 
-    --accent: 192 84% 35%;
-    --accent-foreground: 210 40% 98%;
+    /* Protein Purple - Accent color */
+    --accent: 270 75% 55%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 270 85% 70%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Enzyme Orange - Additional accent */
+    --enzyme: 35 95% 55%;
+    --enzyme-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 195 85% 25%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    --border: 220 20% 88%;
+    --input: 220 20% 94%;
+    --ring: 210 95% 45%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --radius: 0.75rem;
+
+    /* Enhanced gradients for modern look */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-glow)));
+    --gradient-bio: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.08));
+
+    /* Shadows with bio colors */
+    --shadow-primary: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-secondary: 0 10px 30px -10px hsl(var(--secondary) / 0.3);
+    --shadow-accent: 0 10px 30px -10px hsl(var(--accent) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+
+    --sidebar-background: 220 25% 97%;
+    --sidebar-foreground: 215 25% 25%;
+    --sidebar-primary: 210 95% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 92%;
+    --sidebar-accent-foreground: 215 25% 25%;
+    --sidebar-border: 220 20% 88%;
+    --sidebar-ring: 210 95% 45%;
   }
 
   .dark {
-    --background: 210 15% 8%;
-    --foreground: 210 40% 98%;
+    /* Dark mode bio-tech colors */
+    --background: 215 30% 8%;
+    --foreground: 220 20% 95%;
 
-    --card: 210 15% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 25% 12%;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 210 15% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 25% 12%;
+    --popover-foreground: 220 20% 95%;
 
-    --primary: 195 85% 45%;
-    --primary-foreground: 210 12% 16%;
+    /* Brighter colors for dark mode */
+    --primary: 210 100% 60%;
+    --primary-foreground: 215 30% 8%;
+    --primary-glow: 210 100% 70%;
 
-    --secondary: 195 25% 35%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 155 80% 55%;
+    --secondary-foreground: 215 30% 8%;
+    --secondary-glow: 155 90% 65%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 25% 15%;
+    --muted-foreground: 215 15% 65%;
 
-    --accent: 192 84% 55%;
-    --accent-foreground: 210 12% 16%;
+    --accent: 270 85% 65%;
+    --accent-foreground: 215 30% 8%;
+    --accent-glow: 270 90% 75%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --enzyme: 35 100% 65%;
+    --enzyme-foreground: 215 30% 8%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 195 85% 45%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive: 0 90% 65%;
+    --destructive-foreground: 215 30% 8%;
+
+    --border: 215 25% 20%;
+    --input: 215 25% 18%;
+    --ring: 210 100% 60%;
+
+    --sidebar-background: 215 30% 10%;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 210 100% 60%;
+    --sidebar-primary-foreground: 215 30% 8%;
+    --sidebar-accent: 215 25% 15%;
+    --sidebar-accent-foreground: 220 20% 90%;
+    --sidebar-border: 215 25% 20%;
+    --sidebar-ring: 210 100% 60%;
   }
 }
 
@@ -100,20 +133,96 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* Modern Bio-tech Gradients */
   .bioark-gradient {
-    @apply bg-gradient-to-br from-primary via-accent to-secondary;
+    background: var(--gradient-bio);
   }
   
   .bioark-hero-gradient {
-    @apply bg-gradient-to-b from-primary/10 via-accent/5 to-transparent;
+    background: var(--gradient-hero);
   }
   
+  .bioark-primary-gradient {
+    background: var(--gradient-primary);
+  }
+  
+  .bioark-secondary-gradient {
+    background: var(--gradient-secondary);
+  }
+  
+  .bioark-accent-gradient {
+    background: var(--gradient-accent);
+  }
+  
+  /* Modern Card Styles */
+  .bioark-card {
+    @apply bg-card border border-border rounded-xl shadow-lg backdrop-blur-sm;
+    box-shadow: var(--shadow-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .bioark-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Modern Button Styles */
+  .bioark-btn-primary {
+    @apply px-6 py-3 rounded-xl font-semibold text-primary-foreground transition-all duration-300;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-primary);
+  }
+  
+  .bioark-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .bioark-btn-secondary {
+    @apply px-6 py-3 rounded-xl font-semibold text-secondary-foreground transition-all duration-300;
+    background: var(--gradient-secondary);
+    box-shadow: var(--shadow-secondary);
+  }
+  
+  .bioark-btn-accent {
+    @apply px-6 py-3 rounded-xl font-semibold text-accent-foreground transition-all duration-300;
+    background: var(--gradient-accent);
+    box-shadow: var(--shadow-accent);
+  }
+  
+  /* DNA Helix Animation */
+  .animate-dna-helix {
+    animation: dnaHelix 4s ease-in-out infinite;
+  }
+  
+  /* Pulse Glow Effect */
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  
+  /* Modern Fade In */
   .animate-fade-in-up {
     animation: fadeInUp 0.8s ease-out forwards;
   }
   
   .animate-float {
     animation: float 6s ease-in-out infinite;
+  }
+  
+  /* Biological Pattern Backgrounds */
+  .bio-pattern-cells {
+    background-image: radial-gradient(circle at 25% 25%, hsl(var(--secondary) / 0.1) 0%, transparent 50%),
+                      radial-gradient(circle at 75% 75%, hsl(var(--accent) / 0.1) 0%, transparent 50%);
+  }
+  
+  .bio-pattern-dna {
+    background-image: repeating-linear-gradient(
+      45deg,
+      hsl(var(--primary) / 0.05) 0px,
+      hsl(var(--primary) / 0.05) 2px,
+      transparent 2px,
+      transparent 10px
+    );
   }
 }
 
@@ -134,6 +243,28 @@ All colors MUST be HSL.
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+/* New Bio-tech Animations */
+@keyframes dnaHelix {
+  0% {
+    transform: rotateY(0deg) rotateX(15deg);
+  }
+  50% {
+    transform: rotateY(180deg) rotateX(15deg);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(15deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.8), 0 0 60px hsl(var(--secondary) / 0.4);
   }
 }
 

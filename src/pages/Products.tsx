@@ -62,11 +62,13 @@ const Products = () => {
     <Layout>
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="py-20 bioark-hero-gradient">
+        <section className="py-20 bioark-hero-gradient bio-pattern-cells">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Gene Editing and Delivery Products
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Gene Editing and Delivery Products
+                </span>
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Comprehensive molecular tools and reagents to accelerate your genetic research
@@ -76,15 +78,15 @@ const Products = () => {
         </section>
 
         {/* Products Grid */}
-        <section className="py-16">
+        <section className="py-16 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {productCategories.map((category, index) => (
-                <Card key={index} className="group hover:shadow-lg transition-all duration-300">
+                <Card key={index} className="bioark-card group hover:shadow-lg transition-all duration-300">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${category.gradient} mb-4 flex items-center justify-center`}>
-                        <div className="w-6 h-6 bg-white/30 rounded-full" />
+                      <div className={`w-12 h-12 rounded-lg bioark-${['primary', 'secondary', 'accent', 'primary', 'secondary'][index % 5]}-gradient mb-4 flex items-center justify-center shadow-lg`}>
+                        <div className="w-6 h-6 bg-white/30 rounded-full animate-pulse-glow" />
                       </div>
                       {category.comingSoon && (
                         <Badge variant="secondary" className="bg-muted text-muted-foreground">
@@ -92,7 +94,9 @@ const Products = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-xl text-foreground">{category.title}</CardTitle>
+                    <CardTitle className="text-xl text-foreground group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-secondary group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                      {category.title}
+                    </CardTitle>
                     <CardDescription className="text-muted-foreground">
                       {category.description}
                     </CardDescription>
@@ -101,11 +105,11 @@ const Products = () => {
                     {/* Product Images Grid */}
                     <div className="grid grid-cols-2 gap-2 mb-4">
                       {category.products.slice(0, 4).map((product, productIndex) => (
-                        <div key={productIndex} className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden flex items-center justify-center">
+                        <div key={productIndex} className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-xl overflow-hidden flex items-center justify-center hover:shadow-lg transition-all duration-300">
                           <img 
                             src={product.image} 
                             alt={product.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                           />
                         </div>
                       ))}
@@ -113,11 +117,11 @@ const Products = () => {
                     <ul className="space-y-3">
                       {category.products.map((product, productIndex) => (
                         <li key={productIndex} className="flex items-start">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 mt-2 flex-shrink-0" />
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 mt-2 flex-shrink-0 animate-pulse-glow" />
                           {product.slug ? (
                             <Link 
                               to={`/products/${product.slug}`}
-                              className={`text-sm text-foreground hover:text-primary hover:underline transition-colors cursor-pointer`}
+                              className={`text-sm text-foreground hover:text-primary hover:underline transition-colors cursor-pointer font-medium`}
                             >
                               {product.name}
                             </Link>
@@ -137,10 +141,12 @@ const Products = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-muted/30">
+        <section className="py-16 bioark-hero-gradient bio-pattern-dna">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Need Custom Solutions?
+              <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
+                Need Custom Solutions?
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Our team can develop custom molecular tools and reagents tailored to your specific research needs.
@@ -148,13 +154,13 @@ const Products = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/request-quote"
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+                className="bioark-btn-primary inline-flex items-center justify-center transform hover:scale-105 transition-all duration-300"
               >
                 Request Custom Quote
               </a>
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center px-6 py-3 border border-primary text-base font-medium rounded-md text-primary bg-transparent hover:bg-primary hover:text-white transition-colors"
+                className="bioark-btn-secondary inline-flex items-center justify-center transform hover:scale-105 transition-all duration-300"
               >
                 Contact Our Team
               </a>
