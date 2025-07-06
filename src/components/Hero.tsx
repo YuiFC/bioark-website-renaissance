@@ -1,12 +1,19 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import heroBackground from '@/assets/hero-background.jpg';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bioark-hero-gradient bio-pattern-cells">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Hero Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{backgroundImage: `url(${heroBackground})`}}
+      ></div>
+      <div className="absolute inset-0 bioark-hero-gradient opacity-80"></div>
       {/* Background DNA Pattern */}
-      <div className="absolute inset-0 bio-pattern-dna opacity-30"></div>
+      <div className="absolute inset-0 bio-pattern-dna opacity-20"></div>
       
       {/* Floating Elements */}
       <div className="absolute top-20 left-10 w-12 h-12 rounded-full bg-primary/20 animate-float"></div>

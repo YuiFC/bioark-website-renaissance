@@ -1,6 +1,9 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import featuredProductsImage from '@/assets/featured-products.jpg';
+import geneEditingImage from '@/assets/gene-editing.jpg';
+import labServicesImage from '@/assets/lab-services.jpg';
 
 const FeaturedSections = () => {
   const featuredProducts = [
@@ -130,7 +133,7 @@ const FeaturedSections = () => {
               {/* Custom Solutions Image */}
               <div className="w-full h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg overflow-hidden flex items-center justify-center">
                 <img 
-                  src="/images/Service-4-Experiment-Services-298x300.jpg" 
+                  src={labServicesImage} 
                   alt="Custom research and collaborative work"
                   className="w-full h-full object-cover"
                 />

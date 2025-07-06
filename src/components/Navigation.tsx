@@ -57,12 +57,12 @@ const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
                   isActivePath(item.path)
                     ? 'text-primary bg-primary/10'
                     : 'text-foreground hover:text-primary hover:bg-primary/5'
@@ -73,7 +73,7 @@ const Navigation = () => {
             ))}
             
             {/* External Store Links */}
-            <div className="flex items-center space-x-1 ml-4 pl-4 border-l border-border">
+            <div className="flex items-center space-x-2 xl:space-x-4 ml-6 pl-6 border-l border-border">
               {externalLinks.map((link) => {
                 const IconComponent = link.icon;
                 return (
@@ -82,7 +82,7 @@ const Navigation = () => {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-2 py-2 rounded-md text-sm font-medium text-foreground hover:text-primary hover:bg-primary/5 transition-colors duration-200 flex items-center space-x-1"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-foreground hover:text-primary hover:bg-primary/5 transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap"
                     title={link.name}
                   >
                     <IconComponent size={16} />
