@@ -49,12 +49,13 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-3">
             <img 
               src="/lovable-uploads/9b80f083-86c0-4e24-a873-9afa9b5be0e1.png" 
               alt="BioArk Technologies Logo" 
-              className="h-10 w-auto"
+              className="h-8 w-auto"
             />
+            <span className="text-lg font-bold text-foreground hidden sm:inline">BioArk Technologies</span>
           </Link>
 
           {/* Desktop Navigation */}

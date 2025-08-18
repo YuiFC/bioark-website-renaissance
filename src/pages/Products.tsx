@@ -27,11 +27,11 @@ const Products = () => {
       title: 'Genome Editing',
       description: 'Advanced tools for precise genome modifications',
       products: [
-        { name: 'Targeted Knock-In', image: '/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg', slug: 'targeted-knock-in' },
-        { name: 'Knock-In Tagging', image: '/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg', slug: 'knock-in-tagging' },
-        { name: 'Gene Knock-Out', image: '/images/Product-1-3-Gene-Knock-out-300x200.jpg', slug: 'gene-knock-out' },
-        { name: 'Gene Deletion', image: '/images/Product-1-4-Gene-Deletion-300x180.jpeg', slug: 'gene-deletion' },
-        { name: 'RNA Knock-Down', image: '/images/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png', slug: 'rna-knock-down' }
+        { name: 'Targeted Knock-In', image: '/lovable-uploads/8c7d4805-5b8f-4763-82c0-91849873a9eb.png', slug: 'targeted-knock-in' },
+        { name: 'Knock-In Tagging', image: '/lovable-uploads/e9da7cfe-7c51-47c2-b80c-b2809f5b8989.png', slug: 'knock-in-tagging' },
+        { name: 'Gene Knock-Out', image: '/lovable-uploads/bab02e81-0734-4a22-a693-1069fa5149d2.png', slug: 'gene-knock-out' },
+        { name: 'Gene Deletion', image: '/lovable-uploads/cbfce02c-3f73-4f89-8b47-9f6789acf41c.png', slug: 'gene-deletion' },
+        { name: 'RNA Knock-Down', image: '/lovable-uploads/315b539a-0bec-4f7d-819e-39f0f93464e4.png', slug: 'rna-knock-down' }
       ],
       gradient: 'from-accent to-secondary'
     },
