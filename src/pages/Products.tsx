@@ -38,21 +38,21 @@ const Products = () => {
     {
       title: 'Vector Clones',
       description: 'Custom vector systems for gene expression and delivery',
-      products: [{ name: 'Custom vector clones and plasmid systems coming soon', image: '/images/BioArk-Logo-Circle-1-300x300.png', slug: null }],
+      products: [{ name: 'Custom vector clones and plasmid systems coming soon', image: '/lovable-uploads/fd8ed12f-0621-4d21-9df7-68f4e17db710.png', slug: null }],
       gradient: 'from-secondary to-primary',
       comingSoon: true
     },
     {
       title: 'Stable Cell Lines',
       description: 'Engineered cell lines for consistent research applications',
-      products: [{ name: 'Stable cell line development services available', image: '/images/Service-3-Stable-Cell-Line-Services-300x119.jpeg', slug: null }],
+      products: [{ name: 'Stable cell line development services available', image: '/lovable-uploads/82c4717e-8036-4332-a946-833661341b80.png', slug: null }],
       gradient: 'from-primary/80 to-accent/80',
       comingSoon: true
     },
     {
       title: 'Lentivirus',
       description: 'Viral packaging solutions for gene delivery',
-      products: [{ name: 'Lentiviral packaging and production services', image: '/images/BioArk-Logo-Circle-1-300x300.png', slug: null }],
+      products: [{ name: 'Lentiviral packaging and production services', image: '/lovable-uploads/8b59e1eb-205a-41b1-a763-36963f130eef.png', slug: null }],
       gradient: 'from-accent/80 to-secondary/80',
       comingSoon: true
     }

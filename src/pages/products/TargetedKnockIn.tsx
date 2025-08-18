@@ -30,7 +30,7 @@ const TargetedKnockIn = () => {
         'Sample Submission Guidelines (PDF)',
         'Validation Report Template (PDF)'
       ]}
-      mainImage="/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg"
+      mainImage="/lovable-uploads/e9da7cfe-7c51-47c2-b80c-b2809f5b8989.png"
     />
   );
 };

@@ -50,10 +50,11 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bioark-gradient rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">BA</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">BioArk Technologies</span>
+            <img 
+              src="/lovable-uploads/9b80f083-86c0-4e24-a873-9afa9b5be0e1.png" 
+              alt="BioArk Technologies Logo" 
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

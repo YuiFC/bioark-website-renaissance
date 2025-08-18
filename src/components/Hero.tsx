@@ -59,7 +59,7 @@ const Hero = () => {
         <div className="w-96 h-96 relative">
           <div className="absolute inset-0 bioark-primary-gradient rounded-full opacity-20 animate-pulse-glow"></div>
           <img 
-            src="/images/Screenshot-2025-04-21-183458-1536x552.png" 
+            src="/lovable-uploads/82c4717e-8036-4332-a946-833661341b80.png" 
             alt="Genetic Research Visualization"
             className="w-full h-full object-cover rounded-2xl shadow-2xl animate-float"
             style={{filter: 'drop-shadow(0 25px 25px hsl(var(--primary) / 0.3))'}}

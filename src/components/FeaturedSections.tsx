@@ -1,9 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import featuredProductsImage from '@/assets/featured-products.jpg';
-import geneEditingImage from '@/assets/gene-editing.jpg';
-import labServicesImage from '@/assets/lab-services.jpg';
 
 const FeaturedSections = () => {
   const featuredProducts = [
@@ -11,19 +8,19 @@ const FeaturedSections = () => {
       title: '2 × Fast SYBR Green qPCR Master Mix',
       description: 'High-performance qPCR reagent for rapid and accurate amplification',
       category: 'Reagents',
-      image: '/images/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg'
+      image: '/lovable-uploads/fa015458-3001-427a-b816-4db6868b7cf4.png'
     },
     {
       title: 'BAPoly® DNA Transfection Reagent',
       description: 'Advanced transfection solution for efficient gene delivery',
       category: 'Transfection',
-      image: '/images/BAPoly-1-300x300.png'
+      image: '/lovable-uploads/fa6853f1-5309-4c32-945f-ee34e835d8dd.png'
     },
     {
       title: 'Western Protein Marker I',
       description: 'Reliable protein markers for Western blot analysis',
       category: 'Markers',
-      image: '/images/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg'
+      image: '/lovable-uploads/219e0265-4771-4a23-8849-a50f86f7aa95.png'
     }
   ];
 
@@ -32,19 +29,19 @@ const FeaturedSections = () => {
       title: 'Targeted Knock-In',
       description: 'Precise gene insertion at specific genomic locations',
       category: 'Gene Editing',
-      image: '/images/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg'
+      image: '/lovable-uploads/e9da7cfe-7c51-47c2-b80c-b2809f5b8989.png'
     },
     {
       title: 'Gene Knock-Out',
       description: 'Complete gene disruption for functional studies',
       category: 'Gene Editing',
-      image: '/images/Product-1-3-Gene-Knock-out-300x200.jpg'
+      image: '/lovable-uploads/ec21403a-7f7d-49e1-8ef6-3ac75a214aed.png'
     },
     {
       title: 'RNA Knock-Down',
       description: 'Targeted reduction of gene expression',
       category: 'Gene Editing',
-      image: '/images/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png'
+      image: '/lovable-uploads/91502ed7-38c8-4936-8909-b6ad3f7e88ea.png'
     }
   ];
 
@@ -133,8 +130,8 @@ const FeaturedSections = () => {
               {/* Custom Solutions Image */}
               <div className="w-full h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg overflow-hidden flex items-center justify-center">
                 <img 
-                  src={labServicesImage} 
-                  alt="Custom research and collaborative work"
+                  src="/lovable-uploads/f4af09c0-35c8-4f40-8614-bbc990fb94e0.png" 
+                  alt="Advanced laboratory equipment and research facility"
                   className="w-full h-full object-cover"
                 />
               </div>
