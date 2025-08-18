@@ -10,16 +10,16 @@ const Products = () => {
       title: 'Reagents and Markers',
       description: 'High-quality molecular reagents and markers for research applications',
       products: [
-        { name: '2 × Fast SYBR Green qPCR Master Mix', image: '/images/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg', slug: '2-fast-sybr-green-qpcr-master-mix' },
-        { name: '2 × SYBR Green qPCR Master Mix', image: '/images/1-BSY3320_2__SYBR_Green_qPCR_Master_Mix-300x300.jpg', slug: '2-sybr-green-qpcr-master-mix' },
-        { name: 'Western Protein Marker I (Exposure)', image: '/images/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg', slug: 'western-protein-marker-i-exposure' },
-        { name: 'Prestained Protein Marker IV (8-200 kDa)', image: '/images/BioArk-Logo-Circle-1-300x300.png', slug: 'prestained-protein-marker-iv-8-200-kda' },
-        { name: 'BAPoly® In Vitro DNA Transfection Reagent', image: '/images/BAPoly-1-300x300.png', slug: 'bapoly-in-vitro-dna-transfection-reagent' },
-        { name: 'BAJet® In Vitro DNA Transfection Reagent', image: '/images/BAjet-1-300x300.png', slug: 'bajet-in-vitro-dna-transfection-reagent' },
-        { name: 'BioArkLipo® In Vitro Transfection Kit (Ver. II)', image: '/images/BioArkLipo-1-300x300.png', slug: 'bioarklipo-in-vitro-transfection-kit-ver-ii' },
-        { name: 'GN15K DNA Marker (500-15000bp)', image: '/images/BADM3364_GN15K_DNA_Marker-1-300x300.jpg', slug: 'gn15k-dna-marker-500-15000bp' },
-        { name: 'GN10K DNA Marker (300-10000bp)', image: '/images/BADM3363_GN10K_DNA_Marker-1-300x300.jpg', slug: 'gn10k-dna-marker-300-10000bp' },
-        { name: 'GN8K DNA Marker (100-8000bp)', image: '/images/BADM3362_GN8K_DNA_Marker-1-300x300.jpg', slug: 'gn8k-dna-marker-100-8000bp' }
+        { name: '2 × Fast SYBR Green qPCR Master Mix', image: '/lovable-uploads/fa015458-3001-427a-b816-4db6868b7cf4.png', slug: '2-fast-sybr-green-qpcr-master-mix' },
+        { name: '2 × SYBR Green qPCR Master Mix', image: '/lovable-uploads/54707b79-b255-48c7-a5f9-20579adb82c3.png', slug: '2-sybr-green-qpcr-master-mix' },
+        { name: 'Western Protein Marker I (Exposure)', image: '/lovable-uploads/219e0265-4771-4a23-8849-a50f86f7aa95.png', slug: 'western-protein-marker-i-exposure' },
+        { name: 'Prestained Protein Marker IV (8-200 kDa)', image: '/lovable-uploads/eff136f4-2eeb-4c18-9dc6-7252f46cc30a.png', slug: 'prestained-protein-marker-iv-8-200-kda' },
+        { name: 'BAPoly® In Vitro DNA Transfection Reagent', image: '/lovable-uploads/fa6853f1-5309-4c32-945f-ee34e835d8dd.png', slug: 'bapoly-in-vitro-dna-transfection-reagent' },
+        { name: 'BAJet® In Vitro DNA Transfection Reagent', image: '/lovable-uploads/6b172cba-00ba-498f-be94-0cb545ffdaaa.png', slug: 'bajet-in-vitro-dna-transfection-reagent' },
+        { name: 'BioArkLipo® In Vitro Transfection Kit (Ver. II)', image: '/lovable-uploads/7ad603f4-e3e0-4849-ac5d-d0dffb561610.png', slug: 'bioarklipo-in-vitro-transfection-kit-ver-ii' },
+        { name: 'GN15K DNA Marker (500-15000bp)', image: '/lovable-uploads/191bd1c1-51dd-418a-aaad-91f66a68b0b3.png', slug: 'gn15k-dna-marker-500-15000bp' },
+        { name: 'GN10K DNA Marker (300-10000bp)', image: '/lovable-uploads/449d0c14-ace9-47c0-a7c7-e7022b9a588d.png', slug: 'gn10k-dna-marker-300-10000bp' },
+        { name: 'GN8K DNA Marker (100-8000bp)', image: '/lovable-uploads/191bd1c1-51dd-418a-aaad-91f66a68b0b3.png', slug: 'gn8k-dna-marker-100-8000bp' }
       ],
       gradient: 'from-primary to-accent'
     },

@@ -28,7 +28,7 @@ const WesternProteinMarkerI = () => {
         'Product Manual (PDF)',
         'Western Blot Protocol (PDF)'
       ]}
-      mainImage="/images/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg"
+      mainImage="/lovable-uploads/219e0265-4771-4a23-8849-a50f86f7aa95.png"
     />
   );
 };

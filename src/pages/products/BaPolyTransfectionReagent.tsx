@@ -30,7 +30,7 @@ const BaPolyTransfectionReagent = () => {
         'Transfection Protocol (PDF)',
         'Cell Line Compatibility Guide (PDF)'
       ]}
-      mainImage="/images/BAPoly-1-300x300.png"
+      mainImage="/lovable-uploads/fa6853f1-5309-4c32-945f-ee34e835d8dd.png"
     />
   );
 };

@@ -30,7 +30,7 @@ const FastSybrGreenQpcrMasterMix = () => {
         'Protocol Guide (PDF)',
         'Troubleshooting Guide (PDF)'
       ]}
-      mainImage="/images/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg"
+      mainImage="/lovable-uploads/fa015458-3001-427a-b816-4db6868b7cf4.png"
       storeLink="https://store.bioarktech.com/products/bsy3323-fast-sybr-green-qpcr-master-mix"
     />
   );
