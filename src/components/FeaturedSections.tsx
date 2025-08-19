@@ -46,21 +46,23 @@ const FeaturedSections = () => {
   ];
 
   const ProductCard = ({ title, description, category, image }: { title: string; description: string; category: string; image: string }) => (
-    <Card className="bioark-card group hover:shadow-lg transition-all duration-300">
-      <CardHeader>
+    <Card className="group relative overflow-hidden bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 transform hover:-translate-y-2">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <CardHeader className="relative z-10">
         {/* Product Image */}
-        <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/50 rounded-xl overflow-hidden flex items-center justify-center mb-4">
+        <div className="w-full h-40 bg-gradient-to-br from-muted/30 to-muted/10 rounded-2xl overflow-hidden flex items-center justify-center mb-6 relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <img 
             src={image} 
             alt={title}
-            className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
         </div>
-        <CardTitle className="text-lg group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-secondary group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle className="text-xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">{title}</CardTitle>
+        <CardDescription className="text-muted-foreground leading-relaxed">{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <span className="inline-block px-3 py-1 bioark-primary-gradient text-primary-foreground text-sm rounded-full font-medium shadow-sm">
+      <CardContent className="relative z-10">
+        <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary/20 to-accent/20 text-primary text-sm rounded-full font-semibold border border-primary/20 group-hover:border-primary/40 transition-all duration-300">
           {category}
         </span>
       </CardContent>
@@ -85,7 +87,8 @@ const FeaturedSections = () => {
       </section>
 
       {/* Gene Editing Products Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 bg-muted/30 py-16 rounded-2xl">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="bg-gradient-to-br from-muted/40 to-muted/20 backdrop-blur-sm py-16 rounded-3xl border border-border/30">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-4">Gene Editing Products</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -96,6 +99,7 @@ const FeaturedSections = () => {
           {geneEditingProducts.map((product, index) => (
             <ProductCard key={index} {...product} />
           ))}
+        </div>
         </div>
       </section>
 

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import Map from '@/components/Map';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -89,11 +90,12 @@ const Contact = () => {
                         </span>
                         Address
                       </h3>
-                      <address className="text-muted-foreground not-italic">
+                      <address className="text-muted-foreground not-italic mb-4">
                         13 Taft, Suite 213<br />
                         Rockville, MD, 20850<br />
                         United States
                       </address>
+                      <Map />
                     </CardContent>
                   </Card>
 

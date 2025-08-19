@@ -23,30 +23,34 @@ const Hero = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         <div className="animate-fade-in-up">
-          <Card className="max-w-5xl mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl p-8 md:p-12">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          <Card className="max-w-4xl mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-xl p-6 md:p-10">
+            <div className="text-center mb-8">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
+                <span className="block text-primary">BioArk Technologies</span>
+              </h1>
+              <p className="text-2xl md:text-3xl font-semibold mb-6 bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
+                Gene Editing and Gene Delivery Solutions
+              </p>
+              <p className="text-lg text-muted-foreground mb-6 font-medium opacity-75">
                 Research and Development
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-card-foreground mb-6 font-medium">
-              Gene Editing and Gene Delivery Solutions
-            </p>
-            <p className="text-base md:text-lg text-muted-foreground max-w-4xl mx-auto mb-10 leading-relaxed">
-              BioArk Technologies is a biotechnology and biopharmaceutical CRO specializing in gene editing and delivery. 
+              </p>
+            </div>
+            
+            <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed text-center">
+              A biotechnology and biopharmaceutical CRO specializing in gene editing and delivery. 
               Using proprietary platforms, our team engineers DNA and RNA to support research across therapeutic areas 
               such as immunology, oncology, and neuroscience.
             </p>
             
             {/* Modern CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button asChild className="bioark-btn-primary transform hover:scale-105 transition-all duration-300">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
                 <a href="/products">Explore Our Products</a>
               </Button>
-              <Button asChild className="bioark-btn-secondary transform hover:scale-105 transition-all duration-300">
+              <Button asChild size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white px-8 py-3 rounded-full transition-all duration-300">
                 <a href="/request-quote">Request Quote</a>
               </Button>
-              <Button asChild className="bioark-btn-accent transform hover:scale-105 transition-all duration-300">
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
                 <a href="/services">Learn More</a>
               </Button>
             </div>

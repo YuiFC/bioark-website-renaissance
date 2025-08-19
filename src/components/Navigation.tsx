@@ -51,9 +51,9 @@ const Navigation = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="/public/images/BioArk-Logo-Circle-1-300x300.png" 
+              src="/lovable-uploads/60504387-30e7-4c2c-8597-5a5454ce4d25.png" 
               alt="BioArk Technologies Logo" 
-              className="h-10 w-10 rounded-full"
+              className="h-12 w-12"
             />
           </Link>
 
