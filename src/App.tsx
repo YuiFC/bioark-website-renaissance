@@ -1,57 +1,43 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import About from "./pages/About";
-import Products from "./pages/Products";
-import ProductDetail from "./pages/ProductDetail";
-import Services from "./pages/Services";
-import RequestQuote from "./pages/RequestQuote";
-import Investors from "./pages/Investors";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
+// 引入所有页面组件
+import HomePage from './pages/HomePage';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import Services from './pages/Services';
+import RequestQuote from './pages/RequestQuote';
+import Investors from './pages/Investors';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import CreatePost from './pages/CreatePost';
+import NotFound from './pages/NotFound';
 
-// Individual Product Pages
-import FastSybrGreenQpcrMasterMix from "./pages/products/FastSybrGreenQpcrMasterMix";
-import SybrGreenQpcrMasterMix from "./pages/products/SybrGreenQpcrMasterMix";
-import WesternProteinMarkerI from "./pages/products/WesternProteinMarkerI";
-import BaPolyTransfectionReagent from "./pages/products/BaPolyTransfectionReagent";
-import TargetedKnockIn from "./pages/products/TargetedKnockIn";
+// 引入全局样式
+import './index.css';
 
-const queryClient = new QueryClient();
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* 修复：为导航栏中的每个链接添加对应的路由 */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:slug" element={<ProductDetail />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/request-quote" element={<RequestQuote />} />
+        <Route path="/investors" element={<Investors />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/blog/new" element={<CreatePost />} />
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/products/:productId" element={<ProductDetail />} />
-          
-          {/* Individual Product Detail Pages */}
-          <Route path="/products/2-fast-sybr-green-qpcr-master-mix" element={<FastSybrGreenQpcrMasterMix />} />
-          <Route path="/products/2-sybr-green-qpcr-master-mix" element={<SybrGreenQpcrMasterMix />} />
-          <Route path="/products/western-protein-marker-i-exposure" element={<WesternProteinMarkerI />} />
-          <Route path="/products/bapoly-in-vitro-dna-transfection-reagent" element={<BaPolyTransfectionReagent />} />
-          <Route path="/products/targeted-knock-in" element={<TargetedKnockIn />} />
-          
-          <Route path="/services" element={<Services />} />
-          <Route path="/request-quote" element={<RequestQuote />} />
-          <Route path="/investors" element={<Investors />} />
-          <Route path="/contact" element={<Contact />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+        {/* 修复：使用您设计好的 404 页面组件 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
+  );
+}

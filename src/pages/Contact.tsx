@@ -1,31 +1,64 @@
 
 import React, { useState } from 'react';
-import Layout from '@/components/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import Map from '@/components/Map';
+import Layout from '/src/components/Layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '/src/components/ui/card';
+import { Button } from '/src/components/ui/button';
+import { Input } from '/src/components/ui/input';
+import { Label } from '/src/components/ui/label';
+import { Textarea } from '/src/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '/src/components/ui/select';
+import { useToast } from '/src/hooks/use-toast';
+import Map from '/src/components/Map';
 
 const Contact = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      // TODO: 将 '/api/contact' 替换为您真实的后端 API 端点
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
       toast({
         title: "Message Sent",
         description: "Thank you for contacting us. We'll respond within 24 hours.",
       });
-    }, 1000);
+      e.currentTarget.reset(); // 成功提交后清空表单
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      toast({
+        title: "Submission Failed",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 修复：为地图组件提供必要的坐标和标记信息
+  const location = {
+    center: [-77.1537, 39.0840] as [number, number], // Rockville, MD coordinates
+    marker: {
+      coordinates: [-77.1537, 39.0840] as [number, number],
+      popupHtml: '<strong>BioArk Technologies</strong><br/>13 Taft, Suite 213<br/>Rockville, MD, 20850'
+    }
   };
 
   return (
@@ -95,7 +128,8 @@ const Contact = () => {
                         Rockville, MD, 20850<br />
                         United States
                       </address>
-                      <Map />
+                      {/* 修复：将坐标和标记作为 props 传递给地图组件 */}
+                      <Map center={location.center} marker={location.marker} />
                     </CardContent>
                   </Card>
 

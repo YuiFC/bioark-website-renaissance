@@ -1,53 +1,47 @@
-import React, { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React from 'react';
 
-const Map = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+// --- Component Props ---
+interface MapProps {
+  center: [number, number]; // [lon, lat]
+  marker?: {
+    coordinates: [number, number]; // [lon, lat]
+  };
+  className?: string;
+}
 
-  useEffect(() => {
-    if (!mapContainer.current) return;
+const Map = ({
+  center,
+  marker,
+  className = "w-full h-64 rounded-lg overflow-hidden shadow-md border border-border",
+}: MapProps) => {
+  // 使用标记的坐标（如果提供），否则使用中心坐标
+  const [lon, lat] = marker ? marker.coordinates : center;
 
-    // You need to add your Mapbox access token here
-    // Get it from: https://mapbox.com/
-    mapboxgl.accessToken = 'pk.eyJ1IjoibG92YWJsZS1kZW1vIiwiYSI6ImNtNDBhY2JhZDBienAycXM3cW05cG5lZGgifQ.UQD7rMaRRfvOx_T7KzPfBw';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [-77.0369, 39.0457], // Rockville, MD coordinates
-      zoom: 14,
-    });
+  // 在标记周围定义一个边界框，用于确定地图视野
+  // 较小的 delta 值会使地图更放大
+  const delta = 0.02;
+  const minLon = lon - delta;
+  const maxLon = lon + delta;
+  const minLat = lat - (delta / 2);
+  const maxLat = lat + (delta / 2);
 
-    // Add a marker for the BioArk office
-    new mapboxgl.Marker({
-      color: '#0A2A4D'
-    })
-    .setLngLat([-77.0369, 39.0457])
-    .setPopup(
-      new mapboxgl.Popup({ offset: 25 })
-        .setHTML(`
-          <div style="padding: 10px;">
-            <h3 style="margin: 0 0 5px 0; font-weight: bold;">BioArk Technologies</h3>
-            <p style="margin: 0; font-size: 14px;">13 Taft, Suite 213<br>Rockville, MD, 20850</p>
-          </div>
-        `)
-    )
-    .addTo(map.current);
+  const bbox = [minLon, minLat, maxLon, maxLat].join(',');
+  const markerCoords = `${lat},${lon}`;
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // Cleanup
-    return () => {
-      map.current?.remove();
-    };
-  }, []);
+  const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${markerCoords}`;
 
   return (
-    <div className="w-full h-64 rounded-lg overflow-hidden shadow-md border border-border">
-      <div ref={mapContainer} className="w-full h-full" />
+    <div className={className}>
+      <iframe
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        loading="lazy"
+        allowFullScreen
+        referrerPolicy="no-referrer-when-downgrade"
+        src={osmUrl}
+        title="BioArk Technologies Location on OpenStreetMap"
+      ></iframe>
     </div>
   );
 };
