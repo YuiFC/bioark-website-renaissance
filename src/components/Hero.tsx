@@ -25,7 +25,7 @@ const Hero = () => {
         <div className="animate-fade-in-up">
           <Card className="max-w-5xl mx-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl p-8 md:p-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow">
+              <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 Research and Development
               </span>
             </h1>
@@ -54,19 +54,6 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Hero Image with Modern Styling */}
-      <div className="absolute right-10 top-1/2 transform -translate-y-1/2 hidden lg:block">
-        <div className="w-96 h-96 relative">
-          <div className="absolute inset-0 bioark-primary-gradient rounded-full opacity-20 animate-pulse-glow"></div>
-          <img 
-            src="/lovable-uploads/82c4717e-8036-4332-a946-833661341b80.png" 
-            alt="Genetic Research Visualization"
-            className="w-full h-full object-cover rounded-2xl shadow-2xl animate-float"
-            style={{filter: 'drop-shadow(0 25px 25px hsl(var(--primary) / 0.3))'}}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent rounded-2xl"></div>
-        </div>
-      </div>
     </section>
   );
 };

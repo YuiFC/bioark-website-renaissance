@@ -65,8 +65,12 @@ const About = () => {
             <Card className="max-w-4xl mx-auto">
               <CardHeader>
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bioark-gradient rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">LW</span>
+                  <div className="w-16 h-16 rounded-full overflow-hidden">
+                    <img 
+                      src="/lovable-uploads/78c14c39-6124-4d30-abab-1b43b3ed603f.png" 
+                      alt="Dr. Lipeng Wu"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <CardTitle className="text-2xl">Lipeng Wu, Ph.D.</CardTitle>

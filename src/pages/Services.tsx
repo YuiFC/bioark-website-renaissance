@@ -8,7 +8,7 @@ const Services = () => {
     {
       title: 'Cloning Services',
       description: 'Custom DNA cloning and vector construction services for research applications',
-      image: '/images/Service-1-Custom-Cloning-Services-300x170.jpg',
+      image: '/lovable-uploads/0c6f0d24-0fd4-41c4-a39d-ddfafa8b10a7.png',
       features: [
         'Plasmid construction and optimization',
         'Gene synthesis and assembly',
@@ -19,7 +19,7 @@ const Services = () => {
     {
       title: 'Lentivirus Packaging',
       description: 'Professional lentiviral packaging services for gene delivery applications',
-      image: '/images/BioArk-Logo-Circle-1-300x300.png',
+      image: '/lovable-uploads/a6ea2f2a-ba27-4516-bbea-37efa3c7cff8.png',
       features: [
         'High-titer virus production',
         'Custom packaging protocols',
@@ -30,7 +30,7 @@ const Services = () => {
     {
       title: 'Stable Cell Line',
       description: 'Development of stable cell lines for consistent research applications',
-      image: '/images/Service-3-Stable-Cell-Line-Services-300x119.jpeg',
+      image: '/lovable-uploads/13dbfda7-f44d-45a0-bb45-e5bda75ebcc5.png',
       features: [
         'Cell line engineering and selection',
         'Transfection and integration',
@@ -41,7 +41,7 @@ const Services = () => {
     {
       title: 'Experiment Services',
       description: 'Comprehensive experimental services to support your research goals',
-      image: '/images/Service-4-Experiment-Services-298x300.jpg',
+      image: '/lovable-uploads/a7a33956-b5c5-4245-b5e0-de7c42689a4a.png',
       features: [
         'Custom experimental design',
         'Data analysis and interpretation',
@@ -52,7 +52,7 @@ const Services = () => {
     {
       title: 'Lab Supplies',
       description: 'High-quality laboratory supplies and consumables for molecular research',
-      image: '/images/Service-5-Lab-Supplies-300x169.png',
+      image: '/lovable-uploads/a7a33956-b5c5-4245-b5e0-de7c42689a4a.png',
       features: [
         'Research-grade reagents',
         'Laboratory consumables',
