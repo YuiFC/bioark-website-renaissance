@@ -9,8 +9,8 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Modern Bio-tech Color Palette */
-    --background: 220 20% 98%;
+    /* Deep Sea Voyage Color Palette - BioArktech Theme */
+    --background: 210 20% 96%;  /* Neutral Gray as main background */
     --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
@@ -19,26 +19,26 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    /* DNA Blue - Primary brand color */
-    --primary: 210 95% 45%;
+    /* Deep Ocean Blue - Primary brand color */
+    --primary: 209 72% 18%;  /* #0A2A4D - Deep Ocean Blue */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 100% 60%;
+    --primary-glow: 213 93% 60%;  /* Tech Blue for glow effect */
 
-    /* Cell Green - Secondary color */
-    --secondary: 155 70% 45%;
+    /* Tech Blue - Secondary color for buttons and links */
+    --secondary: 213 93% 60%;  /* #3B82F6 - Tech Blue */
     --secondary-foreground: 0 0% 100%;
-    --secondary-glow: 155 80% 60%;
+    --secondary-glow: 213 93% 70%;
 
-    --muted: 220 15% 96%;
+    --muted: 210 20% 96%;  /* Neutral Gray */
     --muted-foreground: 215 12% 45%;
 
-    /* Protein Purple - Accent color */
-    --accent: 270 75% 55%;
+    /* Vitality Green - Accent color for success and positive actions */
+    --accent: 158 84% 39%;  /* #10B981 - Vitality Green */
     --accent-foreground: 0 0% 100%;
-    --accent-glow: 270 85% 70%;
+    --accent-glow: 158 84% 50%;
 
-    /* Enzyme Orange - Additional accent */
-    --enzyme: 35 95% 55%;
+    /* Coral Orange - CTA and emphasis color */
+    --enzyme: 20 94% 52%;  /* #F97316 - Coral Orange */
     --enzyme-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -46,7 +46,7 @@ All colors MUST be HSL.
 
     --border: 220 20% 88%;
     --input: 220 20% 94%;
-    --ring: 210 95% 45%;
+    --ring: 209 72% 18%;  /* Deep Ocean Blue for focus rings */
 
     --radius: 0.75rem;
 
@@ -63,61 +63,61 @@ All colors MUST be HSL.
     --shadow-accent: 0 10px 30px -10px hsl(var(--accent) / 0.3);
     --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
 
-    --sidebar-background: 220 25% 97%;
-    --sidebar-foreground: 215 25% 25%;
-    --sidebar-primary: 210 95% 45%;
+    --sidebar-background: 210 20% 96%;  /* Neutral Gray */
+    --sidebar-foreground: 209 72% 18%;  /* Deep Ocean Blue */
+    --sidebar-primary: 209 72% 18%;  /* Deep Ocean Blue */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 92%;
-    --sidebar-accent-foreground: 215 25% 25%;
+    --sidebar-accent: 213 93% 60%;  /* Tech Blue */
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 20% 88%;
-    --sidebar-ring: 210 95% 45%;
+    --sidebar-ring: 209 72% 18%;  /* Deep Ocean Blue */
   }
 
   .dark {
-    /* Dark mode bio-tech colors */
-    --background: 215 30% 8%;
+    /* Dark mode Deep Sea Voyage colors */
+    --background: 209 72% 8%;  /* Dark Deep Ocean Blue background */
     --foreground: 220 20% 95%;
 
-    --card: 215 25% 12%;
+    --card: 209 72% 12%;  /* Slightly lighter Deep Ocean Blue for cards */
     --card-foreground: 220 20% 95%;
 
-    --popover: 215 25% 12%;
+    --popover: 209 72% 12%;
     --popover-foreground: 220 20% 95%;
 
-    /* Brighter colors for dark mode */
-    --primary: 210 100% 60%;
-    --primary-foreground: 215 30% 8%;
-    --primary-glow: 210 100% 70%;
+    /* Brighter colors for dark mode visibility */
+    --primary: 213 93% 60%;  /* Tech Blue as primary in dark mode */
+    --primary-foreground: 209 72% 8%;
+    --primary-glow: 213 93% 70%;
 
-    --secondary: 155 80% 55%;
-    --secondary-foreground: 215 30% 8%;
-    --secondary-glow: 155 90% 65%;
+    --secondary: 213 93% 70%;  /* Brighter Tech Blue */
+    --secondary-foreground: 209 72% 8%;
+    --secondary-glow: 213 93% 80%;
 
-    --muted: 215 25% 15%;
+    --muted: 209 72% 15%;  /* Dark Ocean Blue muted */
     --muted-foreground: 215 15% 65%;
 
-    --accent: 270 85% 65%;
-    --accent-foreground: 215 30% 8%;
-    --accent-glow: 270 90% 75%;
+    --accent: 158 84% 50%;  /* Brighter Vitality Green for dark mode */
+    --accent-foreground: 209 72% 8%;
+    --accent-glow: 158 84% 60%;
 
-    --enzyme: 35 100% 65%;
-    --enzyme-foreground: 215 30% 8%;
+    --enzyme: 20 94% 60%;  /* Brighter Coral Orange for dark mode */
+    --enzyme-foreground: 209 72% 8%;
 
     --destructive: 0 90% 65%;
-    --destructive-foreground: 215 30% 8%;
+    --destructive-foreground: 209 72% 8%;
 
-    --border: 215 25% 20%;
-    --input: 215 25% 18%;
-    --ring: 210 100% 60%;
+    --border: 209 72% 20%;  /* Dark Ocean Blue borders */
+    --input: 209 72% 18%;
+    --ring: 213 93% 60%;  /* Tech Blue focus rings */
 
-    --sidebar-background: 215 30% 10%;
+    --sidebar-background: 209 72% 10%;  /* Dark Deep Ocean Blue */
     --sidebar-foreground: 220 20% 90%;
-    --sidebar-primary: 210 100% 60%;
-    --sidebar-primary-foreground: 215 30% 8%;
-    --sidebar-accent: 215 25% 15%;
-    --sidebar-accent-foreground: 220 20% 90%;
-    --sidebar-border: 215 25% 20%;
-    --sidebar-ring: 210 100% 60%;
+    --sidebar-primary: 213 93% 60%;  /* Tech Blue */
+    --sidebar-primary-foreground: 209 72% 8%;
+    --sidebar-accent: 158 84% 50%;  /* Vitality Green */
+    --sidebar-accent-foreground: 209 72% 8%;
+    --sidebar-border: 209 72% 20%;  /* Dark Ocean Blue borders */
+    --sidebar-ring: 213 93% 60%;  /* Tech Blue */
   }
 }
 
