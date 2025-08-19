@@ -1,24 +1,52 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from './ui/button';
+import { cn } from '/src/lib/utils';
+import { Button } from '/src/components/ui/button';
 import { Menu, X, ShoppingCart, User, Palette, Sun, Moon } from 'lucide-react';
 import { useTheme } from '/src/components/ThemeProvider';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "/src/components/ui/navigation-menu";
+import { featuredProducts, geneEditingProducts, customerSolutions } from '/src/data/showcase';
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <Link
+          to={props.href || '#'}
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none text-foreground">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  )
+})
+ListItem.displayName = "ListItem"
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
-
-  const navItems = [
-    { name: 'Products', path: '/products' },
-    { name: 'Services', path: '/services' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'Investors', path: '/investors' },
-    { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
-  ];
 
   const externalLinks = [
     { name: 'My Account', url: 'https://store.bioarktech.com/signup', icon: User },
@@ -45,8 +73,8 @@ const Navigation = () => {
 
   // The navigation bar text should be light to be visible on the dark hero image.
   // The background appears on scroll, fixing the abrupt transition.
-  const navBackgroundClass = isScrolled 
-    ? 'bg-[hsl(var(--header-footer-background))]/90 backdrop-blur-lg border-b border-border/20 shadow-sm' 
+  const navBackgroundClass = isScrolled
+    ? 'bg-[hsl(var(--header-footer-background))]/90 backdrop-blur-lg border-b border-border/20 shadow-sm'
     : 'bg-transparent';
 
   return (
@@ -67,20 +95,60 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-                  isActivePath(item.path)
-                    ? 'text-primary font-semibold' // Active link color should stand out
-                    : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'
-                }`}
-              >
-                {item.name}
+            <NavigationMenu>
+              <NavigationMenuList>
+                {/* Products Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid grid-cols-2 gap-4 p-4 w-[600px] lg:w-[700px]">
+                      <div className="flex flex-col space-y-2">
+                        <h3 className="font-semibold text-foreground px-3">Featured Product (Reagent)</h3>
+                        <ul className="space-y-1">
+                          {featuredProducts.map((product) => (
+                            <ListItem key={product.id} title={product.name} href={product.link}>
+                              {product.description}
+                            </ListItem>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <h3 className="font-semibold text-foreground px-3">Gene Editing Product</h3>
+                        <ul className="space-y-1">
+                          {geneEditingProducts.map((product) => (
+                            <ListItem key={product.id} title={product.name} href={product.link}>
+                              {product.description}
+                            </ListItem>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Customer Solutions Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Customer Solutions</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {customerSolutions.map((solution) => (
+                        <ListItem key={solution.id} title={solution.name} href={solution.link}>
+                          {solution.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            {/* Other Links */}
+            {['Blog', 'Investors', 'About', 'Contact'].map(name => (
+              <Link key={name} to={`/${name.toLowerCase()}`} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath(`/${name.toLowerCase()}`) ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>
+                {name}
               </Link>
             ))}
-            
+
             <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border">
               <Button asChild size="sm">
                 <Link to="/request-quote">Request Quote</Link>
@@ -136,21 +204,19 @@ const Navigation = () => {
               >
                 Home
               </Link>
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                    isActivePath(item.path)
-                      ? 'text-primary bg-white/10'
-                      : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'
-                  }`}
-                >
+              {/* Simplified Mobile Links */}
+              {[
+                { name: 'Products', path: '/products' },
+                { name: 'Customer Solutions', path: '/services' },
+                { name: 'Blog', path: '/blog' },
+                { name: 'Investors', path: '/investors' },
+                { name: 'About', path: '/about' },
+                { name: 'Contact', path: '/contact' },
+              ].map((item) => (
+                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath(item.path) ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>
                   {item.name}
                 </Link>
               ))}
-              
               <div className="px-3 pt-4">
                 <Button asChild className="w-full">
                   <Link to="/request-quote" onClick={() => setIsMenuOpen(false)}>

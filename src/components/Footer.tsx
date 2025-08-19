@@ -10,15 +10,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-white/10 p-1.5 rounded-md">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="bg-white/5 p-2 rounded-lg border border-white/10 shadow-sm">
                 <img 
                   src="/lovable-uploads/9b80f083-86c0-4e24-a873-9afa9b5be0e1.png" 
                   alt="BioArk Technologies Logo" 
                   className="h-8 w-auto"
                 />
               </div>
-              <span className="text-xl font-bold">BioArk Technologies</span>
+              <span className="text-2xl font-semibold">BioArk Technologies</span>
             </div>
             <p className="opacity-80 mb-4 max-w-md">
               Biotechnology and biopharmaceutical CRO specializing in gene editing and delivery solutions. 

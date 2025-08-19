@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Services from './pages/Services';
+import ServiceDetail from './pages/ServiceDetail';
 import RequestQuote from './pages/RequestQuote';
 import Investors from './pages/Investors';
 import About from './pages/About';
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/products/:slug" element={<ProductDetail />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/services/:slug" element={<ServiceDetail />} />
         <Route path="/request-quote" element={<RequestQuote />} />
         <Route path="/investors" element={<Investors />} />
         <Route path="/about" element={<About />} />
