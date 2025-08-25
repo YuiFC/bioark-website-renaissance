@@ -289,3 +289,106 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-secondary;
 }
+
+/* Swiper controls: arrows + pagination (shared for product + gene editing) */
+.product-swiper,
+.gene-editing-swiper {
+  /* Harmonize Swiper with theme */
+  --swiper-navigation-size: 20px;
+  --swiper-navigation-color: hsl(var(--primary));
+  --swiper-pagination-color: hsl(var(--primary));
+  --swiper-pagination-bullet-inactive-color: hsl(var(--muted-foreground));
+  --swiper-pagination-bullet-inactive-opacity: 0.5;
+  --swiper-pagination-bullet-size: 8px;
+}
+
+/* Arrow buttons base */
+.product-swiper .swiper-button-prev,
+.product-swiper .swiper-button-next,
+.gene-editing-swiper .swiper-button-prev,
+.gene-editing-swiper .swiper-button-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: hsl(var(--card));
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 6px 16px hsl(var(--primary) / 0.08);
+  opacity: 0.9;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  z-index: 10;
+}
+
+/* Arrow positions on desktop: 30–40px outside */
+@media (min-width: 1024px) {
+  .product-swiper .swiper-button-prev,
+  .gene-editing-swiper .swiper-button-prev { left: -36px; }
+
+  .product-swiper .swiper-button-next,
+  .gene-editing-swiper .swiper-button-next { right: -36px; }
+}
+
+/* Arrow positions on mobile/tablet: 10–15px offset */
+@media (max-width: 1023.98px) {
+  .product-swiper .swiper-button-prev,
+  .gene-editing-swiper .swiper-button-prev { left: 12px; }
+
+  .product-swiper .swiper-button-next,
+  .gene-editing-swiper .swiper-button-next { right: 12px; }
+}
+
+/* Optional smooth hover effect */
+.product-swiper .swiper-button-prev:hover,
+.product-swiper .swiper-button-next:hover,
+.gene-editing-swiper .swiper-button-prev:hover,
+.gene-editing-swiper .swiper-button-next:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 8px 22px hsl(var(--primary) / 0.15);
+}
+
+/* Pagination: centered below with spacing */
+.product-swiper .swiper-pagination,
+.gene-editing-swiper .swiper-pagination {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -20px !important;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Pagination bullets look and interaction */
+.product-swiper .swiper-pagination-bullet,
+.gene-editing-swiper .swiper-pagination-bullet {
+  background: hsl(var(--muted-foreground));
+  opacity: 0.5;
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.product-swiper .swiper-pagination-bullet-active,
+.gene-editing-swiper .swiper-pagination-bullet-active {
+  background: hsl(var(--primary));
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Pagination spacing on small screens */
+@media (max-width: 640px) {
+  .product-swiper .swiper-pagination,
+  .gene-editing-swiper .swiper-pagination {
+    bottom: -14px !important;
+  }
+}
+
+/* Hide default pseudo-elements that Swiper might add on navigation */
+.product-swiper .swiper-button-prev::after,
+.product-swiper .swiper-button-next::after,
+.gene-editing-swiper .swiper-button-prev::after,
+.gene-editing-swiper .swiper-button-next::after {
+  display: none;
+}

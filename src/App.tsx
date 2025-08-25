@@ -15,6 +15,8 @@ import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import CreatePost from './pages/CreatePost';
 import NotFound from './pages/NotFound';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 // 引入全局样式
 import './index.css';
@@ -36,6 +38,8 @@ export default function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/blog/new" element={<CreatePost />} />
+  <Route path="/terms" element={<Terms />} />
+  <Route path="/privacy" element={<Privacy />} />
 
         {/* 修复：使用您设计好的 404 页面组件 */}
         <Route path="*" element={<NotFound />} />

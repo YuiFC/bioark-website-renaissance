@@ -1,11 +1,11 @@
 
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '/src/components/ui/button';
-import { Card, CardContent } from '/src/components/ui/card';
-import { featuredProducts, geneEditingProducts, customerSolutions, ShowcaseItem } from '/src/data/showcase';
-import { ArrowRight } from 'lucide-react';
+import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
+import { featuredProducts, geneEditingProducts, customerSolutions, ShowcaseItem } from '../data/showcase';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay, Pagination } from 'swiper/modules';
 
@@ -21,7 +21,8 @@ const SectionWrapper = ({ title, description, children, className }: SectionProp
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
         <h2 className="text-3xl lg:text-4xl font-bold text-foreground">{title}</h2>
-        <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">{description}</p>
+  {/* Force single-line description with truncation if needed */}
+  <p className="mt-4 text-lg text-muted-foreground max-w-5xl mx-auto whitespace-nowrap overflow-hidden text-ellipsis">{description}</p>
       </div>
       {children}
     </div>
@@ -41,16 +42,22 @@ const FeaturedProductSlide = ({ item }: { item: ShowcaseItem }) => (
 );
 
 const ProductCard = ({ item }: { item: ShowcaseItem }) => (
-  <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full">
-    <Link to={item.link} className="block h-full flex flex-col">
-      <div className="aspect-w-16 aspect-h-9 overflow-hidden">
+  <Card className="overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-[400px] md:h-[420px] lg:h-[460px]">
+    <div className="h-full flex flex-col">
+      <div className="w-full h-40 md:h-44 lg:h-48 overflow-hidden">
         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
       </div>
-      <CardContent className="p-6 flex-grow flex flex-col">
-        <h3 className="font-semibold text-lg text-foreground mb-2">{item.name}</h3>
-        <p className="text-muted-foreground text-sm flex-grow">{item.description}</p>
+      {/* Equal-height body: title (1-2 lines) + description (up to 3 lines) + spacer */}
+      <CardContent className="p-6 flex-1 flex flex-col">
+        <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2 leading-snug min-h-[3rem]">{item.name}</h3>
+        <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">{item.description}</p>
+        <div className="mt-4">
+          <Button asChild size="sm" variant="default">
+            <Link to={item.link}>View the details</Link>
+          </Button>
+        </div>
       </CardContent>
-    </Link>
+    </div>
   </Card>
 );
 
@@ -75,35 +82,66 @@ const SolutionCard = ({ item }: { item: ShowcaseItem }) => {
 };
 
 const FeaturedSections = () => {
+  // External navigation refs to avoid clipping in overflow-hidden content area
+  const featuredPrevRef = useRef<HTMLButtonElement | null>(null);
+  const featuredNextRef = useRef<HTMLButtonElement | null>(null);
+  const genePrevRef = useRef<HTMLButtonElement | null>(null);
+  const geneNextRef = useRef<HTMLButtonElement | null>(null);
   return (
     <>
-      {/* Featured Products (Reagents) Section */}
+      {/* Featured Products Section */}
       <SectionWrapper
-        title="Featured Products (Reagents)"
+        title="Featured Products"
         description="High-performance reagents designed to accelerate your research and deliver reliable results."
         className="bg-background"
       >
-        <div className="relative px-16">
-          <Swiper
-            modules={[Pagination, Navigation]}
-            spaceBetween={30}
-            slidesPerView={2}
-            slidesPerGroup={2}
-            navigation
-            pagination={{ clickable: true }}
-            breakpoints={{
-              768: { slidesPerView: 3, slidesPerGroup: 3 },
-              1024: { slidesPerView: 4, slidesPerGroup: 4 },
-              1280: { slidesPerView: 5, slidesPerGroup: 5 },
-            }}
-            className="pb-12 product-swiper"
-          >
+        {/* Wrapper allows arrows to be placed outside while content remains clipped */}
+        <div className="relative product-swiper px-20 md:px-24 lg:px-28">
+          <div className="overflow-hidden">
+            <Swiper
+              modules={[Pagination, Navigation]}
+              spaceBetween={30}
+              slidesPerView={1}
+              slidesPerGroup={1}
+              onBeforeInit={(swiper) => {
+                // @ts-ignore
+                swiper.params.navigation.prevEl = featuredPrevRef.current;
+                // @ts-ignore
+                swiper.params.navigation.nextEl = featuredNextRef.current;
+              }}
+              navigation={{ prevEl: featuredPrevRef.current, nextEl: featuredNextRef.current }}
+              pagination={{ clickable: true }}
+              breakpoints={{
+                640: { slidesPerView: 2, slidesPerGroup: 2 },
+                1024: { slidesPerView: 3, slidesPerGroup: 3 },
+                1280: { slidesPerView: 4, slidesPerGroup: 4 },
+              }}
+              className="pb-12"
+            >
             {featuredProducts.map(item => (
               <SwiperSlide key={item.id} className="h-full pb-2">
                 <ProductCard item={item} />
               </SwiperSlide>
             ))}
-          </Swiper>
+            </Swiper>
+          </div>
+          {/* External navigation buttons (not clipped) */}
+          <button
+            ref={featuredPrevRef}
+            aria-label="Previous"
+            className="swiper-button-prev"
+            type="button"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            ref={featuredNextRef}
+            aria-label="Next"
+            className="swiper-button-next"
+            type="button"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </SectionWrapper>
 
@@ -113,26 +151,51 @@ const FeaturedSections = () => {
         description="A comprehensive portfolio of tools for precise and efficient genome engineering, from CRISPR to viral vectors."
         className="bg-muted/50"
       >
-        <div className="relative px-16">
-          <Swiper
-            modules={[Pagination, Navigation]}
-            spaceBetween={30}
-            slidesPerView={1}
-            navigation
-            pagination={{ clickable: true }}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              768: { slidesPerView: 3 },
-              1280: { slidesPerView: 5 },
-            }}
-            className="pb-12 gene-editing-swiper"
-          >
+        <div className="relative gene-editing-swiper px-16">
+          <div className="overflow-hidden">
+            <Swiper
+              modules={[Pagination, Navigation]}
+              spaceBetween={30}
+              slidesPerView={1}
+              onBeforeInit={(swiper) => {
+                // @ts-ignore
+                swiper.params.navigation.prevEl = genePrevRef.current;
+                // @ts-ignore
+                swiper.params.navigation.nextEl = geneNextRef.current;
+              }}
+              navigation={{ prevEl: genePrevRef.current, nextEl: geneNextRef.current }}
+              pagination={{ clickable: true }}
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+                1280: { slidesPerView: 5 },
+              }}
+              className="pb-12"
+            >
             {geneEditingProducts.map(item => (
             <SwiperSlide key={item.id} className="h-full pb-2">
                 <ProductCard item={item} />
               </SwiperSlide>
             ))}
-          </Swiper>
+            </Swiper>
+          </div>
+          {/* External navigation buttons for gene editing carousel */}
+          <button
+            ref={genePrevRef}
+            aria-label="Previous"
+            className="swiper-button-prev"
+            type="button"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            ref={geneNextRef}
+            aria-label="Next"
+            className="swiper-button-next"
+            type="button"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </SectionWrapper>
 

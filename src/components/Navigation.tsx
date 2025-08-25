@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '/src/lib/utils';
 import { Button } from '/src/components/ui/button';
-import { Menu, X, ShoppingCart, User, Palette, Sun, Moon } from 'lucide-react';
-import { useTheme } from '/src/components/ThemeProvider';
+import { Menu, X, ShoppingCart, User, Palette } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,8 +11,8 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "/src/components/ui/navigation-menu";
-import { featuredProducts, geneEditingProducts, customerSolutions } from '/src/data/showcase';
+} from "./ui/navigation-menu";
+import { featuredProducts, geneEditingProducts, customerSolutions } from '../data/showcase';
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -46,7 +45,7 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { theme, setTheme } = useTheme();
+  // Dark mode removed; theme toggle no longer used
 
   const externalLinks = [
     { name: 'My Account', url: 'https://store.bioarktech.com/signup', icon: User },
@@ -82,13 +81,13 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-2">
             <img
-              src="/images/BioArk-Logo-Circle-1-300x300.png"
+              src="/images/Logo Transparent.png"
               alt="BioArk Technologies Logo" 
-              className="h-10 w-10"
+              className="h-8 w-auto md:h-9"
             />
-            <span className="text-xl font-bold hidden sm:inline text-inherit">
+            <span className="hidden sm:inline text-[17px] md:text-lg font-semibold tracking-tight leading-none text-inherit">
               BioArk Technologies
             </span>
           </Link>
@@ -155,7 +154,7 @@ const Navigation = () => {
               </Button>
               {externalLinks.map((link) => {
                 const IconComponent = link.icon;
-                return (
+        return (
                   <a
                     key={link.name}
                     href={link.url}
@@ -164,20 +163,10 @@ const Navigation = () => {
                     className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200"
                     title={link.name}
                   >
-                    <IconComponent size={16} />
+          <IconComponent size={20} />
                   </a>
                 );
               })}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                className="text-inherit opacity-80 hover:text-primary hover:opacity-100"
-              >
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
             </div>
           </div>
 
