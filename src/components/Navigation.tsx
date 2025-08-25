@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '/src/lib/utils';
-import { Button } from '/src/components/ui/button';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
 import { Menu, X, ShoppingCart, User, Palette } from 'lucide-react';
 import {
   NavigationMenu,
@@ -81,11 +81,11 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2.5">
             <img
-              src="/images/Logo Transparent.png"
+              src={`${import.meta.env.BASE_URL}images/Logo Transparent.png`}
               alt="BioArk Technologies Logo" 
-              className="h-8 w-auto md:h-9"
+              className="h-10 w-auto md:h-11"
             />
             <span className="hidden sm:inline text-[17px] md:text-lg font-semibold tracking-tight leading-none text-inherit">
               BioArk Technologies
