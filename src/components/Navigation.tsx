@@ -83,7 +83,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5">
             <img
-              src={`${import.meta.env.BASE_URL}images/Logo Transparent.png`}
+              src={`${import.meta.env.BASE_URL}images/Logo-Transparent.png`}
               alt="BioArk Technologies Logo" 
               className="h-10 w-auto md:h-11"
             />
