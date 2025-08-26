@@ -85,8 +85,6 @@ const FeaturedSections = () => {
   // External navigation refs to avoid clipping in overflow-hidden content area
   const featuredPrevRef = useRef<HTMLButtonElement | null>(null);
   const featuredNextRef = useRef<HTMLButtonElement | null>(null);
-  const genePrevRef = useRef<HTMLButtonElement | null>(null);
-  const geneNextRef = useRef<HTMLButtonElement | null>(null);
   return (
     <>
       {/* Featured Products Section */}
@@ -103,13 +101,17 @@ const FeaturedSections = () => {
               spaceBetween={30}
               slidesPerView={1}
               slidesPerGroup={1}
-              onBeforeInit={(swiper) => {
-                // @ts-ignore
-                swiper.params.navigation.prevEl = featuredPrevRef.current;
-                // @ts-ignore
-                swiper.params.navigation.nextEl = featuredNextRef.current;
+              onInit={(swiper) => {
+                if (featuredPrevRef.current && featuredNextRef.current) {
+                  // Bind external buttons once DOM is ready
+                  // @ts-ignore
+                  swiper.params.navigation.prevEl = featuredPrevRef.current;
+                  // @ts-ignore
+                  swiper.params.navigation.nextEl = featuredNextRef.current;
+                  swiper.navigation.init();
+                  swiper.navigation.update();
+                }
               }}
-              navigation={{ prevEl: featuredPrevRef.current, nextEl: featuredNextRef.current }}
               pagination={{ clickable: true }}
               breakpoints={{
                 640: { slidesPerView: 2, slidesPerGroup: 2 },
@@ -146,24 +148,17 @@ const FeaturedSections = () => {
       </SectionWrapper>
 
       {/* Gene Editing Products Section */}
-      <SectionWrapper
+  <SectionWrapper
         title="Gene Editing Products"
         description="A comprehensive portfolio of tools for precise and efficient genome engineering, from CRISPR to viral vectors."
         className="bg-muted/50"
       >
-        <div className="relative gene-editing-swiper px-16">
+    <div className="relative gene-editing-swiper px-16">
           <div className="overflow-hidden">
             <Swiper
-              modules={[Pagination, Navigation]}
+      modules={[Pagination]}
               spaceBetween={30}
               slidesPerView={1}
-              onBeforeInit={(swiper) => {
-                // @ts-ignore
-                swiper.params.navigation.prevEl = genePrevRef.current;
-                // @ts-ignore
-                swiper.params.navigation.nextEl = geneNextRef.current;
-              }}
-              navigation={{ prevEl: genePrevRef.current, nextEl: geneNextRef.current }}
               pagination={{ clickable: true }}
               breakpoints={{
                 640: { slidesPerView: 2 },
@@ -179,23 +174,7 @@ const FeaturedSections = () => {
             ))}
             </Swiper>
           </div>
-          {/* External navigation buttons for gene editing carousel */}
-          <button
-            ref={genePrevRef}
-            aria-label="Previous"
-            className="swiper-button-prev"
-            type="button"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            ref={geneNextRef}
-            aria-label="Next"
-            className="swiper-button-next"
-            type="button"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+      {/* Arrows removed as requested for Gene Editing carousel */}
         </div>
       </SectionWrapper>
 

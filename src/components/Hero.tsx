@@ -42,15 +42,22 @@ const Hero = () => {
             </Button>
           </div>
 
-          {/* Reputation metrics (two numbers) */}
-          <div className="mt-8 grid grid-cols-2 gap-6 sm:gap-8 sm:max-w-md">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">4.9/5</span>
-              <span className="text-sm md:text-base text-muted-foreground">Avg. rating</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-extrabold text-foreground">300+</span>
-              <span className="text-sm md:text-base text-muted-foreground">Trusted partners</span>
+          {/* Divider between text and metrics (clearer brand-tinted color) */}
+          <div className="mt-8 pt-6 border-t border-primary/40">
+            {/* Reputation metrics: stacked (value above, label below), smaller fonts, no gradient */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 max-w-lg">
+              <div className="flex flex-col">
+                <span className="text-2xl md:text-3xl font-extrabold text-foreground">4.9/5</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Avg. rating</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl md:text-3xl font-extrabold text-foreground">300+</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Trusted partners</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl md:text-3xl font-extrabold text-foreground">99%</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Success Rate</span>
+              </div>
             </div>
           </div>
         </div>

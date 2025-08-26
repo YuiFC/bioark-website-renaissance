@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { mockBlogPosts, BlogPost } from '/src/data/blog';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { mockBlogPosts, BlogPost } from '../data/blog';
 
 interface BlogContextType {
   posts: BlogPost[];
@@ -10,6 +10,15 @@ const BlogContext = createContext<BlogContextType | undefined>(undefined);
 
 export const BlogProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<BlogPost[]>(mockBlogPosts);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('bioark_blog_posts') || '[]') as BlogPost[];
+      if (saved.length) {
+        setPosts([...saved, ...mockBlogPosts]);
+      }
+    } catch {}
+  }, []);
 
   const addPost = (post: BlogPost) => {
     setPosts(prevPosts => [post, ...prevPosts]);
