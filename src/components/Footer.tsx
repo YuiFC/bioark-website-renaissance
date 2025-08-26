@@ -17,7 +17,6 @@ const Footer = () => {
               <li><Link to="/services" className="hover:text-primary transition-colors">Services</Link></li>
               <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link to="/request-quote" className="hover:text-primary transition-colors">Request Quote</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Get in touch</Link></li>
             </ul>
           </div>
           {/* Company */}
@@ -26,7 +25,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li><Link to="/about" className="hover:text-primary transition-colors">About</Link></li>
               <li><Link to="/investors" className="hover:text-primary transition-colors">Investors</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>
           </div>
           {/* Store */}
