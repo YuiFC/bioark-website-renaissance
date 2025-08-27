@@ -87,7 +87,7 @@ export const geneEditingProducts: ShowcaseItem[] = [
   { id: 'gep-02', name: 'Gene Knock-Out Services', description: 'Generate complete loss-of-function models using CRISPR-Cas9 technology.', imageUrl: '/images/products/Product-1-3-Gene-Knock-out-300x200.jpg', link: '/products/gene-knock-out' },
   { id: 'gep-03', name: 'Large Fragment Gene Deletion', description: 'Expertly remove large genomic regions to study gene function.', imageUrl: '/images/products/Product-1-4-Gene-Deletion-300x180.jpeg', link: '/products/gene-deletion' },
   { id: 'gep-04', name: 'CRISPRi & RNAi Knock-Down', description: 'Modulate gene expression with our reliable RNA interference services.', imageUrl: '/images/products/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png', link: '/products/crispr-knock-down' },
-  { id: 'gep-05', name: 'BAJet® Transfection Reagent', description: 'A powerful reagent for efficient delivery of nucleic acids for gene editing.', imageUrl: '/images/products/BAjet-1-300x300.png', link: '/products/bajet-transfection-reagent' },
+    { id: 'gep-05', name: 'Targeted Knock-In', description: 'Precise integration to drive robust gene overexpression at safe-harbor or locus-specific sites.', imageUrl: '/images/products/Product-1-1-Overexpression-Targeted-Knock-In.png', link: '/products/overexpression-targeted-knock-in' },
 ];
 
 export const customerSolutions: ShowcaseItem[] = [

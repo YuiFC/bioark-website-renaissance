@@ -142,9 +142,14 @@ const Navigation = () => {
             </NavigationMenu>
 
             {/* Other Links */}
-            {['Blog', 'Investors', 'About', 'Contact'].map(name => (
-              <Link key={name} to={`/${name.toLowerCase()}`} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath(`/${name.toLowerCase()}`) ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>
-                {name}
+            {[
+              { name: 'Blog', path: '/blog' },
+              { name: 'Investors', path: '/investors' },
+              { name: 'Why BioArk', path: '/why-bioark' },
+              { name: 'Contact', path: '/contact' },
+            ].map(item => (
+              <Link key={item.name} to={item.path} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath(item.path) ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>
+                {item.name}
               </Link>
             ))}
 
@@ -199,7 +204,7 @@ const Navigation = () => {
                 { name: 'Customer Solutions', path: '/services' },
                 { name: 'Blog', path: '/blog' },
                 { name: 'Investors', path: '/investors' },
-                { name: 'About', path: '/about' },
+                { name: 'Why BioArk', path: '/why-bioark' },
                 { name: 'Contact', path: '/contact' },
               ].map((item) => (
                 <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath(item.path) ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>

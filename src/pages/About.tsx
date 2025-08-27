@@ -12,7 +12,7 @@ const About = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                About Us – BioArk Technologies Leadership & Mission
+                Why BioArk – Leadership & Mission
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Advancing genetic medicine through scientific excellence and collaborative partnership
@@ -26,7 +26,7 @@ const About = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl font-bold text-foreground mb-6">About Us</h2>
+                <h2 className="text-3xl font-bold text-foreground mb-6">Why BioArk</h2>
                 <div className="space-y-4 text-muted-foreground">
                   <p>
                     Our scientists, engineers, and project managers bring decades of combined expertise 

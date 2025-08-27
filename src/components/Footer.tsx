@@ -23,7 +23,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-4">Company</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/about" className="hover:text-primary transition-colors">About</Link></li>
+              <li><Link to="/why-bioark" className="hover:text-primary transition-colors">Why BioArk</Link></li>
               <li><Link to="/investors" className="hover:text-primary transition-colors">Investors</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>

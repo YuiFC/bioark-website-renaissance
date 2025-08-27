@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import ProductDetailTemplate from '/src/components/ProductDetailTemplate';
-import { getProductBySlug } from '/src/data/products';
+import ProductDetailTemplate from '@/components/ProductDetailTemplate';
+import { getProductBySlug } from '@/data/products';
 import NotFound from './NotFound';
 
 const ProductDetail = () => {

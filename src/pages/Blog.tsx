@@ -9,59 +9,43 @@ import { Search, Clock, Eye } from 'lucide-react';
 const Blog = () => {
   const { posts } = useBlog();
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<string>('All');
   const [limit, setLimit] = useState(6);
 
-  const categories = useMemo(() => ['All', 'Tutorials', 'AI Trends', 'Business Use Cases', 'Company News', 'Operations'], []);
   const filtered = useMemo(() => {
-    const byCategory = category === 'All' ? posts : posts.filter(p => p.category === category);
-    if (!query.trim()) return byCategory;
+    if (!query.trim()) return posts;
     const q = query.toLowerCase();
-      return byCategory.filter(p =>
-        p.title.toLowerCase().includes(q) ||
-        p.excerpt.toLowerCase().includes(q) ||
-        p.content.toLowerCase().includes(q) ||
+    return posts.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.excerpt.toLowerCase().includes(q) ||
+      p.content.toLowerCase().includes(q) ||
       (p.tags || []).some(t => t.toLowerCase().includes(q))
     );
-  }, [posts, query, category]);
+  }, [posts, query]);
   const visible = filtered.slice(0, limit);
 
   return (
     <Layout>
-      <section className="py-16 bg-muted/30">
+      <section className="py-16 bioark-hero-gradient border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="text-left">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3">Blog</h1>
-                <p className="text-base md:text-lg text-muted-foreground max-w-3xl">Explore insights on gene editing, delivery technologies, and BioArk news.</p>
-              </div>
-              <Button asChild className="shrink-0 h-9 px-4">
-                <Link to="/blog/new">Create Blog</Link>
-              </Button>
+            <div className="text-center">
+              <h1 className="mx-auto text-3xl md:text-4xl lg:text-5xl font-bold text-foreground max-w-4xl">
+                Explore insights on gene editing, delivery technologies, and BioArk news.
+              </h1>
             </div>
-            {/* Search + Categories */}
-            <div className="flex flex-col gap-4">
-              <div className="relative w-full max-w-2xl">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <div className="relative w-full max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search blog posts..."
+                  placeholder="Search blog posts..."
                   className="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => { setCategory(c); setLimit(6); }}
-                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${category === c ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
+              <Button asChild className="shrink-0 h-9 px-4">
+                <Link to="/blog/new">Create Blog</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -78,7 +62,6 @@ const Blog = () => {
                   <img src={post.coverImage} alt={post.title} className="w-full h-40 object-cover" />
                 )}
                 <CardHeader>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{post.category || 'Uncategorized'}</div>
                   <CardTitle className="text-lg md:text-xl mt-1">
                     <Link to={`/blog/${post.slug}`} className="hover:underline" aria-label={`${post.title} - ${post.excerpt}`} title={post.excerpt}>
                       {post.title}

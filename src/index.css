@@ -319,7 +319,8 @@ html {
   box-shadow: 0 6px 16px hsl(var(--primary) / 0.08);
   opacity: 0.9;
   transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
-  z-index: 10;
+  z-index: 20;
+  pointer-events: auto;
 }
 
 /* Arrow positions on desktop: 30–40px outside */

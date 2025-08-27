@@ -7,7 +7,7 @@ import { Card, CardContent } from './ui/card';
 import { featuredProducts, geneEditingProducts, customerSolutions, ShowcaseItem } from '../data/showcase';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Autoplay, Pagination } from 'swiper/modules';
+import { Pagination } from 'swiper/modules';
 
 interface SectionProps {
   title: string;
@@ -85,6 +85,7 @@ const FeaturedSections = () => {
   // External navigation refs to avoid clipping in overflow-hidden content area
   const featuredPrevRef = useRef<HTMLButtonElement | null>(null);
   const featuredNextRef = useRef<HTMLButtonElement | null>(null);
+  const featuredSwiperRef = useRef<any>(null);
   return (
     <>
       {/* Featured Products Section */}
@@ -97,21 +98,11 @@ const FeaturedSections = () => {
         <div className="relative product-swiper px-20 md:px-24 lg:px-28">
           <div className="overflow-hidden">
             <Swiper
-              modules={[Pagination, Navigation]}
+              modules={[Pagination]}
               spaceBetween={30}
               slidesPerView={1}
               slidesPerGroup={1}
-              onInit={(swiper) => {
-                if (featuredPrevRef.current && featuredNextRef.current) {
-                  // Bind external buttons once DOM is ready
-                  // @ts-ignore
-                  swiper.params.navigation.prevEl = featuredPrevRef.current;
-                  // @ts-ignore
-                  swiper.params.navigation.nextEl = featuredNextRef.current;
-                  swiper.navigation.init();
-                  swiper.navigation.update();
-                }
-              }}
+              onSwiper={(swiper) => { featuredSwiperRef.current = swiper; }}
               pagination={{ clickable: true }}
               breakpoints={{
                 640: { slidesPerView: 2, slidesPerGroup: 2 },
@@ -132,6 +123,7 @@ const FeaturedSections = () => {
             ref={featuredPrevRef}
             aria-label="Previous"
             className="swiper-button-prev"
+            onClick={() => featuredSwiperRef.current?.slidePrev()}
             type="button"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -140,6 +132,7 @@ const FeaturedSections = () => {
             ref={featuredNextRef}
             aria-label="Next"
             className="swiper-button-next"
+            onClick={() => featuredSwiperRef.current?.slideNext()}
             type="button"
           >
             <ChevronRight className="w-5 h-5" />
