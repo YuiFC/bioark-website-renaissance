@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import adminConfig from '@/config/admin.json';
 import { useBlog } from '@/context/BlogProvider';
 import { featuredProducts, geneEditingProducts } from '@/data/showcase';
+import { getProductBySlug } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type AdminUser = { email: string; password: string };
@@ -190,6 +191,9 @@ function ProductPanel() {
   const [hidden, setHidden] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('bioark_products_hidden')||'[]'); } catch { return []; } });
   const [overrides, setOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_products_overrides')||'{}'); } catch { return {}; } });
   const [custom, setCustom] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('bioark_products')||'[]'); } catch { return []; } });
+  const [detailsOverrides, setDetailsOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_product_details_overrides')||'{}'); } catch { return {}; } });
+  const [editing, setEditing] = useState<any|null>(null);
+  const [detailsForm, setDetailsForm] = useState<any|null>(null);
 
   const applyOverrides = (item: any) => ({ ...item, ...(overrides[item.id] || {}) });
   const baseFeatured = featuredProducts.filter(p => !hidden.includes(p.id)).map(applyOverrides);
@@ -215,6 +219,10 @@ function ProductPanel() {
   const saveHidden = (next: string[]) => {
     setHidden(next);
     localStorage.setItem('bioark_products_hidden', JSON.stringify(next));
+  };
+  const saveDetailsOverrides = (next: Record<string, any>) => {
+    setDetailsOverrides(next);
+    localStorage.setItem('bioark_product_details_overrides', JSON.stringify(next));
   };
 
   const onEdit = (item: any, patch: Partial<any>) => {
@@ -245,6 +253,69 @@ function ProductPanel() {
     setForm({ name:'', description:'', imageUrl:'', link:'', category: 'featured' });
   };
 
+  const openEditDetails = (p:any) => {
+    setEditing(p);
+    // derive slug
+    const slug = (p.link||'').replace('/products/','');
+    let base = slug ? getProductBySlug(slug) : undefined;
+    const dOv = detailsOverrides[p.id] || {};
+    const dispOv = overrides[p.id] || {};
+    const merged = {
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      imageUrl: p.imageUrl,
+      link: p.link,
+      catalogNumber: base?.catalogNumber || '',
+      availability: base?.availability || 'In Stock',
+      listPrice: base?.listPrice || '',
+      options: base?.options || [],
+      keyFeatures: base?.keyFeatures || [],
+      storageStability: base?.storageStability || '',
+      performanceData: base?.performanceData || '',
+      manuals: base?.manuals || [],
+      storeLink: base?.storeLink || '',
+      ...dispOv,
+      ...dOv,
+    };
+    setDetailsForm({
+      ...merged,
+      optionsText: (merged.options||[]).join(', '),
+      keyFeaturesText: (merged.keyFeatures||[]).join('\n'),
+      manualsText: (merged.manuals||[]).join(', '),
+    });
+  };
+
+  const saveEditDetails = () => {
+    if (!editing || !detailsForm) return;
+    const id = editing.id;
+    // persist display overrides for name/description/imageUrl/link
+    if (!custom.some(c=>c.id===id)) {
+      const nextDisp = { ...overrides, [id]: { ...(overrides[id]||{}), name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } };
+      saveOverrides(nextDisp);
+    } else {
+      const nextCustom = custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } : c);
+      saveCustom(nextCustom);
+    }
+    // persist detailed fields in detailsOverrides
+    const normalized = {
+      catalogNumber: detailsForm.catalogNumber || '',
+      availability: detailsForm.availability || '',
+      listPrice: detailsForm.listPrice || '',
+      options: (detailsForm.optionsText||'').split(',').map((s:string)=>s.trim()).filter(Boolean),
+      keyFeatures: (detailsForm.keyFeaturesText||'').split('\n').map((s:string)=>s.trim()).filter(Boolean),
+      storageStability: detailsForm.storageStability || '',
+      performanceData: detailsForm.performanceData || '',
+      manuals: (detailsForm.manualsText||'').split(',').map((s:string)=>s.trim()).filter(Boolean),
+      storeLink: detailsForm.storeLink || '',
+    };
+    const nextDetails = { ...detailsOverrides, [id]: { ...(detailsOverrides[id]||{}), ...normalized } };
+    saveDetailsOverrides(nextDetails);
+    setEditing(null);
+    setDetailsForm(null);
+    alert('Saved product details.');
+  };
+
   const Section = ({title, items}:{title:string, items:any[]}) => (
     <Card>
       <CardHeader className="flex items-center justify-between">
@@ -261,6 +332,7 @@ function ProductPanel() {
                 <textarea className="border rounded-md px-2 py-1 w-full" rows={3} value={p.description} onChange={e=>onEdit(p,{description:e.target.value})} />
                 <div className="flex justify-between">
                   <Button asChild variant="secondary" size="sm"><Link to={p.link || '#'}>Open</Link></Button>
+                  <Button size="sm" variant="outline" onClick={()=>openEditDetails(p)}>Edit details</Button>
                   <Button variant="destructive" size="sm" onClick={()=>onDelete(p)}>Delete</Button>
                 </div>
               </CardContent>
@@ -301,6 +373,83 @@ function ProductPanel() {
 
       <Section title="Featured Products" items={featuredFiltered} />
       <Section title="Gene Editing Products" items={geneFiltered} />
+
+      {/* Edit Details Dialog */}
+      <Dialog open={!!editing} onOpenChange={(o)=>{ if(!o){ setEditing(null); setDetailsForm(null); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Product Details</DialogTitle>
+          </DialogHeader>
+          {detailsForm && (
+            <div className="grid gap-3 max-h-[70vh] overflow-auto pr-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Name</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.name} onChange={e=>setDetailsForm((f:any)=>({...f,name:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Catalog #</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.catalogNumber} onChange={e=>setDetailsForm((f:any)=>({...f,catalogNumber:e.target.value}))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Availability</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.availability} onChange={e=>setDetailsForm((f:any)=>({...f,availability:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">List Price</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.listPrice} onChange={e=>setDetailsForm((f:any)=>({...f,listPrice:e.target.value}))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Description</label>
+                <textarea className="border rounded-md px-3 py-2 w-full" rows={3} value={detailsForm.description} onChange={e=>setDetailsForm((f:any)=>({...f,description:e.target.value}))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Image URL</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.imageUrl||''} onChange={e=>setDetailsForm((f:any)=>({...f,imageUrl:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Product Link (/products/slug)</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.link||''} onChange={e=>setDetailsForm((f:any)=>({...f,link:e.target.value}))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Options (comma separated)</label>
+                <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.optionsText} onChange={e=>setDetailsForm((f:any)=>({...f,optionsText:e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Key Features (one per line)</label>
+                <textarea className="border rounded-md px-3 py-2 w-full" rows={4} value={detailsForm.keyFeaturesText} onChange={e=>setDetailsForm((f:any)=>({...f,keyFeaturesText:e.target.value}))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Storage & Stability</label>
+                  <textarea className="border rounded-md px-3 py-2 w-full" rows={3} value={detailsForm.storageStability} onChange={e=>setDetailsForm((f:any)=>({...f,storageStability:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Performance Data</label>
+                  <textarea className="border rounded-md px-3 py-2 w-full" rows={3} value={detailsForm.performanceData} onChange={e=>setDetailsForm((f:any)=>({...f,performanceData:e.target.value}))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Manuals (comma separated)</label>
+                <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.manualsText} onChange={e=>setDetailsForm((f:any)=>({...f,manualsText:e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Store Link</label>
+                <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.storeLink||''} onChange={e=>setDetailsForm((f:any)=>({...f,storeLink:e.target.value}))} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="secondary" onClick={()=>{ setEditing(null); setDetailsForm(null); }}>Cancel</Button>
+                <Button onClick={saveEditDetails}>Save</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -311,6 +460,8 @@ function BlogPanel() {
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title:'', excerpt:'', coverImage:'', category:'General' });
+  const [editing, setEditing] = useState<any|null>(null);
+  const [editForm, setEditForm] = useState<any|null>(null);
 
   const filtered = useMemo(() => {
     if (!q.trim()) return posts;
@@ -344,6 +495,38 @@ function BlogPanel() {
     } as any);
     setShowAdd(false);
     setForm({ title:'', excerpt:'', coverImage:'', category:'General' });
+  };
+
+  const openEdit = (post:any) => {
+    setEditing(post);
+    setEditForm({
+      ...post,
+      tagsText: (post.tags||[]).join(', '),
+      date: post.date ? new Date(post.date).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
+      readTime: post.readTime || 5,
+      views: post.views || 0,
+    });
+  };
+
+  const saveEdit = () => {
+    if (!editing || !editForm) return;
+    const patch:any = {
+      slug: editForm.slug,
+      title: editForm.title,
+      excerpt: editForm.excerpt,
+      content: editForm.content,
+      author: editForm.author,
+      date: new Date(editForm.date).toISOString(),
+      category: editForm.category,
+      coverImage: editForm.coverImage || undefined,
+      readTime: Number(editForm.readTime)||0,
+      views: Number(editForm.views)||0,
+      tags: (editForm.tagsText||'').split(',').map((s:string)=>s.trim()).filter(Boolean),
+    };
+    updatePost(editing.id, patch);
+    setEditing(null);
+    setEditForm(null);
+    alert('Saved blog post.');
   };
 
   return (
@@ -384,6 +567,7 @@ function BlogPanel() {
                   <input className="w-full text-base font-semibold outline-none" value={post.title} onChange={e=>updatePost(post.id, { title: e.target.value })} />
                   <textarea className="w-full text-sm text-muted-foreground outline-none" rows={2} value={post.excerpt} onChange={e=>updatePost(post.id, { excerpt: e.target.value })} />
                   <div className="flex items-center justify-end pt-2 gap-2">
+                    <Button size="sm" variant="outline" onClick={()=>openEdit(post)}>Edit</Button>
                     <Button size="sm" variant="secondary" asChild><Link to={`/blog/${post.slug}`}>Open</Link></Button>
                     <Button size="sm" variant="destructive" onClick={()=>{ if (confirm(`Delete blog "${post.title}"?`)) deletePost(post.id); }}>Delete</Button>
                   </div>
@@ -394,6 +578,75 @@ function BlogPanel() {
         })}
       </div>
       {!filtered.length && <p className="text-sm text-muted-foreground">No blog posts found.</p>}
+
+      {/* Edit Blog Dialog */}
+      <Dialog open={!!editing} onOpenChange={(o)=>{ if(!o){ setEditing(null); setEditForm(null); } }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit Blog Post</DialogTitle>
+          </DialogHeader>
+          {editForm && (
+            <div className="grid gap-3 max-h-[70vh] overflow-auto pr-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Title</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={editForm.title} onChange={e=>setEditForm((f:any)=>({...f,title:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Slug</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={editForm.slug} onChange={e=>setEditForm((f:any)=>({...f,slug:e.target.value}))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Author</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={editForm.author} onChange={e=>setEditForm((f:any)=>({...f,author:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Date</label>
+                  <input type="date" className="border rounded-md px-3 py-2 w-full" value={editForm.date} onChange={e=>setEditForm((f:any)=>({...f,date:e.target.value}))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Category</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={editForm.category||''} onChange={e=>setEditForm((f:any)=>({...f,category:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Cover Image URL</label>
+                  <input className="border rounded-md px-3 py-2 w-full" value={editForm.coverImage||''} onChange={e=>setEditForm((f:any)=>({...f,coverImage:e.target.value}))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">Read Time (min)</label>
+                  <input type="number" className="border rounded-md px-3 py-2 w-full" value={editForm.readTime} onChange={e=>setEditForm((f:any)=>({...f,readTime:e.target.value}))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Views</label>
+                  <input type="number" className="border rounded-md px-3 py-2 w-full" value={editForm.views} onChange={e=>setEditForm((f:any)=>({...f,views:e.target.value}))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Tags (comma separated)</label>
+                <input className="border rounded-md px-3 py-2 w-full" value={editForm.tagsText} onChange={e=>setEditForm((f:any)=>({...f,tagsText:e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Excerpt</label>
+                <textarea className="border rounded-md px-3 py-2 w-full" rows={3} value={editForm.excerpt} onChange={e=>setEditForm((f:any)=>({...f,excerpt:e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Content (Markdown)</label>
+                <textarea className="border rounded-md px-3 py-2 w-full font-mono text-sm" rows={12} value={editForm.content} onChange={e=>setEditForm((f:any)=>({...f,content:e.target.value}))} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="secondary" onClick={()=>{ setEditing(null); setEditForm(null); }}>Cancel</Button>
+                <Button onClick={saveEdit}>Save</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
