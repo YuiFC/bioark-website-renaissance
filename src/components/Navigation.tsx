@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
@@ -52,6 +52,8 @@ const Navigation = () => {
     { name: 'Design', url: 'https://store.bioarktech.com/design', icon: Palette },
   ];
   const [auth, setAuth] = useState<any>(() => { try { return JSON.parse(localStorage.getItem('bioark_auth_user')||'null'); } catch { return null; } });
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
   useEffect(()=>{
     const onStorage = () => {
       try { setAuth(JSON.parse(localStorage.getItem('bioark_auth_user')||'null')); } catch { setAuth(null); }
@@ -171,11 +173,42 @@ const Navigation = () => {
                 <Link to="/request-quote">Request Quote</Link>
               </Button>
               {/* Auth/User menu */}
-              <div className="relative group">
-                <button className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200">
+              <div className="relative">
+                <button
+                  className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  onMouseEnter={() => {
+                    if (closeTimerRef.current) {
+                      window.clearTimeout(closeTimerRef.current);
+                      closeTimerRef.current = null;
+                    }
+                    setUserMenuOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    // slight delay to allow moving into the dropdown without flicker
+                    closeTimerRef.current = window.setTimeout(() => {
+                      setUserMenuOpen(false);
+                      closeTimerRef.current = null;
+                    }, 120);
+                  }}
+                >
                   <User size={20} />
                 </button>
-                <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 absolute right-0 mt-2 w-44 bg-background border rounded-md shadow-lg">
+                <div
+                  className={`absolute right-0 mt-2 w-44 bg-background border rounded-md shadow-lg transition-opacity duration-150 ${userMenuOpen ? 'visible opacity-100 pointer-events-auto' : 'invisible opacity-0 pointer-events-none'}`}
+                  role="menu"
+                  onMouseEnter={() => {
+                    if (closeTimerRef.current) {
+                      window.clearTimeout(closeTimerRef.current);
+                      closeTimerRef.current = null;
+                    }
+                    setUserMenuOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    setUserMenuOpen(false);
+                  }}
+                >
                   {!auth ? (
                     <div className="py-1">
                       <a href="/auth.html" className="block px-3 py-2 text-sm hover:bg-muted">Sign in / Sign up</a>

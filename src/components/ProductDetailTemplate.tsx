@@ -125,13 +125,13 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                     <a href="/request-quote">Request Quote</a>
                   </Button>
                   {storeLink ? (
-                    <Button variant="outline" asChild>
+                    <Button asChild className="bg-primary text-white hover:bg-primary/90">
                       <a href={storeLink} target="_blank" rel="noopener noreferrer">
                         Add to Cart
                       </a>
                     </Button>
                   ) : (
-                    <Button variant="outline" asChild>
+                    <Button asChild className="bg-primary text-white hover:bg-primary/90">
                       <a href="https://store.bioarktech.com/cart" target="_blank" rel="noopener noreferrer">
                         Add to Cart
                       </a>
