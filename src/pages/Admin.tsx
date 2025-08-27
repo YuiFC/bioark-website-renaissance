@@ -109,12 +109,7 @@ const Admin = () => {
             )}
 
             {active === 'user' && (
-              <Card>
-                <CardHeader><CardTitle>User</CardTitle></CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Coming soon.</p>
-                </CardContent>
-              </Card>
+              <UserPanel />
             )}
 
             {active === 'product' && (
@@ -135,6 +130,59 @@ const Admin = () => {
 export default Admin;
 
 // ===== Helpers: Product Manager (local cache) =====
+function getUsers(){ try { return JSON.parse(localStorage.getItem('bioark_users')||'[]'); } catch { return []; } }
+function setUsers(list:any[]){ localStorage.setItem('bioark_users', JSON.stringify(list)); }
+
+function UserPanel(){
+  const [q, setQ] = useState('');
+  const [users, setUsersState] = useState<any[]>(getUsers());
+
+  const filtered = useMemo(()=>{
+    if(!q.trim()) return users;
+    const s = q.toLowerCase();
+    return users.filter(u => (u.name||'').toLowerCase().includes(s) || (u.email||'').toLowerCase().includes(s) || (u.role||'').toLowerCase().includes(s));
+  },[q, users]);
+
+  const onEdit = (email:string, patch:Partial<any>) => {
+    const next = users.map(u => u.email===email ? { ...u, ...patch } : u);
+    setUsersState(next); setUsers(next);
+  };
+  const onDelete = (email:string) => {
+    if (!confirm('Delete this user?')) return;
+    const next = users.filter(u => u.email !== email);
+    setUsersState(next); setUsers(next);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search users..." value={q} onChange={e=>setQ(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map(u => (
+          <Card key={u.email}>
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold text-foreground">{u.name || '—'}</div>
+                <select className="border rounded-md px-2 py-1 text-sm" value={u.role||'User'} onChange={e=>onEdit(u.email,{ role: e.target.value })}>
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+              <input className="border rounded-md px-2 py-1 w-full" value={u.name||''} placeholder="Full name" onChange={e=>onEdit(u.email,{ name:e.target.value })} />
+              <input className="border rounded-md px-2 py-1 w-full" value={u.email||''} disabled />
+              <textarea className="border rounded-md px-2 py-1 w-full" rows={2} placeholder="Shipping Address" value={u.address||''} onChange={e=>onEdit(u.email,{ address:e.target.value })} />
+              <div className="flex justify-end gap-2">
+                <Button variant="destructive" size="sm" onClick={()=>onDelete(u.email)}>Delete</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      {!filtered.length && <p className="text-sm text-muted-foreground">No users found.</p>}
+    </div>
+  );
+}
 function ProductPanel() {
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);

@@ -48,10 +48,23 @@ const Navigation = () => {
   // Dark mode removed; theme toggle no longer used
 
   const externalLinks = [
-    { name: 'My Account', url: 'https://store.bioarktech.com/signup', icon: User },
     { name: 'Shopping Cart', url: 'https://store.bioarktech.com/cart', icon: ShoppingCart },
     { name: 'Design', url: 'https://store.bioarktech.com/design', icon: Palette },
   ];
+  const [auth, setAuth] = useState<any>(() => { try { return JSON.parse(localStorage.getItem('bioark_auth_user')||'null'); } catch { return null; } });
+  useEffect(()=>{
+    const onStorage = () => {
+      try { setAuth(JSON.parse(localStorage.getItem('bioark_auth_user')||'null')); } catch { setAuth(null); }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  },[]);
+  const logout = () => {
+    localStorage.removeItem('bioark_auth_user');
+    localStorage.removeItem('bioark_admin_token');
+    setAuth(null);
+    window.location.href = '/';
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -157,6 +170,24 @@ const Navigation = () => {
               <Button asChild size="sm">
                 <Link to="/request-quote">Request Quote</Link>
               </Button>
+              {/* Auth/User menu */}
+              <div className="relative group">
+                <button className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200">
+                  <User size={20} />
+                </button>
+                <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 absolute right-0 mt-2 w-44 bg-background border rounded-md shadow-lg">
+                  {!auth ? (
+                    <div className="py-1">
+                      <a href="/auth.html" className="block px-3 py-2 text-sm hover:bg-muted">Sign in / Sign up</a>
+                    </div>
+                  ) : (
+                    <div className="py-1">
+                      <Link to="/dashboard" className="block px-3 py-2 text-sm hover:bg-muted">Dashboard</Link>
+                      <button onClick={logout} className="w-full text-left block px-3 py-2 text-sm hover:bg-muted">Log out</button>
+                    </div>
+                  )}
+                </div>
+              </div>
               {externalLinks.map((link) => {
                 const IconComponent = link.icon;
         return (
@@ -217,6 +248,17 @@ const Navigation = () => {
                     Request Quote
                   </Link>
                 </Button>
+              </div>
+              {/* Mobile user menu */}
+              <div className="border-t border-border mt-2 pt-2">
+                {!auth ? (
+                  <a href="/auth.html" className="block px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">Sign in / Sign up</a>
+                ) : (
+                  <>
+                    <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">Dashboard</Link>
+                    <button onClick={()=>{ logout(); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">Log out</button>
+                  </>
+                )}
               </div>
               {/* Mobile External Store Links */}
               <div className="border-t border-border mt-2 pt-2">
