@@ -22,7 +22,7 @@ const Contact = () => {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // TODO: 将 '/api/contact' 替换为您真实的后端 API 端点
+  // TODO: Replace '/api/contact' with your real backend API endpoint
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -39,7 +39,7 @@ const Contact = () => {
         title: "Message Sent",
         description: "Thank you for contacting us. We'll respond within 24 hours.",
       });
-      e.currentTarget.reset(); // 成功提交后清空表单
+  e.currentTarget.reset(); // Clear form after successful submission
     } catch (error) {
       console.error('Failed to send message:', error);
       toast({
@@ -52,7 +52,7 @@ const Contact = () => {
     }
   };
 
-  // 修复：为地图组件提供必要的坐标和标记信息
+  // Fix: provide necessary coordinates and marker info to the Map component
   const location = {
     center: [-77.1537, 39.0840] as [number, number], // Rockville, MD coordinates
     marker: {
@@ -128,7 +128,7 @@ const Contact = () => {
                         Rockville, MD, 20850<br />
                         United States
                       </address>
-                      {/* 修复：将坐标和标记作为 props 传递给地图组件 */}
+                      {/* Fix: pass coordinates and marker as props to the Map component */}
                       <Map center={location.center} marker={location.marker} />
                     </CardContent>
                   </Card>

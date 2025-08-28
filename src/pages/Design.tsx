@@ -123,7 +123,7 @@ export default function Design() {
     if (step === 1) return !!category;
     if (step === 2) return !!funcType;
     if (step === 3) return !!delivery;
-    if (step === 4) return !!structure.promoter && !!structure.selection; // 必选示例：启动子、筛选标记
+  if (step === 4) return !!structure.promoter && !!structure.selection; // Required example: promoter and selection marker
     if (step === 5) {
       if (targetChoice === 'Search Target Gene') return targetGene.trim().length > 0;
       return !!targetChoice;
@@ -168,97 +168,7 @@ export default function Design() {
   };
 
   // Legend overlay config for on-image markers
-  type LegendItem = {
-    key: string;
-    title: string;
-    value?: string;
-    active: boolean;
-    x: number; // percentage (0-100)
-    y: number; // percentage (0-100)
-    colorClass: string; // tailwind color utility
-    align?: 'left' | 'right';
-  };
-
-  // Admin-configurable legend overlay with fallback to defaults
-  const legendItems: LegendItem[] = useMemo(() => {
-    const defaults: LegendItem[] = [
-      { key: 'category', title: 'Category', value: category, active: !!category, x: 16, y: 18, colorClass: 'from-primary/15 to-primary/5 border-primary/30', align: 'right' },
-      { key: 'func', title: 'Function', value: funcType, active: !!funcType, x: 82, y: 20, colorClass: 'from-secondary/15 to-secondary/5 border-secondary/30', align: 'left' },
-      { key: 'delivery', title: 'Delivery', value: delivery, active: !!delivery, x: 20, y: 82, colorClass: 'from-accent/15 to-accent/5 border-accent/30', align: 'right' },
-      { key: 'promoter', title: 'Promoter', value: structure.promoter, active: !!structure.promoter, x: 40, y: 32, colorClass: 'from-muted to-muted border-border', align: 'right' },
-      { key: 'tag', title: 'Protein Tag', value: structure.proteinTag, active: !!structure.proteinTag, x: 62, y: 30, colorClass: 'from-muted to-muted border-border', align: 'left' },
-      { key: 'fluo', title: 'Fluorescence', value: structure.fluorescence, active: !!structure.fluorescence, x: 66, y: 72, colorClass: 'from-muted to-muted border-border', align: 'left' },
-      { key: 'selection', title: 'Selection', value: structure.selection, active: !!structure.selection, x: 38, y: 70, colorClass: 'from-muted to-muted border-border', align: 'right' },
-      { key: 'target', title: 'Target', value: summary.target, active: !!summary.target, x: 50, y: 50, colorClass: 'from-enzyme/15 to-enzyme/5 border-enzyme/30', align: 'left' },
-    ];
-
-    const getValueForKey = (k: string): string | undefined => {
-      const key = k.toLowerCase();
-      if (key === 'category') return category;
-      if (key === 'func' || key === 'function' || key === 'functiontype') return funcType;
-      if (key === 'delivery') return delivery;
-      if (key === 'promoter') return structure.promoter;
-      if (key === 'proteintag' || key === 'tag') return structure.proteinTag;
-      if (key === 'fluorescence' || key === 'fluo') return structure.fluorescence;
-      if (key === 'selection') return structure.selection;
-      if (key === 'target' || key === 'gene' || key === 'genesymbol') return summary.target as string | undefined;
-      return undefined;
-    };
-
-    try {
-      const raw = localStorage.getItem('bioark_design_legend_cfg_v1');
-      const cfg = raw ? JSON.parse(raw) as Array<{ id: string; key: string; title: string; x: number; y: number; align?: 'left'|'right'; colorClass?: string; active?: boolean; }> : [];
-      if (Array.isArray(cfg) && cfg.length) {
-        return cfg.map(c => ({
-          key: c.key,
-          title: c.title || c.key,
-          x: Number(c.x ?? 50),
-          y: Number(c.y ?? 50),
-          align: c.align || 'left',
-          colorClass: c.colorClass || 'from-muted to-muted border-border',
-          active: c.active !== false, // default true
-          value: getValueForKey(c.key),
-        }));
-      }
-    } catch {
-      // ignore parse errors and fallback
-    }
-    return defaults;
-  }, [category, funcType, delivery, structure.promoter, structure.proteinTag, structure.fluorescence, structure.selection, summary.target]);
-
-  const LegendOverlay: React.FC<{ items: LegendItem[] }> = ({ items }) => {
-    return (
-      <div className="pointer-events-none absolute inset-0">
-        {items.filter(i => i.active).map((item) => {
-          const left = `${item.x}%`;
-          const top = `${item.y}%`;
-          const alignLeft = item.align === 'left';
-          return (
-            <div key={item.key} className="absolute" style={{ left, top }}>
-              {/* anchor dot */}
-              <div className="h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary ring-2 ring-white/90 shadow" />
-              {/* connector & label */}
-              <div className={`relative mt-1 ${alignLeft ? 'ml-3' : '-ml-3'}`}>
-                {/* connector line */}
-                <div className={`absolute top-1/2 ${alignLeft ? '-left-3 -translate-x-full' : '-right-3 translate-x-full'} h-px w-3 bg-primary/50`} />
-                {/* label */}
-                <div className={`inline-flex max-w-[220px] sm:max-w-[260px] items-center gap-2 rounded-lg border bg-gradient-to-br ${item.colorClass} backdrop-blur px-2.5 py-1.5 text-xs text-foreground shadow-sm animate-in fade-in-50 slide-in-from-top-1`}>
-                  {item.value ? (
-                    <>
-                      <span className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground/90">{item.title}:</span>
-                      <span className="font-medium truncate">{item.value}</span>
-                    </>
-                  ) : (
-                    <span className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground/90">{item.title}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  // Legend overlay removed per request
 
   const resetAfter = (toStep: number) => {
     if (toStep <= 1) { setFuncType(undefined); setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setTargetGene(''); }
@@ -305,8 +215,7 @@ export default function Design() {
               <CardContent>
                 <div className="relative rounded-xl overflow-hidden border bg-card">
                   <img src="/images/products/Lego-Diagram-0.png" alt="Gene structure" className="w-full h-[300px] md:h-[420px] object-contain bg-white" />
-                  {/* On-image legend overlay */}
-                  <LegendOverlay items={legendItems} />
+                  {/* Legend overlay removed */}
                   {/* Overlay chips to reflect current selections */}
                   <div className="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
                     {category && <span className="px-2 py-1 text-xs rounded-md bg-primary/10 text-foreground border border-primary/20 animate-in fade-in-50 slide-in-from-bottom-1">{category}</span>}

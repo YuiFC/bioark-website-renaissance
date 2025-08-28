@@ -1,7 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 
-// 引入所有页面组件
+// Import all page components
 import HomePage from './pages/HomePage';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -23,14 +24,15 @@ import Cart from './pages/Cart';
 import ProductDetailUI from './pages/ProductDetailUI';
 import Design from './pages/Design';
 
-// 引入全局样式
+// Import global styles
 import './index.css';
 
 export default function App() {
   return (
     <Router>
+      <ScrollToTop behavior="smooth" />
       <Routes>
-        {/* 修复：为导航栏中的每个链接添加对应的路由 */}
+  {/* Fix: add routes for every navbar link */}
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:slug" element={<ProductDetail />} />
@@ -52,8 +54,8 @@ export default function App() {
   <Route path="/dashboard" element={<Dashboard />} />
   <Route path="/cart" element={<Cart />} />
 
-        {/* 修复：使用您设计好的 404 页面组件 */}
-        <Route path="*" element={<NotFound />} />
+  {/* Fix: use custom 404 page component */}
+  <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

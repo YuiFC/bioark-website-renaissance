@@ -53,7 +53,7 @@ const ProductCard = ({ item }: { item: ShowcaseItem }) => (
         <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">{item.description}</p>
         <div className="mt-4">
           <Button asChild size="sm" variant="default">
-            <Link to={item.link}>View the details</Link>
+            <Link to={item.link} state={{ fromHome: true }}>View the details</Link>
           </Button>
         </div>
       </CardContent>
@@ -146,8 +146,7 @@ const FeaturedSections = () => {
         description="A comprehensive portfolio of tools for precise and efficient genome engineering, from CRISPR to viral vectors."
         className="bg-muted/50"
       >
-    <div className="relative gene-editing-swiper px-16">
-          <div className="overflow-hidden">
+    <div className="overflow-hidden">
             <Swiper
       modules={[Pagination]}
               spaceBetween={30}
@@ -166,14 +165,12 @@ const FeaturedSections = () => {
               </SwiperSlide>
             ))}
             </Swiper>
-          </div>
-      {/* Arrows removed as requested for Gene Editing carousel */}
         </div>
       </SectionWrapper>
 
-      {/* Customer Solutions Section */}
+      {/* Services Section */}
       <SectionWrapper
-        title="Customer Solutions"
+        title="Services"
         description="Partner with our expert team for tailored services that meet your unique project requirements."
         className="bg-background"
       >

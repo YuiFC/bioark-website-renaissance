@@ -28,7 +28,7 @@ const investors = [
 const Investors = () => {
   return (
     <Layout>
-      <section className="py-20 bg-muted/30">
+  <section className="py-20 bioark-hero-gradient border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">

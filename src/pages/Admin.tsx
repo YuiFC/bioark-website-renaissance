@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ const Admin = () => {
   const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [active, setActive] = useState<'overview'|'user'|'product'|'blog'|'design'>('overview');
+  const [active, setActive] = useState<'overview'|'user'|'product'|'blog'>('overview');
 
   const metrics = { pageViews: 12890, users: 1, posts: posts.length };
 
@@ -83,7 +83,6 @@ const Admin = () => {
                 {k:'user', label:'User'},
                 {k:'product', label:'Product'},
                 {k:'blog', label:'Blog'},
-                {k:'design', label:'Design Editor'},
               ].map(i => (
                 <button key={i.k} onClick={()=>setActive(i.k as any)} className={`w-full text-left px-3 py-2 rounded-md text-sm ${active===i.k ? 'bg-muted text-foreground' : 'hover:bg-muted/60'}`}>
                   {i.label}
@@ -120,9 +119,6 @@ const Admin = () => {
 
             {active === 'blog' && (
               <BlogPanel />
-            )}
-            {active === 'design' && (
-              <DesignEditor />
             )}
           </section>
         </div>
@@ -188,6 +184,7 @@ function UserPanel(){
     </div>
   );
 }
+
 function ProductPanel() {
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -259,7 +256,6 @@ function ProductPanel() {
 
   const openEditDetails = (p:any) => {
     setEditing(p);
-    // derive slug
     const slug = (p.link||'').replace('/products/','');
     let base = slug ? getProductBySlug(slug) : undefined;
     const dOv = detailsOverrides[p.id] || {};
@@ -293,7 +289,6 @@ function ProductPanel() {
   const saveEditDetails = () => {
     if (!editing || !detailsForm) return;
     const id = editing.id;
-    // persist display overrides for name/description/imageUrl/link
     if (!custom.some(c=>c.id===id)) {
       const nextDisp = { ...overrides, [id]: { ...(overrides[id]||{}), name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } };
       saveOverrides(nextDisp);
@@ -301,7 +296,6 @@ function ProductPanel() {
       const nextCustom = custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } : c);
       saveCustom(nextCustom);
     }
-    // persist detailed fields in detailsOverrides
     const normalized = {
       catalogNumber: detailsForm.catalogNumber || '',
       availability: detailsForm.availability || '',
@@ -458,104 +452,7 @@ function ProductPanel() {
   );
 }
 
-// ===== Design Editor: manage legend overlays for Design page =====
-type LegendCfg = { id: string; key: string; title: string; x: number; y: number; align: 'left'|'right'; colorClass: string; active: boolean };
-const LS_LEGEND_KEY = 'bioark_design_legend_cfg_v1';
-function getLegendCfg(): LegendCfg[] { try { return JSON.parse(localStorage.getItem(LS_LEGEND_KEY)||'[]'); } catch { return []; } }
-function setLegendCfg(next: LegendCfg[]) { localStorage.setItem(LS_LEGEND_KEY, JSON.stringify(next)); }
-
-function DesignEditor() {
-  const [list, setList] = useState<LegendCfg[]>(getLegendCfg());
-  const [draft, setDraft] = useState<Partial<LegendCfg>>({ key: '', title: '', x: 50, y: 50, align: 'left', colorClass: 'from-muted to-muted border-border', active: true });
-
-  const save = (next: LegendCfg[]) => { setList(next); setLegendCfg(next); };
-
-  const add = () => {
-    if (!draft.key || !draft.title) return alert('Key and title are required');
-    const payload: LegendCfg = {
-      id: `legend-${Date.now()}`,
-      key: String(draft.key),
-      title: String(draft.title),
-      x: Number(draft.x ?? 50),
-      y: Number(draft.y ?? 50),
-      align: (draft.align as any) || 'left',
-      colorClass: String(draft.colorClass || 'from-muted to-muted border-border'),
-      active: Boolean(draft.active ?? true),
-    };
-    save([payload, ...list]);
-    setDraft({ key: '', title: '', x: 50, y: 50, align: 'left', colorClass: 'from-muted to-muted border-border', active: true });
-  };
-
-  const update = (id: string, patch: Partial<LegendCfg>) => {
-    const next = list.map(it => it.id === id ? { ...it, ...patch } : it);
-    save(next);
-  };
-  const remove = (id: string) => {
-    const next = list.filter(it => it.id !== id);
-    save(next);
-  };
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader><CardTitle>Add Legend</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input className="border rounded-md px-3 py-2" placeholder="Key (e.g., promoter)" value={draft.key as any} onChange={e=>setDraft(d=>({...d,key:e.target.value}))} />
-          <input className="border rounded-md px-3 py-2" placeholder="Title (display)" value={draft.title as any} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} />
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground w-24">X (%)</label>
-            <input type="number" className="border rounded-md px-3 py-2 w-full" value={draft.x as any} onChange={e=>setDraft(d=>({...d,x:Number(e.target.value)}))} />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground w-24">Y (%)</label>
-            <input type="number" className="border rounded-md px-3 py-2 w-full" value={draft.y as any} onChange={e=>setDraft(d=>({...d,y:Number(e.target.value)}))} />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground w-24">Align</label>
-            <select className="border rounded-md px-3 py-2 w-full" value={draft.align as any} onChange={e=>setDraft(d=>({...d,align:e.target.value as any}))}>
-              <option value="left">left</option>
-              <option value="right">right</option>
-            </select>
-          </div>
-          <input className="border rounded-md px-3 py-2" placeholder="Color class (e.g., from-primary/15 to-primary/5 border-primary/30)" value={draft.colorClass as any} onChange={e=>setDraft(d=>({...d,colorClass:e.target.value}))} />
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground w-24">Active</label>
-            <input type="checkbox" checked={!!draft.active} onChange={e=>setDraft(d=>({...d,active:e.target.checked}))} />
-          </div>
-          <div className="md:col-span-2 flex justify-end">
-            <Button onClick={add}>Add</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Legend List</CardTitle></CardHeader>
-        <CardContent>
-          {!list.length && <p className="text-sm text-muted-foreground">No legends. Add one above.</p>}
-          <div className="space-y-3">
-            {list.map(it => (
-              <div key={it.id} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center border rounded-md p-2">
-                <input className="border rounded-md px-2 py-1 w-full" value={it.key} onChange={e=>update(it.id,{ key:e.target.value })} />
-                <input className="border rounded-md px-2 py-1 w-full" value={it.title} onChange={e=>update(it.id,{ title:e.target.value })} />
-                <input type="number" className="border rounded-md px-2 py-1 w-full" value={it.x} onChange={e=>update(it.id,{ x:Number(e.target.value) })} />
-                <input type="number" className="border rounded-md px-2 py-1 w-full" value={it.y} onChange={e=>update(it.id,{ y:Number(e.target.value) })} />
-                <select className="border rounded-md px-2 py-1 w-full" value={it.align} onChange={e=>update(it.id,{ align: e.target.value as any })}>
-                  <option value="left">left</option>
-                  <option value="right">right</option>
-                </select>
-                <div className="flex items-center gap-2">
-                  <input className="border rounded-md px-2 py-1 w-full" value={it.colorClass} onChange={e=>update(it.id,{ colorClass:e.target.value })} />
-                  <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={it.active} onChange={e=>update(it.id,{ active:e.target.checked })} /> Active</label>
-                  <Button variant="destructive" size="sm" onClick={()=>remove(it.id)}>Delete</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+// (Design Editor removed as requested)
 
 // ===== Helpers: Blog Manager (uses BlogProvider) =====
 function BlogPanel() {
