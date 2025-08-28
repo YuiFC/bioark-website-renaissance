@@ -1,51 +1,73 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Building2, Cpu, Dna, FlaskConical, ShieldCheck } from 'lucide-react';
 
 const About = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-background">
-        {/* Hero Section */}
-        <section className="py-20 bioark-hero-gradient">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Why BioArk – Leadership & Mission
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Advancing genetic medicine through scientific excellence and collaborative partnership
-              </p>
-            </div>
+        {/* Hero Section with background image (original approach) */}
+        <section className="relative py-24 md:py-28">
+          <div className="absolute inset-0">
+            <img src="/images/AboutUs.jpg" alt="About BioArk" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/45" />
+          </div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Why BioArk</h1>
+            <p className="text-white/90 max-w-3xl mx-auto text-lg">Innovating genome engineering for real-world impact</p>
           </div>
         </section>
 
-        {/* About Us Section */}
+        {/* Who We Are */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-bold text-foreground mb-6">Why BioArk</h2>
-                <div className="space-y-4 text-muted-foreground">
-                  <p>
-                    Our scientists, engineers, and project managers bring decades of combined expertise 
-                    in molecular biology, synthetic biology, and biopharmaceutical R&D.
-                  </p>
-                  <p>
-                    We are committed to scientific excellence, transparency, and collaborative partnership 
-                    to help our clients achieve their goals faster.
-                  </p>
-                </div>
+            <h2 className="text-3xl font-bold text-foreground mb-8">Who We Are</h2>
+            <div className="grid md:grid-cols-3 gap-10 items-start">
+              {/* Left: full copy */}
+              <div className="md:col-span-2 space-y-5 text-muted-foreground leading-relaxed text-[17px]">
+                <p>BioArk Technologies, established in January 2025 in Rockville, Maryland, is an innovative biotechnology company dedicated to transforming groundbreaking scientific discoveries into practical solutions. Our mission is to advance genome engineering and accelerate its clinical and translational applications.</p>
+                <p>We provide a comprehensive suite of services—including molecular cloning, viral packaging, and stable cell line development—designed to accelerate progress in gene editing. By integrating advanced AI technologies, we deliver streamlined, customized solutions that enhance efficiency and improve overall customer experience.</p>
+                <p>Our proprietary CRISPR Trinity Platform addresses complex genetic editing challenges and offers unique advantages in the development of universal CAR-T therapies and related applications. These capabilities are available through specialized services, licensing opportunities, and strategic partnerships.</p>
+                <p>By bridging cutting-edge research with clinical application, BioArk Technologies is committed to transforming pioneering scientific discoveries into real-world healthcare solutions.</p>
               </div>
-              <div className="relative">
-                <div className="absolute inset-0 bioark-gradient rounded-2xl transform rotate-3 opacity-20"></div>
-                <div className="relative bg-card p-8 rounded-2xl shadow-lg">
-                  <h3 className="text-xl font-semibold text-foreground mb-4">Our Mission</h3>
-                  <p className="text-muted-foreground">
-                    To accelerate discoveries and advance genetic medicine through innovative 
-                    gene editing and delivery solutions.
-                  </p>
+              {/* Right: key highlights with icons */}
+              <div className="grid gap-4">
+                <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="mt-0.5 text-primary"><Building2 className="h-5 w-5" /></div>
+                  <div>
+                    <div className="font-semibold">Founded 2025 • Rockville, MD</div>
+                    <p className="text-sm text-muted-foreground">Established to advance genome engineering into real-world applications.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="mt-0.5 text-primary"><FlaskConical className="h-5 w-5" /></div>
+                  <div>
+                    <div className="font-semibold">Comprehensive gene editing services</div>
+                    <p className="text-sm text-muted-foreground">Molecular cloning, viral packaging, stable cell line development.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="mt-0.5 text-primary"><Dna className="h-5 w-5" /></div>
+                  <div>
+                    <div className="font-semibold">Proprietary CRISPR Trinity Platform</div>
+                    <p className="text-sm text-muted-foreground">Designed for complex editing and universal CAR-T strategies.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="mt-0.5 text-primary"><Cpu className="h-5 w-5" /></div>
+                  <div>
+                    <div className="font-semibold">AI-enhanced, tailored solutions</div>
+                    <p className="text-sm text-muted-foreground">Streamlined workflows for efficiency and better experiences.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="mt-0.5 text-primary"><ShieldCheck className="h-5 w-5" /></div>
+                  <div>
+                    <div className="font-semibold">Clinical & translational focus</div>
+                    <p className="text-sm text-muted-foreground">Bridging cutting-edge research with practical healthcare solutions.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -56,67 +78,86 @@ const About = () => {
         <section className="py-16 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-4">Meet Our Team</h2>
-              <p className="text-xl text-muted-foreground">
-                Leadership driving innovation in genetic medicine
-              </p>
+              <h2 className="text-3xl font-bold text-foreground mb-4">Meet our Team</h2>
             </div>
 
-            <Card className="max-w-4xl mx-auto">
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden">
-                    <img 
-                      src="/lovable-uploads/78c14c39-6124-4d30-abab-1b43b3ed603f.png" 
-                      alt="Dr. Lipeng Wu"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl">Lipeng Wu, Ph.D.</CardTitle>
-                    <CardDescription className="text-lg">Co-Founder and CEO</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
-                  Dr. Lipeng Wu is the Co-Founder and CEO of BioArk Technologies, a pioneering biotech 
-                  company advancing gene editing solutions from research to real-world therapies. With 
-                  over 20 years of experience in cancer biology, CRISPR engineering, and product 
-                  development, Dr. Wu has built a career at the intersection of science and innovation. 
-                  He holds a Ph.D. in Biochemistry and Molecular Biology from Peking University Health 
-                  Science Center, where he earned national recognition for his work in epigenetic drug 
-                  discovery. Passionate about transforming cutting-edge science into impactful healthcare solutions.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Dr. Lipeng Wu */}
+              <TeamCard
+                avatarSrc="/images/Headshot-1-Lipeng-300x300.jpg"
+                name="Dr. Lipeng Wu"
+                title="Founder & CEO"
+                intro1="Dr. Lipeng Wu is the Founder & CEO of BioArk Technologies, an innovative biotechnology company established in Rockville, Maryland in 2025, specializing in gene editing services and the proprietary CRISPR-Trinity platform. With over 21 years of research experience in molecular biology, cell biology, and cancer biology across both academic and industry settings, he brings deep expertise in genome engineering, viral vector systems, and CAR-T therapy development."
+                intro2="Dr. Wu’s career bridges both academic research and the biotechnology industry. He held research fellowships at the NIH and the University of Michigan, where he published multiple high-impact papers in Molecular Cell and Molecular and Cellular Biology on epigenetics and chromatin biology. He later served as Senior Scientist and Product Manager at Origene Technologies, where he led the development of advanced CRISPR technologies including base editing and prime editing, as well as viral vector production and stable cell line platforms."
+                intro3="Today, Dr. Wu leverages his expertise in CRISPR genome editing, molecular cloning, viral vector design, stable cell line engineering, and AI-driven biotechnology to lead BioArk Technologies. As a scientific innovator and business leader, he has directed research teams, product pipelines, and strategic partnerships to bridge fundamental discoveries with real-world healthcare solutions."
+              />
 
-        {/* Company Details Section */}
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-4">About BioArk Technologies</h2>
-            </div>
-            
-            <div className="max-w-4xl mx-auto">
-              <Card>
-                <CardContent className="p-8">
-                  <p className="text-muted-foreground text-lg leading-relaxed">
-                    BioArk Technologies is a biotechnology and biopharmaceutical CRO specializing in 
-                    gene editing and delivery. Using proprietary platforms, our team engineers DNA and 
-                    RNA to support research across therapeutic areas such as immunology, oncology, and 
-                    neuroscience. We offer comprehensive molecular services, viral packaging, and stable 
-                    cell line development to help accelerate discoveries and advance genetic medicine.
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Dr. Jingwen Xu */}
+              <TeamCard
+                avatarSrc="/images/Jingwen-Xu-HeadShot.jpg"
+                name="Dr. Jingwen Xu"
+                title="Co-Founder & Chief Operating Officer"
+                intro1="Dr. Jingwen Xu, M.D., M.Sc., Ph.D., is a physician-scientist, entrepreneur, and biotechnology executive with over three decades of experience in clinical medicine, molecular biology, and translational research. He is the Co-Founder and Chief Operating Officer of BioArk Technologies and also serves as Chief Executive Officer of EGFIE, a company specializing in the marketing and distribution of molecular laboratory consumables, kits, reagents, and equipment."
+                intro2="Dr. Xu completed his postdoctoral research at the University of Helsinki, focusing on biomedicine and orthopaedics. He then served as a Senior Research Scientist at the Albert Einstein College of Medicine, where he conducted studies in rheumatology, oncology, and molecular signaling pathways. He later joined Georgetown University as an Instructor and Assistant Professor, advancing research in molecular biology and immunology."
+                intro3="In addition to his academic appointments, Dr. Xu has held leadership roles in both research and industry. As CEO of Himalayan Biotech and later EGFIE, he has successfully bridged scientific innovation with business development. At BioArk Technologies, he plays a pivotal role in advancing next-generation CRISPR-based platforms and CAR-T therapeutic strategies, integrating laboratory management expertise with commercial strategy."
+                intro4="Today, Dr. Xu combines deep scientific expertise with entrepreneurial leadership to drive innovation at the intersection of biotechnology, clinical application, and commercial development."
+              />
             </div>
           </div>
         </section>
+        {/* End */}
       </div>
     </Layout>
+  );
+};
+
+type TeamCardProps = {
+  avatarSrc: string;
+  name: string;
+  title: string;
+  intro1: string;
+  intro2?: string;
+  intro3?: string;
+  intro4?: string;
+};
+
+const TeamCard: React.FC<TeamCardProps> = ({ avatarSrc, name, title, intro1, intro2, intro3, intro4 }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-start gap-4">
+          <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+            <img src={avatarSrc} alt={name} className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl">{name}</CardTitle>
+            <CardDescription className="text-base">{title}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Collapsed: show only first paragraph (clamped to ~3 lines). Expanded: show all */}
+        <div className="text-muted-foreground leading-relaxed text-[16px]">
+          <p className={!expanded ? 'line-clamp-3' : ''}>{intro1}</p>
+          {expanded && (
+            <>
+              {intro2 && <p className="mt-4">{intro2}</p>}
+              {intro3 && <p className="mt-4">{intro3}</p>}
+              {intro4 && <p className="mt-4">{intro4}</p>}
+            </>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-4 text-primary hover:underline text-sm font-medium"
+          aria-expanded={expanded}
+        >
+          {expanded ? 'Show less' : 'Read more'}
+        </button>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductDetailProps {
   title: string;
@@ -36,6 +38,19 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
   mainImage,
   storeLink
 }) => {
+  const { addItem } = useCart();
+  const { toast } = useToast();
+  const [selectedOpt, setSelectedOpt] = useState(options[0] || 'Default');
+  const priceCents = useMemo(()=>{
+    const m = listPrice?.replace(/[^0-9.]/g,'');
+    if(!m) return 0; const v = Math.round(parseFloat(m)*100); return Number.isFinite(v)?v:0;
+  },[listPrice]);
+
+  const handleAddToCart = () => {
+    addItem({ id: catalogNumber || title, name: title, price: priceCents, imageUrl: mainImage, variant: selectedOpt, link: storeLink || undefined }, 1);
+  toast({ title: 'Added to cart', description: `${title} (${selectedOpt}) has been added to your cart.` });
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-background">
@@ -111,7 +126,7 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                     <div className="space-y-2">
                       {options.map((option, index) => (
                         <label key={index} className="flex items-center space-x-3 cursor-pointer">
-                          <input type="radio" name="option" className="text-primary" defaultChecked={index === 0} />
+                          <input type="radio" name="option" className="text-primary" defaultChecked={index === 0} onChange={()=>setSelectedOpt(option)} />
                           <span className="text-muted-foreground">{option}</span>
                         </label>
                       ))}
@@ -124,19 +139,9 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                   <Button className="bioark-gradient text-white hover:opacity-90 transition-opacity">
                     <a href="/request-quote">Request Quote</a>
                   </Button>
-                  {storeLink ? (
-                    <Button asChild className="bg-primary text-white hover:bg-primary/90">
-                      <a href={storeLink} target="_blank" rel="noopener noreferrer">
-                        Add to Cart
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button asChild className="bg-primary text-white hover:bg-primary/90">
-                      <a href="https://store.bioarktech.com/cart" target="_blank" rel="noopener noreferrer">
-                        Add to Cart
-                      </a>
-                    </Button>
-                  )}
+                  <Button className="bg-primary text-white hover:bg-primary/90" onClick={handleAddToCart}>
+                    Add to Cart
+                  </Button>
                 </div>
               </div>
             </div>

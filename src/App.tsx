@@ -19,6 +19,9 @@ import Admin from './pages/Admin';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import Dashboard from './pages/Dashboard';
+import Cart from './pages/Cart';
+import ProductDetailUI from './pages/ProductDetailUI';
+import Design from './pages/Design';
 
 // 引入全局样式
 import './index.css';
@@ -31,6 +34,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:slug" element={<ProductDetail />} />
+  <Route path="/p/:slug-ui" element={<ProductDetailUI />} />
         <Route path="/services" element={<Services />} />
         <Route path="/services/:slug" element={<ServiceDetail />} />
         <Route path="/request-quote" element={<RequestQuote />} />
@@ -38,6 +42,7 @@ export default function App() {
   <Route path="/why-bioark" element={<About />} />
   <Route path="/about" element={<Navigate to="/why-bioark" replace />} />
         <Route path="/contact" element={<Contact />} />
+  <Route path="/design" element={<Design />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/blog/new" element={<CreatePost />} />
@@ -45,6 +50,7 @@ export default function App() {
   <Route path="/terms" element={<Terms />} />
   <Route path="/privacy" element={<Privacy />} />
   <Route path="/dashboard" element={<Dashboard />} />
+  <Route path="/cart" element={<Cart />} />
 
         {/* 修复：使用您设计好的 404 页面组件 */}
         <Route path="*" element={<NotFound />} />

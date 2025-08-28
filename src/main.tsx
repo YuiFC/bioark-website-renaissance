@@ -9,11 +9,14 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 import { BlogProvider } from './context/BlogProvider.tsx'
+import { CartProvider } from './context/CartContext.tsx'
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BlogProvider>
-      <App />
+      <CartProvider>
+        <App />
+      </CartProvider>
     </BlogProvider>
   </React.StrictMode>
 );

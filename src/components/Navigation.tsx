@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
-import { Menu, X, ShoppingCart, User, Palette } from 'lucide-react';
+import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -48,8 +48,7 @@ const Navigation = () => {
   // Dark mode removed; theme toggle no longer used
 
   const externalLinks = [
-    { name: 'Shopping Cart', url: 'https://store.bioarktech.com/cart', icon: ShoppingCart },
-    { name: 'Design', url: 'https://store.bioarktech.com/design', icon: Palette },
+    { name: 'Shopping Cart', url: '/cart', icon: ShoppingCart },
   ];
   const [auth, setAuth] = useState<any>(() => { try { return JSON.parse(localStorage.getItem('bioark_auth_user')||'null'); } catch { return null; } });
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -140,9 +139,9 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* Customer Solutions Dropdown */}
+                {/* Services Dropdown */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Customer Solutions</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                       {customerSolutions.map((solution) => (
@@ -157,16 +156,11 @@ const Navigation = () => {
             </NavigationMenu>
 
             {/* Other Links */}
-            {[
-              { name: 'Blog', path: '/blog' },
-              { name: 'Investors', path: '/investors' },
-              { name: 'Why BioArk', path: '/why-bioark' },
-              { name: 'Contact', path: '/contact' },
-            ].map(item => (
-              <Link key={item.name} to={item.path} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath(item.path) ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>
-                {item.name}
-              </Link>
-            ))}
+            {/* Primary links: remove Contact; add text Design (external) */}
+            <Link to="/blog" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/blog') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Blog</Link>
+            <Link to="/investors" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/investors') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Investors</Link>
+            <Link to="/why-bioark" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/why-bioark') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Why BioArk</Link>
+            <Link to="/design" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/design') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Design</Link>
 
             <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border">
               <Button asChild size="sm">
@@ -223,17 +217,15 @@ const Navigation = () => {
               </div>
               {externalLinks.map((link) => {
                 const IconComponent = link.icon;
-        return (
-                  <a
+                return (
+                  <Link
                     key={link.name}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to={link.url}
                     className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200"
                     title={link.name}
                   >
-          <IconComponent size={20} />
-                  </a>
+                    <IconComponent size={20} />
+                  </Link>
                 );
               })}
             </div>
@@ -263,18 +255,13 @@ const Navigation = () => {
                 Home
               </Link>
               {/* Simplified Mobile Links */}
-              {[
-                { name: 'Products', path: '/products' },
-                { name: 'Customer Solutions', path: '/services' },
-                { name: 'Blog', path: '/blog' },
-                { name: 'Investors', path: '/investors' },
-                { name: 'Why BioArk', path: '/why-bioark' },
-                { name: 'Contact', path: '/contact' },
-              ].map((item) => (
-                <Link key={item.name} to={item.path} onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath(item.path) ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>
-                  {item.name}
-                </Link>
-              ))}
+              {/* Mobile primary links */}
+              <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/products') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Products</Link>
+              <Link to="/services" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/services') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Services</Link>
+              <Link to="/blog" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/blog') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Blog</Link>
+              <Link to="/investors" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/investors') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Investors</Link>
+              <Link to="/why-bioark" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/why-bioark') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Why BioArk</Link>
+              <Link to="/design" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/design') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Design</Link>
               <div className="px-3 pt-4">
                 <Button asChild className="w-full">
                   <Link to="/request-quote" onClick={() => setIsMenuOpen(false)}>

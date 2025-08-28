@@ -1,22 +1,23 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Layout from '/src/components/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '/src/components/ui/card';
-import { Button } from '/src/components/ui/button';
-import { customerSolutions } from '/src/data/showcase';
+import Layout from '@/components/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { customerSolutions } from '@/data/showcase';
 import { ArrowRight } from 'lucide-react';
 
 const Services = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-background">
-        {/* Hero Section */}
+  {/* Hero Section */
+  }
         <section className="py-20 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Customer Solutions
+    Services
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Partner with our expert team for tailored services that meet your unique project requirements, from discovery to delivery.
@@ -69,9 +70,7 @@ const Services = () => {
               <Button asChild size="lg" className="bioark-btn-primary px-8 font-semibold">
                 <Link to="/request-quote">Request a Quote</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/contact">Contact Our Experts</Link>
-              </Button>
+              {/* Contact removed as requested */}
             </div>
           </div>
         </section>
