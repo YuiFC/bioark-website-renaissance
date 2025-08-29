@@ -8,15 +8,11 @@ const About = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-background">
-        {/* Hero Section with background image (original approach) */}
-        <section className="relative py-24 md:py-28">
-          <div className="absolute inset-0">
-            <img src="/images/AboutUs.jpg" alt="About BioArk" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/45" />
-          </div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Why BioArk</h1>
-            <p className="text-white/90 max-w-3xl mx-auto text-lg">Innovating genome engineering for real-world impact</p>
+        {/* Hero Section with brand gradient (no background image) */}
+        <section className="py-20 bioark-hero-gradient border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Why BioArk</h1>
+            <p className="text-muted-foreground max-w-3xl mx-auto text-lg">Innovating genome engineering for real-world impact</p>
           </div>
         </section>
 
