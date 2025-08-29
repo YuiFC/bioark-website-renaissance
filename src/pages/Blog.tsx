@@ -51,23 +51,23 @@ const Blog = () => {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-14 md:py-16">
         {visible.length === 0 ? (
-          <div className="text-center text-muted-foreground py-20">No matching posts found.</div>
+          <div className="text-center text-muted-foreground py-24">No matching posts found.</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {visible.map(post => (
               <Card key={post.id} className="flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden">
                 {post.coverImage && (
                   <img src={post.coverImage} alt={post.title} className="w-full h-40 object-cover" />
                 )}
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl mt-1">
+                  <CardTitle className="text-xl md:text-2xl font-bold leading-tight mt-1">
                     <Link to={`/blog/${post.slug}`} className="hover:underline" aria-label={`${post.title} - ${post.excerpt}`} title={post.excerpt}>
                       {post.title}
                     </Link>
                   </CardTitle>
-                  <div className="text-xs text-muted-foreground flex items-center gap-3 pt-1">
+                  <div className="text-xs text-muted-foreground flex items-center gap-3 pt-2">
                     <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     {post.readTime && (
                       <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {post.readTime} min read</span>
@@ -78,10 +78,12 @@ const Blog = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-grow flex flex-col">
-                  <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">{post.excerpt}</p>
-                  <div className="mt-4 flex items-center justify-between">
+                  <p className="text-muted-foreground text-base md:text-[17px] leading-relaxed line-clamp-4 flex-grow">
+                    {post.excerpt}
+                  </p>
+                  <div className="mt-5 flex items-center justify-between">
                     <Link to={`/blog/${post.slug}`} className="text-primary font-semibold hover:underline">
-                      Read article →
+                      Read Article →
                     </Link>
                   </div>
                 </CardContent>

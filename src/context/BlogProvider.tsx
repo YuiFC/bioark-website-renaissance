@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { mockBlogPosts, BlogPost } from '../data/blog';
 
+// Bump this when built-in mock posts' content changes and we want to refresh local overrides
+const DATA_VERSION = '2025-08-29-1';
+const RESET_BUILTIN_IDS = new Set<number>([1, 2, 3, 4]);
+
 interface BlogContextType {
   posts: BlogPost[];
   addPost: (post: BlogPost) => void;
@@ -15,6 +19,26 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
+      // Invalidate stale overrides when data version changes
+      const currentVersion = localStorage.getItem('bioark_blog_data_version');
+      if (currentVersion !== DATA_VERSION) {
+        try {
+          const overrides = JSON.parse(localStorage.getItem('bioark_blog_overrides') || '{}') as Record<number, Partial<BlogPost>>;
+          let changed = false;
+          for (const idStr of Object.keys(overrides)) {
+            const id = Number(idStr);
+            if (RESET_BUILTIN_IDS.has(id)) {
+              delete overrides[id];
+              changed = true;
+            }
+          }
+          if (changed) {
+            localStorage.setItem('bioark_blog_overrides', JSON.stringify(overrides));
+          }
+        } catch {}
+        localStorage.setItem('bioark_blog_data_version', DATA_VERSION);
+      }
+
       const saved = JSON.parse(localStorage.getItem('bioark_blog_posts') || '[]') as BlogPost[];
       const hidden = JSON.parse(localStorage.getItem('bioark_blog_hidden') || '[]') as number[];
       const overrides = JSON.parse(localStorage.getItem('bioark_blog_overrides') || '{}') as Record<number, Partial<BlogPost>>;

@@ -91,8 +91,9 @@ export const geneEditingProducts: ShowcaseItem[] = [
 ];
 
 export const customerSolutions: ShowcaseItem[] = [
-  { id: 'cs-01', name: 'Stable Cell Line Generation', description: 'From vector design to monoclonal selection and validation.', icon: Dna, link: '/services/cell-line-generation' },
-  { id: 'cs-02', name: 'Custom Viral Vector Production', description: 'High-quality lentivirus, AAV, and adenovirus production services.', icon: Beaker, link: '/services/viral-vector-production' },
-  { id: 'cs-03', name: 'Assay Development & Screening', description: 'Develop and validate robust cell-based and biochemical assays.', icon: Wrench, link: '/services/assay-development' },
-  { id: 'cs-04', name: 'Target Identification & Validation', description: 'Utilize CRISPR screening and other technologies to validate novel drug targets.', icon: Dna, link: '/services/target-validation' },
+  { id: 'cs-01', name: 'Custom Cloning Services', description: 'End-to-end plasmid design, cloning, synthesis, and delivery.', icon: Dna, link: '/services/custom-cloning' },
+  { id: 'cs-02', name: 'Genome Editing Services', description: 'Targeted overexpression, CRISPR knockout, and RNA knockdown.', icon: Beaker, link: '/services/genome-editing' },
+  { id: 'cs-03', name: 'Lentivirus Packaging Services', description: 'High-titer lentivirus packaging with full QC and functional options.', icon: Wrench, link: '/services/lentivirus-packaging' },
+  { id: 'cs-04', name: 'Stable Cell Line Services', description: 'From vector design to monoclonal selection and validation.', icon: Dna, link: '/services/cell-line-generation' },
+  { id: 'cs-05', name: 'Lab Supplies', description: 'Reagents and kits for cloning, qPCR, markers, and transfection.', icon: Beaker, link: '/services/lab-supplies' },
 ];

@@ -69,7 +69,19 @@ const BlogPost = () => {
           )}
         </header>
 
-        <article className="prose md:prose-lg max-w-none">
+        <article
+          className="prose md:prose-lg max-w-none
+          prose-headings:font-semibold prose-headings:tracking-tight prose-headings:scroll-mt-24
+          prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
+          prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+          prose-p:leading-relaxed prose-p:my-5
+          prose-ul:list-disc prose-ol:list-decimal prose-li:my-1.5
+          prose-a:text-primary hover:prose-a:underline
+          prose-img:rounded-lg prose-img:shadow-md
+          prose-pre:bg-muted prose-pre:border prose-pre:rounded-lg
+          prose-blockquote:border-l-4 prose-blockquote:border-primary/40 prose-blockquote:pl-4 prose-blockquote:italic
+          prose-table:my-6 prose-th:font-semibold prose-td:p-2 prose-th:p-2"
+        >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {post.content}
           </ReactMarkdown>
