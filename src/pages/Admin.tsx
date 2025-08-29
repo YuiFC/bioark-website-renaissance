@@ -7,6 +7,7 @@ import { useBlog } from '@/context/BlogProvider';
 import { featuredProducts, geneEditingProducts } from '@/data/showcase';
 import { getProductBySlug } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
 
 type AdminUser = { email: string; password: string };
 
@@ -16,7 +17,8 @@ const Admin = () => {
   const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [active, setActive] = useState<'overview'|'user'|'product'|'blog'>('overview');
+  const [active, setActive] = useState<'overview'|'user'|'product'|'blog'|'quotes'>('overview');
+  const [unreadQuotes, setUnreadQuotes] = useState<number>(()=>getUnreadQuotesCount());
 
   const metrics = { pageViews: 12890, users: 1, posts: posts.length };
 
@@ -83,9 +85,16 @@ const Admin = () => {
                 {k:'user', label:'User'},
                 {k:'product', label:'Product'},
                 {k:'blog', label:'Blog'},
+                {k:'quotes', label:'Quotes'},
               ].map(i => (
-                <button key={i.k} onClick={()=>setActive(i.k as any)} className={`w-full text-left px-3 py-2 rounded-md text-sm ${active===i.k ? 'bg-muted text-foreground' : 'hover:bg-muted/60'}`}>
-                  {i.label}
+                <button key={i.k} onClick={()=>{
+                  setActive(i.k as any);
+                  if (i.k==='quotes'){ markAllQuotesRead(); setUnreadQuotes(0); }
+                }} className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm ${active===i.k ? 'bg-muted text-foreground' : 'hover:bg-muted/60'}`}>
+                  <span>{i.label}</span>
+                  {i.k==='quotes' && unreadQuotes>0 && (
+                    <span className="ml-2 inline-flex items-center justify-center text-xs bg-primary text-white rounded-full px-2 py-0.5">{unreadQuotes}</span>
+                  )}
                 </button>
               ))}
             </nav>
@@ -120,6 +129,10 @@ const Admin = () => {
             {active === 'blog' && (
               <BlogPanel />
             )}
+
+            {active === 'quotes' && (
+              <QuotesPanel onChangeUnread={setUnreadQuotes} />
+            )}
           </section>
         </div>
         )}
@@ -133,6 +146,130 @@ export default Admin;
 // ===== Helpers: Product Manager (local cache) =====
 function getUsers(){ try { return JSON.parse(localStorage.getItem('bioark_users')||'[]'); } catch { return []; } }
 function setUsers(list:any[]){ localStorage.setItem('bioark_users', JSON.stringify(list)); }
+
+// ===== Quotes Panel =====
+function QuotesPanel({ onChangeUnread }:{ onChangeUnread: (n:number)=>void }){
+  const [q, setQ] = useState('');
+  const [items, setItems] = useState(()=>getQuotes());
+  const [selected, setSelected] = useState<any|null>(null);
+
+  const refresh = () => { const list = getQuotes(); setItems(list); onChangeUnread(list.filter(x=>!x.read).length); };
+
+  const filtered = useMemo(()=>{
+    if (!q.trim()) return items;
+    const s = q.toLowerCase();
+    return items.filter((x:any)=>[
+      x.firstName, x.lastName, x.email, x.company, x.department, x.serviceType, x.projectDescription, x.additionalInfo
+    ].some((v:any)=>String(v||'').toLowerCase().includes(s)));
+  },[q, items]);
+
+  const open = (x:any) => { setSelected(x); if (!x.read){ markQuoteRead(x.id, true); refresh(); } };
+  const del = (x:any) => { if (confirm('Delete this quote?')){ deleteQuote(x.id); refresh(); } };
+
+  const Badge = ({children}:{children:React.ReactNode}) => (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted text-foreground/80">{children}</span>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search quotes..." value={q} onChange={e=>setQ(e.target.value)} />
+        <Button variant="outline" onClick={()=>{ markAllQuotesRead(); refresh(); }}>Mark all read</Button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((x:any)=> (
+          <Card key={x.id}>
+            <CardContent className={`p-4 space-y-2 ${x.read ? '' : 'ring-2 ring-primary/60'}`}>
+              <div className="flex items-center justify-between">
+                <div className="font-semibold">{x.firstName} {x.lastName}</div>
+                <div className="text-xs text-muted-foreground">{new Date(x.createdAt).toLocaleString()}</div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge>{x.serviceType}</Badge>
+                {x.budget && <Badge>{x.budget}</Badge>}
+                {x.timeline && <Badge>{x.timeline}</Badge>}
+              </div>
+              <div className="text-sm text-muted-foreground line-clamp-2">{x.projectDescription}</div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button size="sm" variant="outline" onClick={()=>open(x)}>View</Button>
+                <Button size="sm" variant="destructive" onClick={()=>del(x)}>Delete</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      {!filtered.length && <p className="text-sm text-muted-foreground">No quotes found.</p>}
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selected} onOpenChange={(o)=>{ if(!o) setSelected(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Quote Detail</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="grid gap-3 max-h-[70vh] overflow-auto pr-1">
+              <div className="text-sm text-muted-foreground">Submitted: {new Date(selected.createdAt).toLocaleString()}</div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-xs text-muted-foreground">Contact</div>
+                  <div className="font-medium">{selected.firstName} {selected.lastName}</div>
+                  <div className="text-sm">{selected.email}</div>
+                  {selected.phone && <div className="text-sm">{selected.phone}</div>}
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Organization</div>
+                  <div className="font-medium">{selected.company}</div>
+                  {selected.department && <div className="text-sm">{selected.department}</div>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <div className="text-xs text-muted-foreground">Service Type</div>
+                  <div className="font-medium">{selected.serviceType}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Timeline</div>
+                  <div className="font-medium">{selected.timeline || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Budget</div>
+                  <div className="font-medium">{selected.budget || '—'}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-muted-foreground">Project Description</div>
+                <div className="prose prose-sm max-w-none text-foreground">{selected.projectDescription}</div>
+              </div>
+              {selected.additionalInfo && (
+                <div>
+                  <div className="text-xs text-muted-foreground">Additional Info</div>
+                  <div className="prose prose-sm max-w-none text-foreground">{selected.additionalInfo}</div>
+                </div>
+              )}
+
+              <div className="border-t pt-3">
+                <div className="text-xs text-muted-foreground mb-1">User Registration Snapshot</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-xs text-muted-foreground">Email</div>
+                    <div className="font-medium">{selected.submittedByEmail || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Address</div>
+                    <div className="font-medium whitespace-pre-wrap">{selected.submittedByAddress || '—'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
 function UserPanel(){
   const [q, setQ] = useState('');

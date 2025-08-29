@@ -8,23 +8,56 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { addQuote } from '@/lib/quotes';
 
 const RequestQuote = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const form = new FormData(e.currentTarget);
+      const payload = {
+        firstName: String(form.get('firstName')||''),
+        lastName: String(form.get('lastName')||''),
+        email: String(form.get('email')||''),
+        phone: String(form.get('phone')||''),
+        company: String(form.get('company')||''),
+        department: String(form.get('department')||''),
+        serviceType: String(form.get('serviceType')||''),
+        timeline: String(form.get('timeline')||''),
+        budget: String(form.get('budget')||''),
+        projectDescription: String(form.get('projectDescription')||''),
+        additionalInfo: String(form.get('additionalInfo')||''),
+        // user snapshot
+        submittedByEmail: undefined as string|undefined,
+        submittedByAddress: undefined as string|undefined,
+      };
+
+      // Try attach registered user snapshot
+      try {
+        const auth = JSON.parse(localStorage.getItem('bioark_auth_user')||'null');
+        const users = JSON.parse(localStorage.getItem('bioark_users')||'[]');
+        if (auth?.email) {
+          const u = (users||[]).find((x:any)=>x.email?.toLowerCase()===auth.email.toLowerCase());
+          payload.submittedByEmail = auth.email;
+          if (u?.address) payload.submittedByAddress = u.address;
+        }
+      } catch {}
+
+      addQuote(payload as any);
+
+      // reset form
+      (e.currentTarget as HTMLFormElement).reset();
       toast({
-        title: "Quote Request Submitted",
+        title: 'Quote Request Submitted',
         description: "We'll get back to you within 24 hours with a detailed quote.",
       });
-    }, 1000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
