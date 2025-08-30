@@ -10,9 +10,9 @@ const Products = () => {
       title: 'Reagents and Markers',
       description: 'High-quality molecular reagents and markers for research applications',
       products: [
-        { name: '2 × Fast SYBR Green qPCR Master Mix', image: '/lovable-uploads/fa015458-3001-427a-b816-4db6868b7cf4.png', slug: '2-fast-sybr-green-qpcr-master-mix' },
-        { name: '2 × SYBR Green qPCR Master Mix', image: '/lovable-uploads/54707b79-b255-48c7-a5f9-20579adb82c3.png', slug: '2-sybr-green-qpcr-master-mix' },
-        { name: 'Western Protein Marker I (Exposure)', image: '/lovable-uploads/219e0265-4771-4a23-8849-a50f86f7aa95.png', slug: 'western-protein-marker-i-exposure' },
+  { name: '2 × Fast SYBR Green qPCR Master Mix', image: '/lovable-uploads/fa015458-3001-427a-b816-4db6868b7cf4.png', slug: 'fast-sybr-green-qpcr-mix' },
+  { name: '2 × SYBR Green qPCR Master Mix', image: '/lovable-uploads/54707b79-b255-48c7-a5f9-20579adb82c3.png', slug: 'sybr-green-qpcr-mix' },
+  { name: 'Western Protein Marker I (Exposure)', image: '/lovable-uploads/219e0265-4771-4a23-8849-a50f86f7aa95.png', slug: 'western-protein-marker-i' },
         { name: 'Prestained Protein Marker IV (8-200 kDa)', image: '/lovable-uploads/eff136f4-2eeb-4c18-9dc6-7252f46cc30a.png', slug: 'prestained-protein-marker-iv-8-200-kda' },
         { name: 'BAPoly® In Vitro DNA Transfection Reagent', image: '/lovable-uploads/fa6853f1-5309-4c32-945f-ee34e835d8dd.png', slug: 'bapoly-in-vitro-dna-transfection-reagent' },
         { name: 'BAJet® In Vitro DNA Transfection Reagent', image: '/lovable-uploads/6b172cba-00ba-498f-be94-0cb545ffdaaa.png', slug: 'bajet-in-vitro-dna-transfection-reagent' },

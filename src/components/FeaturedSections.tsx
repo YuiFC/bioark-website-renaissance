@@ -29,12 +29,19 @@ const SectionWrapper = ({ title, description, children, className }: SectionProp
   </section>
 );
 
+const displayTitle = (name: string) => {
+  // Remove leading catalog like "BADM3362 – " and trailing size like " (100-8000bp)" / " (8-200 kDa)"
+  let out = name.replace(/^\s*[A-Z0-9-]+\s*–\s*/i, '');
+  out = out.replace(/\s*\([^)]*(?:bp|kda)\)\s*$/i, '').trim();
+  return out;
+};
+
 const FeaturedProductSlide = ({ item }: { item: ShowcaseItem }) => (
   <Link to={item.link} className="block p-4 rounded-lg transition-colors hover:bg-muted h-full">
     <div className="flex items-center gap-4 h-full">
       <img src={item.imageUrl} alt={item.name} className="w-20 h-20 object-cover rounded-md flex-shrink-0" />
       <div>
-        <h3 className="font-semibold text-foreground leading-tight">{item.name}</h3>
+        <h3 className="font-semibold text-foreground leading-tight">{displayTitle(item.name)}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
       </div>
     </div>
@@ -49,8 +56,8 @@ const ProductCard = ({ item }: { item: ShowcaseItem }) => (
       </div>
       {/* Equal-height body: title (1-2 lines) + description (up to 3 lines) + spacer */}
       <CardContent className="p-6 flex-1 flex flex-col">
-        <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2 leading-snug min-h-[3rem]">{item.name}</h3>
-        <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">{item.description}</p>
+  <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2 leading-snug min-h-[3rem]">{displayTitle(item.name)}</h3>
+  <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">{item.description}</p>
         <div className="mt-4">
           <Button asChild size="sm" variant="default">
             <Link to={item.link} state={{ fromHome: true }}>View the details</Link>

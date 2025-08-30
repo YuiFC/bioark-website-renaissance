@@ -18,11 +18,13 @@ interface ProductDetailProps {
   availability: string;
   listPrice: string;
   options: string[];
+  optionPrices?: Record<string, string>;
   description: string;
   keyFeatures: string[];
   storageStability: string;
   performanceData: string;
   manuals: string[];
+  manualUrls?: string[];
   mainImage: string;
   storeLink?: string;
 }
@@ -34,11 +36,13 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
   availability,
   listPrice,
   options,
+  optionPrices,
   description,
   keyFeatures,
   storageStability,
   performanceData,
   manuals,
+  manualUrls,
   mainImage,
   storeLink
 }) => {
@@ -47,16 +51,41 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
   const [selectedOpt, setSelectedOpt] = useState(options[0] || 'Default');
   const [qty, setQty] = useState<number>(1);
   const [activeImage, setActiveImage] = useState<number>(0);
+  const effectivePrice = useMemo(() => {
+    if (optionPrices && options?.length) {
+      const p = optionPrices[selectedOpt];
+      if (p) return p;
+    }
+    return listPrice;
+  }, [optionPrices, selectedOpt, listPrice, options]);
+
   const priceCents = useMemo(()=>{
-    const m = listPrice?.replace(/[^0-9.]/g,'');
+    const m = effectivePrice?.replace(/[^0-9.]/g,'');
     if(!m) return 0; const v = Math.round(parseFloat(m)*100); return Number.isFinite(v)?v:0;
-  },[listPrice]);
+  },[effectivePrice]);
 
   const handleAddToCart = () => {
     const quantity = Math.max(1, Math.min(999, qty || 1));
     addItem({ id: catalogNumber || title, name: title, price: priceCents, imageUrl: mainImage, variant: selectedOpt, link: storeLink || undefined }, quantity);
   toast({ title: 'Added to cart', description: `${title}${selectedOpt ? ` (${selectedOpt})` : ''} × ${quantity} added to your cart.` });
   };
+
+  // Derive display name and extra metadata from title when encoded like "BADM3362 – Name (100-8000bp)"
+  const parsed = (() => {
+    const codeMatch = title.match(/^\s*([A-Z0-9-]+)\s*–\s*/i);
+    const sizeMatch = title.match(/\(([^)]*(?:bp|kda))\)\s*$/i);
+    const displayName = title
+      .replace(/^\s*[A-Z0-9-]+\s*–\s*/i, '')
+      .replace(/\s*\([^)]*(?:bp|kda)\)\s*$/i, '')
+      .trim();
+    return {
+      codeFromName: codeMatch ? codeMatch[1] : '',
+      sizeFromName: sizeMatch ? sizeMatch[1] : '',
+      displayName,
+    };
+  })();
+
+  const shownCatalog = (catalogNumber && catalogNumber.trim()) || parsed.codeFromName || '';
 
   return (
     <Layout>
@@ -112,14 +141,21 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                     <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">{availability}</Badge>
                   )}
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">{parsed.displayName || title}</h1>
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground"><Package className="h-4 w-4"/><span>Catalog #:</span><span className="text-foreground font-medium">{catalogNumber || '-'}</span></div>
-                  <div className="flex items-center gap-2 text-muted-foreground"><Info className="h-4 w-4"/><span>Price:</span><span className="text-2xl md:text-3xl font-bold text-primary">{listPrice || 'Contact Sales'}</span></div>
+                  <div className="flex items-center gap-2 text-muted-foreground"><Package className="h-4 w-4"/><span>Catalog #:</span><span className="text-foreground font-medium">{shownCatalog || '-'}</span></div>
+                  <div className="flex items-center gap-2 text-muted-foreground"><Info className="h-4 w-4"/><span>Price:</span><span className="text-2xl md:text-3xl font-bold text-primary">{effectivePrice || 'Contact Sales'}</span></div>
                 </div>
 
-                {/* Options (chip style) */}
+                {/* Fragment size (if any) */}
+                {parsed.sizeFromName && (
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">Fragment Size:</span> {parsed.sizeFromName}
+                  </div>
+                )}
+
+                {/* Options (chip style) - kept immediately above Qty */}
                 {options?.length > 0 && (
                   <div className="mt-6">
                     <p className="text-sm font-medium mb-2">Specification</p>
@@ -174,48 +210,47 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
           </div>
         </section>
 
-        {/* Detail Tabs */}
+        {/* Detail Tabs: Specifications, Performance Data, Manuals */}
         <section className="py-14 bg-muted/30 border-t">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Tabs defaultValue="desc">
+            <Tabs defaultValue="specs">
               <TabsList>
-                <TabsTrigger value="desc">Description</TabsTrigger>
-                <TabsTrigger value="features">Key Features</TabsTrigger>
+                <TabsTrigger value="specs">Specifications</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="manuals">Manuals</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="desc" className="mt-6">
+              <TabsContent value="specs" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Product Description</CardTitle>
+                    <CardTitle>Product Information</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed">
-                      {description || 'No description available.'}
+                  <CardContent className="space-y-6">
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground mb-2">Description</h3>
+                      <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed">
+                        {description || 'No description available.'}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="features" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Key Features</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {keyFeatures?.length ? (
-                      <ul className="space-y-3">
-                        {keyFeatures.map((f, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                            <CheckCircle2 className="h-5 w-5 text-primary mt-0.5"/>
-                            <span className="text-muted-foreground">{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No key features available.</p>
-                    )}
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground mb-2">Key Features</h3>
+                      {keyFeatures?.length ? (
+                        <ul className="space-y-3">
+                          {keyFeatures.map((f, i) => (
+                            <li key={i} className="flex items-start gap-3">
+                              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5"/>
+                              <span className="text-muted-foreground">{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No key features available.</p>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground mb-2">Storage & Stability</h3>
+                      <p className="text-sm text-muted-foreground">{storageStability || 'No storage information available.'}</p>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -242,15 +277,18 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                   <CardContent>
                     {manuals?.length ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {manuals.map((m, i) => (
-                          <a key={i} href="#" className="flex items-center justify-between border rounded-md p-3 hover:bg-accent transition-colors">
+                            {manuals.map((m, i) => {
+                              const href = manualUrls?.[i] || '#';
+                              const clickable = !!manualUrls?.[i];
+                              return (
+                              <a key={i} href={href} target={clickable?"_blank":undefined} rel={clickable?"noopener noreferrer":undefined} className="flex items-center justify-between border rounded-md p-3 hover:bg-accent transition-colors">
                             <div className="flex items-center gap-2">
                               <FileDown className="h-4 w-4" />
                               <span className="text-sm">{m}</span>
                             </div>
                             <span className="text-xs text-muted-foreground">PDF</span>
                           </a>
-                        ))}
+                            );})}
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">No downloadable documents.</p>

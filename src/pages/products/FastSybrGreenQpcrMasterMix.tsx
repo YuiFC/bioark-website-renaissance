@@ -15,15 +15,17 @@ const FastSybrGreenQpcrMasterMix = () => {
         '1 mL (Low ROX)',
         '1 mL (High ROX)'
       ]}
-      description="Our Fast SYBR Green qPCR Master Mix is a high-performance reagent designed for rapid and accurate quantitative PCR applications. This optimized formulation provides exceptional sensitivity and specificity for your gene expression studies."
+      description={
+        '2× Fast SYBR Green qPCR Master Mix (None ROX) is a special 2× premix for qPCR reaction using SYBR Green I chimeric fluorescence method, which contains all qPCR components except primers and DNA templates, which can reduce the operation steps, shorten the time of adding samples, and reduce the chance of contamination. The core component is genetically engineered hot-start Taq DNA Polymerase, which effectively seals off DNA polymerase activity and prevents non-specific amplification at low temperatures by efficiently combining monoclonal antibody and Taq DNA Polymerase, with many advantages such as high specificity and high sensitivity and is coupled with a reaction buffer optimized for qPCR. It is very suitable for high specificity and high sensitivity qPCR reaction. This product is a 2× premixed reagent containing the optimal concentration of SYBR Green I for qPCR reaction, which can obtain a good standard curve in a wide quantitative region, accurate quantification of target genes, good reproducibility, high confidence, and the fastest qPCR reaction can be completed in 30 minutes.'
+      }
       keyFeatures={[
-        'Fast cycling protocol compatible',
-        'High sensitivity and specificity',
-        'Consistent performance across different templates',
-        'Ready-to-use 2X concentrated mix',
-        'Compatible with most qPCR instruments'
+        'Fast & easy: 2× premixed, requires only primers and DNA, completing qPCR in 30 minutes.',
+        'High precision: Hot-start Taq polymerase prevents non-specific amplification.',
+        'Reliable results: Optimized buffer ensures accurate quantification and good reproducibility.'
       ]}
-      storageStability="Store at -20°C. Stable for 12 months when stored properly. Avoid repeated freeze-thaw cycles."
+      storageStability={
+        'Ship with wet ice. Store at -20°C without light, valid for 12 months. Avoid freeze-thaw cycles. After thawing, it can be stably stored at 4℃ for one month without light.'
+      }
       performanceData="Validated with various gene targets and sample types. Ct values typically 0.5-1 cycle earlier than competitor products."
       manuals={[
         'Product Manual (PDF)',

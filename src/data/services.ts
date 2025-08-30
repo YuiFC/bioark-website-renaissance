@@ -75,50 +75,6 @@ Downstream services including lentivirus packaging and stable cell line developm
 `
   },
 
-  // 2) Genome Editing Services
-  {
-    id: 'svc-02',
-    name: 'Genome Editing Services',
-    description: 'Targeted overexpression, CRISPR knock-out, RNA knockdown, and complete kit solutions.',
-    link: '/services/genome-editing',
-    longDescription: 'Comprehensive genome editing services and kits to accelerate functional studies and stable cell line generation.',
-    keyBenefits: [
-      'High editing efficiency with optimized designs',
-      'Flexible formats (plasmid and lentivirus)',
-      'Validated workflows and QC',
-      'Expert support across diverse cell lines',
-    ],
-    processOverview: [
-      { step: 'Consultation', description: 'Define targets and choose delivery format.' },
-      { step: 'Design', description: 'Custom gRNA design and donor strategy (as applicable).' },
-      { step: 'Build & Test', description: 'Constructs/kits built and validated; optional pilot.' },
-      { step: 'Delivery', description: 'Ship kits or provide full-service editing with validation.' },
-    ],
-    markdown: `### Targeted Overexpression with CRISPR
-Precise, controlled expression at safe-harbor sites (e.g., AAVS1) for stable, high-level expression. More precise and safer than lentiviral overexpression.
-
-### CRISPR Knock-Out
-Optimized Cas9 and gRNAs for high-efficiency knockout in adherent and cancer cell lines, with PCR/sequencing/Western validation available. Offered as plasmid or lentivirus formats.
-
-### CRISPR RNA Knockdown
-CRISPR/Cas13-based RNA knockdown with improved specificity versus traditional RNAi—ideal for screening and gene function analysis.
-
-## Genome Editing Kits
-**Targeted Overexpression Plasmid Kit (CDS-P011k)** — $899 • 2–3 weeks  
-Guaranteed stable overexpression in transfectable cell lines or full refund.
-
-**CRISPR Knock-Out Plasmid Kit (COT-P031k)** — $790 • 2–3 weeks  
-Three all-in-one plasmids with optimized Cas9, gRNA, and selection markers; refund guarantee.
-
-**CRISPR Knock-Out Lentivirus Kit (COM-P032k)** — $1,499 • 2–3 weeks  
-Single tube of virus with three mixed gRNAs; broadened cell line compatibility; refund guarantee.
-
-**CRISPR RNA Knock-Down Plasmid Kit (CRT-P051k)** — $790 • 2–3 weeks  
->70% RNA knockdown across applications; refund guarantee.
-
-Contact: support@BioArkTech.com
-`
-  },
 
   // 3) Lab Supplies
   {
@@ -235,4 +191,8 @@ Contact: support@bioarktech.com
 
 export const getServiceBySlug = (slug: string): ServiceDetailData | undefined => {
   return allServices.find(s => s.link === `/services/${slug}`);
+};
+
+export const getAllServices = (): ServiceDetailData[] => {
+  return allServices;
 };

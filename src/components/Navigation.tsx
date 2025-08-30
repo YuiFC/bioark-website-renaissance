@@ -31,9 +31,6 @@ const ListItem = React.forwardRef<
           {...props}
         >
           <div className="text-sm font-medium leading-none text-foreground">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
         </Link>
       </NavigationMenuLink>
     </li>
@@ -90,6 +87,14 @@ const Navigation = () => {
     ? 'bg-[hsl(var(--header-footer-background))]/90 backdrop-blur-lg border-b border-border/20 shadow-sm'
     : 'bg-transparent';
 
+  const displayTitle = (name: string) => {
+    // Remove leading catalog like "BADM3362 – "
+    let out = name.replace(/^\s*[A-Z0-9-]+\s*–\s*/i, '');
+    // Remove trailing size like " (100-8000bp)" or " (8-200 kDa)"
+    out = out.replace(/\s*\([^)]*(?:bp|kda)\)\s*$/i, '').trim();
+    return out;
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 text-[hsl(var(--header-footer-foreground))] ${navBackgroundClass}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -114,12 +119,12 @@ const Navigation = () => {
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Products</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid grid-cols-2 gap-4 p-4 w-[600px] lg:w-[700px]">
+                    <div className="grid grid-cols-2 gap-4 p-4 w-[560px] lg:w-[640px]">
                       <div className="flex flex-col space-y-2">
                         <h3 className="font-semibold text-foreground px-3">Featured Product (Reagent)</h3>
                         <ul className="space-y-1">
                           {featuredProducts.map((product) => (
-                            <ListItem key={product.id} title={product.name} href={product.link}>
+                            <ListItem key={product.id} title={displayTitle(product.name)} href={product.link}>
                               {product.description}
                             </ListItem>
                           ))}
@@ -129,7 +134,7 @@ const Navigation = () => {
                         <h3 className="font-semibold text-foreground px-3">Gene Editing Product</h3>
                         <ul className="space-y-1">
                           {geneEditingProducts.map((product) => (
-                            <ListItem key={product.id} title={product.name} href={product.link}>
+                            <ListItem key={product.id} title={displayTitle(product.name)} href={product.link}>
                               {product.description}
                             </ListItem>
                           ))}
@@ -143,7 +148,7 @@ const Navigation = () => {
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                    <ul className="grid w-[360px] gap-3 p-4 md:w-[440px] md:grid-cols-2 lg:w-[520px]">
                       {customerSolutions.map((solution) => (
                         <ListItem key={solution.id} title={solution.name} href={solution.link}>
                           {solution.description}

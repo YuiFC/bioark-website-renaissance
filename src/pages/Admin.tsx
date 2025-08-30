@@ -8,6 +8,7 @@ import { featuredProducts, geneEditingProducts } from '@/data/showcase';
 import { getProductBySlug } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
+import { getAllServices } from '@/data/services';
 
 type AdminUser = { email: string; password: string };
 
@@ -17,7 +18,7 @@ const Admin = () => {
   const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [active, setActive] = useState<'overview'|'user'|'product'|'blog'|'quotes'>('overview');
+  const [active, setActive] = useState<'overview'|'user'|'product'|'services'|'blog'|'quotes'>('overview');
   const [unreadQuotes, setUnreadQuotes] = useState<number>(()=>getUnreadQuotesCount());
 
   const metrics = { pageViews: 12890, users: 1, posts: posts.length };
@@ -84,6 +85,7 @@ const Admin = () => {
                 {k:'overview', label:'Overview'},
                 {k:'user', label:'User'},
                 {k:'product', label:'Product'},
+                {k:'services', label:'Services'},
                 {k:'blog', label:'Blog'},
                 {k:'quotes', label:'Quotes'},
               ].map(i => (
@@ -133,6 +135,10 @@ const Admin = () => {
             {active === 'quotes' && (
               <QuotesPanel onChangeUnread={setUnreadQuotes} />
             )}
+
+            {active === 'services' && (
+              <ServicesPanel />
+            )}
           </section>
         </div>
         )}
@@ -147,6 +153,93 @@ export default Admin;
 function getUsers(){ try { return JSON.parse(localStorage.getItem('bioark_users')||'[]'); } catch { return []; } }
 function setUsers(list:any[]){ localStorage.setItem('bioark_users', JSON.stringify(list)); }
 
+// ===== Services Panel (manage Services data locally) =====
+function ServicesPanel(){
+  type Svc = ReturnType<typeof getAllServices>[number];
+  const base = getAllServices();
+  const [q, setQ] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
+  const [overrides, setOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_services_overrides')||'{}'); } catch { return {}; } });
+  const [custom, setCustom] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('bioark_services_custom')||'[]'); } catch { return []; } });
+  const [editing, setEditing] = useState<any|null>(null);
+
+  const saveOverrides = (next: Record<string, any>) => { setOverrides(next); localStorage.setItem('bioark_services_overrides', JSON.stringify(next)); };
+  const saveCustom = (next: any[]) => { setCustom(next); localStorage.setItem('bioark_services_custom', JSON.stringify(next)); };
+
+  const applyOverrides = (s:Svc) => ({ ...s, ...(overrides[s.id]||{}) });
+  const baseApplied = base.map(applyOverrides);
+  const all = [...baseApplied, ...custom];
+  const filtered = q ? all.filter(s => (s.name||'').toLowerCase().includes(q.toLowerCase()) || (s.description||'').toLowerCase().includes(q.toLowerCase())) : all;
+
+  const onEdit = (item:any, patch:Partial<any>) => {
+    if (custom.some(c => c.id === item.id)) {
+      const next = custom.map(c => c.id===item.id ? { ...c, ...patch } : c);
+      saveCustom(next);
+    } else {
+      const next = { ...overrides, [item.id]: { ...(overrides[item.id]||{}), ...patch } };
+      saveOverrides(next);
+    }
+  };
+  const onDelete = (item:any) => {
+    if (!confirm(`Delete service "${item.name}"?`)) return;
+    if (custom.some(c => c.id === item.id)) {
+      const next = custom.filter(c => c.id !== item.id);
+      saveCustom(next);
+    } else {
+      const next = { ...overrides }; delete next[item.id]; saveOverrides(next);
+    }
+  };
+  const onAdd = () => {
+    const id = `svc-custom-${Date.now()}`;
+    const payload = { id, ...form } as any;
+    saveCustom([payload, ...custom]);
+    setShowAdd(false);
+    setForm({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-3">
+        <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search services..." value={q} onChange={e=>setQ(e.target.value)} />
+        <Dialog open={showAdd} onOpenChange={setShowAdd}>
+          <DialogTrigger asChild>
+            <Button>Add</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Add Service</DialogTitle></DialogHeader>
+            <div className="grid gap-3">
+              <input className="border rounded-md px-3 py-2" placeholder="Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
+              <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
+              <input className="border rounded-md px-3 py-2" placeholder="Link (/services/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
+              <input className="border rounded-md px-3 py-2" placeholder="Image URL (optional)" value={form.imageUrl} onChange={e=>setForm(f=>({...f,imageUrl:e.target.value}))} />
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={()=>setShowAdd(false)}>Cancel</Button>
+                <Button onClick={onAdd}>Save</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map(s => (
+          <Card key={s.id}>
+            <CardContent className="p-4 space-y-3">
+              {s.imageUrl && <img src={s.imageUrl} alt={s.name} className="w-full h-28 object-cover rounded" />}
+              <input className="border rounded-md px-2 py-1 w-full" value={s.name} onChange={e=>onEdit(s,{name:e.target.value})} />
+              <textarea className="border rounded-md px-2 py-1 w-full" rows={3} value={s.description} onChange={e=>onEdit(s,{description:e.target.value})} />
+              <div className="flex justify-between">
+                <Button asChild variant="secondary" size="sm"><Link to={s.link || '#'}>Open</Link></Button>
+                <Button variant="destructive" size="sm" onClick={()=>onDelete(s)}>Delete</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      {!filtered.length && <p className="text-sm text-muted-foreground">No services.</p>}
+    </div>
+  );
+}
 // ===== Quotes Panel =====
 function QuotesPanel({ onChangeUnread }:{ onChangeUnread: (n:number)=>void }){
   const [q, setQ] = useState('');
@@ -407,10 +500,12 @@ function ProductPanel() {
       availability: base?.availability || 'In Stock',
       listPrice: base?.listPrice || '',
       options: base?.options || [],
+      optionPrices: (base as any)?.optionPrices || {},
       keyFeatures: base?.keyFeatures || [],
       storageStability: base?.storageStability || '',
       performanceData: base?.performanceData || '',
-      manuals: base?.manuals || [],
+  manuals: base?.manuals || [],
+  manualUrls: (base as any)?.manualUrls || [],
       storeLink: base?.storeLink || '',
       ...dispOv,
       ...dOv,
@@ -418,8 +513,10 @@ function ProductPanel() {
     setDetailsForm({
       ...merged,
       optionsText: (merged.options||[]).join(', '),
+      optionPricesText: Object.entries((merged.optionPrices||{} as any)).map(([k,v])=>`${k}=${v}`).join('\n'),
       keyFeaturesText: (merged.keyFeatures||[]).join('\n'),
-      manualsText: (merged.manuals||[]).join(', '),
+  manualsText: (merged.manuals||[]).join(', '),
+  manualUrlsText: (merged.manualUrls||[]).join(', '),
     });
   };
 
@@ -433,15 +530,31 @@ function ProductPanel() {
       const nextCustom = custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } : c);
       saveCustom(nextCustom);
     }
+    const optionPricesMap = (() => {
+      const txt = detailsForm.optionPricesText || '';
+      const map: Record<string,string> = {};
+      txt.split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean).forEach((line:string)=>{
+        const idx = line.indexOf('=');
+        if (idx>0) {
+          const k = line.slice(0, idx).trim();
+          const v = line.slice(idx+1).trim();
+          if (k) map[k] = v;
+        }
+      });
+      return map;
+    })();
+
     const normalized = {
       catalogNumber: detailsForm.catalogNumber || '',
       availability: detailsForm.availability || '',
       listPrice: detailsForm.listPrice || '',
       options: (detailsForm.optionsText||'').split(',').map((s:string)=>s.trim()).filter(Boolean),
+      optionPrices: optionPricesMap,
       keyFeatures: (detailsForm.keyFeaturesText||'').split('\n').map((s:string)=>s.trim()).filter(Boolean),
       storageStability: detailsForm.storageStability || '',
       performanceData: detailsForm.performanceData || '',
       manuals: (detailsForm.manualsText||'').split(',').map((s:string)=>s.trim()).filter(Boolean),
+      manualUrls: (detailsForm.manualUrlsText||'').split(',').map((s:string)=>s.trim()).filter(Boolean),
       storeLink: detailsForm.storeLink || '',
     };
     const nextDetails = { ...detailsOverrides, [id]: { ...(detailsOverrides[id]||{}), ...normalized } };
@@ -556,6 +669,10 @@ function ProductPanel() {
                 <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.optionsText} onChange={e=>setDetailsForm((f:any)=>({...f,optionsText:e.target.value}))} />
               </div>
               <div>
+                <label className="text-sm text-muted-foreground">Option Prices (one per line, format: option=price) — e.g. 250 μL=$48.00</label>
+                <textarea className="border rounded-md px-3 py-2 w-full" rows={3} value={detailsForm.optionPricesText||''} onChange={e=>setDetailsForm((f:any)=>({...f,optionPricesText:e.target.value}))} />
+              </div>
+              <div>
                 <label className="text-sm text-muted-foreground">Key Features (one per line)</label>
                 <textarea className="border rounded-md px-3 py-2 w-full" rows={4} value={detailsForm.keyFeaturesText} onChange={e=>setDetailsForm((f:any)=>({...f,keyFeaturesText:e.target.value}))} />
               </div>
@@ -572,6 +689,11 @@ function ProductPanel() {
               <div>
                 <label className="text-sm text-muted-foreground">Manuals (comma separated)</label>
                 <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.manualsText} onChange={e=>setDetailsForm((f:any)=>({...f,manualsText:e.target.value}))} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Manual Links (comma separated, aligns by index with Manuals)</label>
+                <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.manualUrlsText||''} onChange={e=>setDetailsForm((f:any)=>({...f,manualUrlsText:e.target.value}))} />
+                <p className="text-xs text-muted-foreground mt-1">提示：Manuals 与 Links 数量应一致；若某项不填链接，将显示为不可点击文本。</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Store Link</label>
