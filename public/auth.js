@@ -1,4 +1,16 @@
 (function(){
+  // Detect base path (e.g., "/bioark-website-renaissance") for GitHub Pages; empty on local dev
+  const basePath = (function(){
+    try {
+      const host = window.location.hostname;
+      const isGhPages = /\.github\.io$/.test(host);
+      if (isGhPages) {
+        const segs = window.location.pathname.split('/').filter(Boolean);
+        return segs.length ? '/' + segs[0] : '';
+      }
+      return '';
+    } catch { return ''; }
+  })();
   const tabs = document.querySelectorAll('.tab');
   const forms = {
     signin: document.getElementById('form-signin'),
@@ -76,9 +88,9 @@
     // 兼容现有 Admin Portal 登录标记（用于进入 /admin）
     if (user.role === 'Admin'){
       localStorage.setItem('bioark_admin_token', 'ok');
-      window.location.href = '/admin';
+  window.location.href = basePath + '/admin';
     } else {
-      window.location.href = '/';
+  window.location.href = basePath + '/';
     }
   });
 
@@ -99,7 +111,7 @@
     upsertUser({ email, name, password, role: 'User' });
     // 自动登录并跳转首页
     localStorage.setItem('bioark_auth_user', JSON.stringify({ email, name, role: 'User' }));
-    window.location.href = '/';
+  window.location.href = basePath + '/';
   });
 
   // Default view
