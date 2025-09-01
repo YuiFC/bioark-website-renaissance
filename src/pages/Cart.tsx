@@ -94,12 +94,13 @@ const CartPage = () => {
                       <Button disabled={loading || payableItems.length === 0} onClick={onCheckout} className="w-full mt-4 rounded-full bg-blue-700 hover:bg-blue-700/90 text-white">
                         {loading ? 'Processing…' : 'Checkout'}
                       </Button>
-                      <div className="mt-4 flex items-center justify-center gap-3 text-neutral-500">
+                      <div className="mt-4 flex items-center justify-center gap-2 text-neutral-500">
                         <span className="text-xs">Powered by</span>
-                        <img src="https://storage.googleapis.com/stripe-sample-images/logo-stripe.png" alt="Stripe" className="h-5" />
-                        <span className="mx-1 text-xs">•</span>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" className="h-5" />
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Mastercard-logo.png" alt="Mastercard" className="h-5" />
+                        <img
+                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png"
+                          alt="Stripe"
+                          className="h-5 object-contain"
+                        />
                       </div>
                     <Button variant="outline" className="w-full mt-2 rounded-full" onClick={clear}>Clear Cart</Button>
                   </div>
