@@ -3,24 +3,65 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const Stripe = require('stripe');
 
 const app = express();
 app.use(express.json());
 
-// Allow CORS for dev (restrict in production)
+// Allow CORS broadly for development/demo (tighten for production)
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
-const allowedExact = new Set([FRONTEND_URL]);
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // non-browser or same-origin
-    const devPattern = /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
-    if (allowedExact.has(origin) || devPattern.test(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-}));
+app.use(cors({ origin: true, credentials: false }));
+
+// Serve static frontend (so you can open http://localhost:4242/auth.html)
+const PUBLIC_DIR = path.resolve(__dirname, '../public');
+if (fs.existsSync(PUBLIC_DIR)) {
+  app.use(express.static(PUBLIC_DIR));
+}
+
+// === File-based user store ===
+const DATA_DIR = path.join(__dirname, 'data');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+
+function ensureDataFiles() {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '[]', 'utf-8');
+  if (!fs.existsSync(SESSIONS_FILE)) fs.writeFileSync(SESSIONS_FILE, '{}', 'utf-8');
+}
+ensureDataFiles();
+
+function readUsers() {
+  try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8')); } catch { return []; }
+}
+function writeUsers(users) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+}
+function readSessions() {
+  try { return JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8')); } catch { return {}; }
+}
+function writeSessions(sessions) {
+  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8');
+}
+
+function hashPassword(pw) {
+  return crypto.createHash('sha256').update(String(pw)).digest('hex');
+}
+function newToken() {
+  return crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+}
+
+// Seed default admin if missing
+(function seedAdmin() {
+  const users = readUsers();
+  const hasAdmin = users.some(u => u.role === 'Admin');
+  if (!hasAdmin) {
+    users.push({ email: 'admin@bioark.com', name: 'BioArk Admin', password: hashPassword('Admin123!'), role: 'Admin' });
+    writeUsers(users);
+  }
+})();
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecret) {
@@ -30,6 +71,55 @@ const stripe = stripeSecret ? new Stripe(stripeSecret) : null;
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
+});
+
+// Simple API ping
+app.get('/api/ping', (_req, res) => {
+  res.json({ ok: true, time: Date.now() });
+});
+
+// Auth: signup
+// body: { name, email, password }
+app.post('/api/signup', (req, res) => {
+  const { name, email, password } = req.body || {};
+  if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
+  const users = readUsers();
+  const exists = users.some(u => u.email.toLowerCase() === String(email).toLowerCase());
+  if (exists) return res.status(409).json({ error: 'Email already registered' });
+  users.push({ name, email, password: hashPassword(password), role: 'User' });
+  writeUsers(users);
+  // Auto create session
+  const token = newToken();
+  const sessions = readSessions();
+  sessions[token] = { email, role: 'User', name };
+  writeSessions(sessions);
+  return res.json({ token, user: { name, email, role: 'User' } });
+});
+
+// Auth: signin
+// body: { email, password }
+app.post('/api/signin', (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
+  const users = readUsers();
+  const user = users.find(u => u.email.toLowerCase() === String(email).toLowerCase());
+  if (!user || user.password !== hashPassword(password)) return res.status(401).json({ error: 'Invalid email or password' });
+  const token = newToken();
+  const sessions = readSessions();
+  sessions[token] = { email: user.email, role: user.role, name: user.name };
+  writeSessions(sessions);
+  return res.json({ token, user: { name: user.name, email: user.email, role: user.role } });
+});
+
+// Auth: me
+app.get('/api/me', (req, res) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'No token' });
+  const sessions = readSessions();
+  const session = sessions[token];
+  if (!session) return res.status(401).json({ error: 'Invalid token' });
+  return res.json({ user: session });
 });
 
 // POST /create-checkout-session

@@ -49,25 +49,16 @@
     });
   });
 
-  // Simple localStorage-backed user store
-  const STORE_KEY = 'bioark_users';
-  function getUsers(){ try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; } }
-  function setUsers(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
-  function upsertUser(user){
-    const list = getUsers();
-    const idx = list.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
-    if (idx >= 0) list[idx] = user; else list.push(user);
-    setUsers(list);
-  }
-  // Seed an admin if missing (from existing admin.json email as a hint)
-  (function seedAdmin(){
-    const list = getUsers();
-    const hasAdmin = list.some(u => u.role === 'Admin');
-    if (!hasAdmin){
-      // Default admin placeholder; user可在Admin中改密或后续接入真实后台
-      upsertUser({ email: 'admin@bioark.com', name: 'BioArk Admin', password: 'Admin123!', role: 'Admin' });
-    }
+  // Backend API base (set via ?api=..., or window.BIOARK_API_BASE, else default localhost)
+  const API_BASE = (function(){
+    try {
+      const fromQuery = new URLSearchParams(window.location.search).get('api');
+      if (fromQuery) return fromQuery;
+    } catch {}
+    if (window && window.BIOARK_API_BASE) return window.BIOARK_API_BASE;
+    return 'http://localhost:4242';
   })();
+  const TOKEN_KEY = 'bioark_auth_token';
 
   // Sign in handler
   forms.signin.addEventListener('submit', (e) => {
@@ -79,19 +70,28 @@
     if (!email || !password){
       signinError.hidden = false; signinError.textContent = 'Please enter email and password.'; return;
     }
-    const user = getUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user || user.password !== password){
-      signinError.hidden = false; signinError.textContent = 'Invalid email or password.'; return;
-    }
-    // Set session token
-    localStorage.setItem('bioark_auth_user', JSON.stringify({ email: user.email, name: user.name, role: user.role }));
-    // 兼容现有 Admin Portal 登录标记（用于进入 /admin）
-    if (user.role === 'Admin'){
-      localStorage.setItem('bioark_admin_token', 'ok');
-  window.location.href = basePath + '/admin';
-    } else {
-  window.location.href = basePath + '/';
-    }
+    fetch(API_BASE + '/api/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    }).then(async r => {
+      if (!r.ok) {
+        const t = await r.json().catch(() => ({}));
+        throw new Error(t.error || 'Sign in failed');
+      }
+      return r.json();
+    }).then(({ token, user }) => {
+      // Only store token locally; user data后端管理
+      localStorage.setItem(TOKEN_KEY, token);
+      if (user.role === 'Admin') {
+        localStorage.setItem('bioark_admin_token', 'ok');
+        window.location.href = basePath + '/admin';
+      } else {
+        window.location.href = basePath + '/';
+      }
+    }).catch(err => {
+      signinError.hidden = false; signinError.textContent = err.message || 'Sign in failed';
+    });
   });
 
   // Sign up handler
@@ -105,13 +105,22 @@
     if (!name || !email || !password){
       signupError.hidden = false; signupError.textContent = 'Please fill in all fields.'; return;
     }
-    const exists = getUsers().some(u => u.email.toLowerCase() === email.toLowerCase());
-    if (exists){ signupError.hidden = false; signupError.textContent = 'Email already registered.'; return; }
-    // 默认注册为普通用户
-    upsertUser({ email, name, password, role: 'User' });
-    // 自动登录并跳转首页
-    localStorage.setItem('bioark_auth_user', JSON.stringify({ email, name, role: 'User' }));
-  window.location.href = basePath + '/';
+    fetch(API_BASE + '/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    }).then(async r => {
+      if (!r.ok) {
+        const t = await r.json().catch(() => ({}));
+        throw new Error(t.error || 'Sign up failed');
+      }
+      return r.json();
+    }).then(({ token }) => {
+      localStorage.setItem(TOKEN_KEY, token);
+      window.location.href = basePath + '/';
+    }).catch(err => {
+      signupError.hidden = false; signupError.textContent = err.message || 'Sign up failed';
+    });
   });
 
   // Default view

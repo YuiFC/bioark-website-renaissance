@@ -1,0 +1,17 @@
+{
+  "f0f10b18-42d0-491e-a4db-c4579179e060": {
+    "email": "test@test.com",
+    "role": "User",
+    "name": "test"
+  },
+  "c25ba90b-0e73-41d6-a077-dcf4b6cf4406": {
+    "email": "test@test.com",
+    "role": "User",
+    "name": "test"
+  },
+  "4aee5450-4b4e-45f9-9e07-7b3af4dad62b": {
+    "email": "test@test.com",
+    "role": "User",
+    "name": "test"
+  }
+}
