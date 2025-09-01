@@ -1,4 +1,5 @@
 import { ShowcaseItem, featuredProducts, geneEditingProducts } from './showcase';
+import fileConfig from '@/config/products-config.json';
 
 export interface ProductDetailData extends ShowcaseItem {
   catalogNumber: string;
@@ -215,9 +216,48 @@ Zhuang, H., et al. Trimethylamine-N-oxide sensitizes chondrocytes to mechanical 
   return p;
 });
 
+// Read file-based configuration committed to repo (version-managed)
+type ProductsFileConfig = {
+  version: number;
+  products: Array<Partial<ProductDetailData> & { id: string }>;
+  overrides: Record<string, Partial<ProductDetailData>>;
+  details: Record<string, Partial<ProductDetailData>>;
+  hidden: string[];
+};
+
+const cfg: ProductsFileConfig = (fileConfig as any) || { version: 1, products: [], overrides: {}, details: {}, hidden: [] };
+
+// Combine base products with file-config custom products/hidden/overrides before localStorage overrides
+const fileHidden = new Set(cfg.hidden || []);
+const fileCustom = (cfg.products || []).map(p => ({
+  id: p.id,
+  name: p.name || '',
+  description: p.description || '',
+  imageUrl: p.imageUrl || '/placeholder.svg',
+  link: p.link || '',
+  catalogNumber: p.catalogNumber || '',
+  availability: p.availability || 'In Stock',
+  listPrice: p.listPrice || '',
+  options: p.options || [],
+  keyFeatures: p.keyFeatures || [],
+  storageStability: p.storageStability || '',
+  performanceData: p.performanceData || '',
+  manuals: p.manuals || [],
+  manualUrls: (p as any).manualUrls,
+  storeLink: p.storeLink || 'https://store.bioarktech.com/cart',
+} as ProductDetailData));
+
+const baseWithFile = [
+  ...allProducts.filter(p => !fileHidden.has(p.id)).map(p => ({
+    ...p,
+    ...(cfg.overrides?.[p.id] || {}),
+  } as ProductDetailData)),
+  ...fileCustom.filter(c => !fileHidden.has(c.id)),
+];
+
 // Expose a readonly list of all catalog products for admin/management UIs
 export const listAllProducts = (): ProductDetailData[] => {
-  return allProducts.slice();
+  return baseWithFile.slice();
 };
 
 function readLS<T>(key: string, fallback: T): T {
@@ -233,8 +273,8 @@ function readLS<T>(key: string, fallback: T): T {
 
 export const getProductBySlug = (slug: string): ProductDetailData | undefined => {
   const path = `/products/${slug}`;
-  // First, try to find from base catalog
-  let base = allProducts.find(p => p.link === path);
+  // First, try to find from base+file-config catalog
+  let base = baseWithFile.find(p => p.link === path);
 
   // If not found, try custom products from Admin (bioark_products)
   if (!base) {
@@ -262,13 +302,14 @@ export const getProductBySlug = (slug: string): ProductDetailData | undefined =>
 
   if (!base) return undefined;
 
-  // Apply display overrides (name/description/imageUrl/link)
+  // Start from file-config patches
+  const dispFilePatch = (cfg.overrides || {})[base.id] || {};
+  const detFilePatch = (cfg.details || {})[base.id] || {};
+  // Then apply localStorage overrides (runtime, highest priority)
   const dispOv = readLS<Record<string, Partial<ProductDetailData>>>('bioark_products_overrides', {});
-  const dispPatch = dispOv[base.id] || {};
-
-  // Apply detailed field overrides (catalogNumber, options, etc.)
   const detOv = readLS<Record<string, Partial<ProductDetailData>>>('bioark_product_details_overrides', {});
-  const detPatch = detOv[base.id] || {};
+  const dispPatch = { ...dispFilePatch, ...(dispOv[base.id] || {}) };
+  const detPatch = { ...detFilePatch, ...(detOv[base.id] || {}) };
 
   return {
     ...base,
