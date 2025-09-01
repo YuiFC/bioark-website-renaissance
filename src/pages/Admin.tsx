@@ -785,6 +785,58 @@ function ProductPanel() {
   const [detailsOverrides, setDetailsOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_product_details_overrides')||'{}'); } catch { return {}; } });
   const [editing, setEditing] = useState<any|null>(null);
   const [detailsForm, setDetailsForm] = useState<any|null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  const exportProducts = () => {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      products: custom,
+      overrides,
+      details: detailsOverrides,
+      hidden,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `bioark-products-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  };
+
+  const onImportFile: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const text = await f.text();
+      const data = JSON.parse(text);
+      if (data && typeof data === 'object') {
+        if (Array.isArray(data.products)) {
+          setCustom(data.products);
+          localStorage.setItem('bioark_products', JSON.stringify(data.products));
+        }
+        if (data.overrides && typeof data.overrides === 'object') {
+          setOverrides(data.overrides);
+          localStorage.setItem('bioark_products_overrides', JSON.stringify(data.overrides));
+        }
+        if (data.details && typeof data.details === 'object') {
+          setDetailsOverrides(data.details);
+          localStorage.setItem('bioark_product_details_overrides', JSON.stringify(data.details));
+        }
+        if (Array.isArray(data.hidden)) {
+          setHidden(data.hidden);
+          localStorage.setItem('bioark_products_hidden', JSON.stringify(data.hidden));
+        }
+        alert('Imported product settings. 刷新页面以确保所有变更生效。');
+        e.target.value = '';
+      }
+    } catch (err) {
+      console.error('Import failed', err);
+      alert('导入失败：文件格式不正确或已损坏。');
+    }
+  };
 
   const applyOverrides = (item: any) => ({ ...item, ...(overrides[item.id] || {}) });
   // Build a unified list of all products: base catalog (from data) + custom entries
@@ -963,6 +1015,9 @@ function ProductPanel() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search products..." value={q} onChange={e=>setQ(e.target.value)} />
+  <Button variant="outline" onClick={exportProducts}>Export</Button>
+  <Button variant="outline" onClick={()=>fileRef.current?.click()}>Import</Button>
+  <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={onImportFile} />
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button>Add</Button>
