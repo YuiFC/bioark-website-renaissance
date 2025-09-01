@@ -75,6 +75,94 @@ Downstream services including lentivirus packaging and stable cell line developm
 `
   },
 
+  // 2) Genome Editing Services (new; full content markdown)
+  {
+    id: 'svc-02',
+    name: 'Genome Editing Services',
+    description: 'CRISPR overexpression, knockout, RNA knockdown, and ready-to-use kits for streamlined editing.',
+    link: '/services/genome-editing',
+    longDescription: 'Comprehensive genome editing solutions including targeted overexpression, CRISPR knock-out, RNA knockdown, and turnkey kits with delivery options.',
+    keyBenefits: [
+      'Precise knock-in at safe harbor or locus-specific sites',
+      'High-efficiency CRISPR knock-out with minimized off-targets',
+      'CRISPR-based RNA knockdown for superior specificity',
+      'Kits with success guarantee and rapid turnaround',
+    ],
+    processOverview: [
+      { step: 'Consultation', description: 'Discuss goals, targets, and editing strategy (overexpression/KO/RNA KD).' },
+      { step: 'Design', description: 'gRNA, donor template, and vector design optimized for your cell line.' },
+      { step: 'Build & QC', description: 'Construct assembly, validation, and functional checks.' },
+      { step: 'Delivery', description: 'Plasmid or lentivirus delivery with documentation and support.' },
+    ],
+    markdown: `## Targeted Overexpression with CRISPR
+Our targeted overexpression service allows for the precise and controlled expression of your gene of interest at specific genomic loci, including safe harbor sites like AAVS1. Compared with Lentivirus induced overexpression, targeted overexpression can provide more precision regulation and more safety and controllable knock-in effects. This service is ideal for:
+
+- Inducible or constitutive overexpression of target genes
+- Ensuring high-level, stable expression in your cell line
+- Requiring more accurate regulations, including inducible promoters.
+
+## CRISPR Knock-Out
+We employ an optimized CRISPR-Cas9 system along with precisely designed guide RNAs (gRNAs) to achieve high knockout efficiency in both adherent and cancer cell lines. Our tailored knockout strategies are customized to meet your specific experimental requirements, ensuring reliable and reproducible results. Our services target a broad range of genomic loci, from exonic regions to safe harbor sites, minimizing off-target effects. We also provide thorough validation of knockout efficiency through genomic and expression analyses, including PCR, sequencing, and Western blotting.
+
+**Available in two formats:** lentivirus and standard plasmids  
+**Custom-designed guide RNAs (gRNAs)** for maximum knockout efficiency  
+**Ideal for** functional genomics and pathway analysis
+
+## CRISPR RNA Knockdown
+We offer CRISPR-based RNA knockdown services that specifically target and degrade RNA transcripts, effectively reducing the expression of your gene of interest at the transcriptional level. Compared to traditional RNA interference (RNAi), CRISPR RNA technologies generally provide more efficient knockdown and greater target specificity.
+
+- Efficient RNA degradation using CRISPR/Cas13 technology
+- Ideal for high-throughput screening and gene function analysis
+- Offers a more dynamic and precise approach to gene silencing than conventional methods
+
+## Genome Editing Kits
+
+### Targeted Overexpression Plasmid Kit
+
+Catalog: (CDS-P011k) — $899 — 2–3 weeks
+
+Transform your research with our innovative tool to integrate your interest genes into the safe harbor site AAVS1. Our targeted overexpression kit is optimized for use in various cancer cell lines, achieving a remarkable success rate in establishing stable cell lines.
+
+**Your Success is Our Commitment!**  
+We guarantee that our kit will successfully generate stable overexpression clones in your transfectable cell lines. If it doesn’t work, you’ll receive a full refund.
+
+For additional services related to stable cell lines, please reach out to us at support@BioArkTech.com.
+
+### CRISPR Knock-Out Plasmid Kit
+
+Catalog: (COT-P031k) — $790 — 2–3 weeks
+
+Our knockout kit offers a fast and efficient solution to disrupt target genes in various cell lines, facilitating the creation of stable cell lines. It includes three all-in-one plasmids featuring optimized Cas9, gRNA structures, and selection markers for improved gene knockout efficiency.
+
+**Guaranteed Success!**  
+We guarantee that our kit will successfully generate stable knockout clones in your transfectable cell lines. If it doesn’t work, you’ll receive a full refund.
+
+For additional services related to stable cell lines, please get in touch with us at support@BioArkTech.com.
+
+### CRISPR Knock-Out Lentivirus Kit
+
+Catalog: (COM-P032k) — $1,499 — 2–3 weeks
+
+Our knockout lentivirus kit harnesses advanced lentivirus technology to deliver all-in-one CRISPR knockout functional cassettes, expanding your applications across a broader range of cell lines. The kit includes a single tube of virus with three mixed gRNA sequences, streamlining your experimental process.
+
+**Guaranteed Results!**  
+We guarantee that our kit will successfully generate stable knockout clones in your transfectable cell lines. If it doesn’t work, you’ll receive a full refund.
+
+For additional services related to stable cell lines, please contact us at support@BioArkTech.com.
+
+### CRISPR RNA Knock-Down Plasmid Kit
+
+Catalog: (CRT-P051k) — $790 — 2–3 weeks
+
+Our CRISPR RNA knockdown kits offer a highly specific and powerful alternative to traditional RNAi methods for reducing RNA expression levels. Achieve effective inhibition of target gene RNA levels by over 70% across a wide range of applications.
+
+**Guaranteed Efficiency!**  
+We stand by our promise: our kit will efficiently inhibit your target genes in transfectable cell lines. If it doesn’t work, you’ll receive a full refund.
+
+For any inquiries, please contact us at support@BioArkTech.com.
+`
+  },
+
 
   // 3) Lab Supplies
   {
@@ -189,10 +277,27 @@ Contact: support@bioarktech.com
   },
 ];
 
-export const getServiceBySlug = (slug: string): ServiceDetailData | undefined => {
-  return allServices.find(s => s.link === `/services/${slug}`);
+// Local override/custom support (Admin Portal)
+const readOverrides = (): Record<string, Partial<ServiceDetailData>> => {
+  try { return JSON.parse(localStorage.getItem('bioark_services_overrides')||'{}'); } catch { return {}; }
+};
+const readCustom = (): ServiceDetailData[] => {
+  try { return JSON.parse(localStorage.getItem('bioark_services_custom')||'[]'); } catch { return []; }
 };
 
+const applyOverrides = (s: ServiceDetailData, ov: Record<string, Partial<ServiceDetailData>>): ServiceDetailData => ({
+  ...s,
+  ...(ov[s.id]||{})
+});
+
 export const getAllServices = (): ServiceDetailData[] => {
-  return allServices;
+  const ov = readOverrides();
+  const baseApplied = allServices.map(s => applyOverrides(s, ov));
+  const custom = readCustom();
+  return [...baseApplied, ...custom];
+};
+
+export const getServiceBySlug = (slug: string): ServiceDetailData | undefined => {
+  const all = getAllServices();
+  return all.find(s => s.link === `/services/${slug}`);
 };

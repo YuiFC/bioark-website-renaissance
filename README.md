@@ -71,3 +71,21 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Stripe 支付开发指南
+
+本项目内置了一个最小后端用于创建 Stripe Checkout 会话：
+
+1) 复制 `.env.example` 为 `.env` 并设置：
+
+- `STRIPE_SECRET_KEY`：你的 Stripe Secret Key，只保存在服务器端
+- `VITE_API_BASE`：前端调用后端地址（默认 `http://localhost:4242`）
+
+2) 在本地分别启动：
+
+- 前端：`npm run dev`
+- 后端：`npm run dev:server`
+
+或在 PowerShell 下使用：`npm run dev:full` 同时启动两者。
+
+购物车 Checkout 按钮将调用后端 `/create-checkout-session` 接口并跳转到 Stripe 托管的收银台。

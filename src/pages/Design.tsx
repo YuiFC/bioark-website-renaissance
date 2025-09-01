@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { addQuote } from '@/lib/quotes';
 import { Check, ChevronLeft, ChevronRight, Dna, Package, Search, Tags, Workflow } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
@@ -134,8 +137,9 @@ export default function Design() {
   const canAddToCart = useMemo(() => step === 5 && canNext, [step, canNext]);
 
   // Pricing policy for Gene Design
-  const originalPrice = 39900; // cents
-  const limitedPrice = 19900; // cents
+  // Pricing hidden per request
+  const originalPrice = 0;
+  const limitedPrice = 0;
 
   const summary = useMemo(() => ({ category, funcType, delivery, ...structure, target: targetChoice === 'Search Target Gene' ? targetGene.trim().toUpperCase() : (targetChoice || '') }), [category, funcType, delivery, structure, targetChoice, targetGene]);
 
@@ -154,17 +158,34 @@ export default function Design() {
     return s.join(' | ');
   }, [structure, summary]);
 
-  const addToCart = () => {
-    const id = `design-${Date.now()}-${category || 'NA'}-${funcType || 'NA'}-${delivery || 'NA'}`;
-    addItem({
-      id,
-      name: productName,
-      price: limitedPrice,
-      imageUrl: '/images/products/Lego-Diagram-0.png',
-      variant: productVariant,
-      link: '/design',
-    }, 1);
-    toast({ title: 'Added to cart', description: `${productName} has been added to your cart.` });
+  // Quote dialog state
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [custName, setCustName] = useState('');
+  const [custEmail, setCustEmail] = useState('');
+
+  const submitDesignQuote = () => {
+    const [firstName, ...rest] = custName.trim().split(/\s+/);
+    const lastName = rest.join(' ');
+    const payload = {
+      firstName: firstName || '-',
+      lastName: lastName || '-',
+      email: custEmail.trim(),
+      phone: '',
+      company: 'Design Page',
+      department: '',
+      serviceType: 'Custom Design',
+      timeline: '',
+      budget: '',
+      projectDescription: `${productName} | ${productVariant}`,
+      additionalInfo: JSON.stringify({ summary }),
+      submittedByEmail: (JSON.parse(localStorage.getItem('bioark_auth_user')||'null')||{}).email || undefined,
+      submittedByAddress: (JSON.parse(localStorage.getItem('bioark_auth_user')||'null')||{}).address || undefined,
+    } as const;
+    addQuote(payload as any);
+    setQuoteOpen(false);
+    setCustName('');
+    setCustEmail('');
+    toast({ title: 'Quote submitted', description: 'We will contact you soon.' });
   };
 
   // Legend overlay config for on-image markers
@@ -280,16 +301,10 @@ export default function Design() {
 
                 {canAddToCart && (
                   <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
-                    <div className="text-sm sm:mr-auto min-w-0">
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-2xl font-bold text-primary">$ {(limitedPrice/100).toFixed(2)}</span>
-                        <span className="text-muted-foreground line-through">$ {(originalPrice/100).toFixed(2)}</span>
-                        <span className="text-xs text-accent font-semibold bg-accent/10 border border-accent/30 rounded px-1.5 py-0.5">Limited Time</span>
-                      </div>
-                    </div>
+                    {/* Price section removed per request */}
                     <div className="flex gap-2 w-full sm:w-auto">
-                      <Button onClick={addToCart} className="w-full sm:w-auto whitespace-nowrap">
-                        Add to Cart
+                      <Button onClick={() => setQuoteOpen(true)} className="w-full sm:w-auto whitespace-nowrap">
+                        Add to Quote
                       </Button>
                     </div>
                   </div>
@@ -407,8 +422,8 @@ export default function Design() {
                         Next <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     ) : canAddToCart ? (
-                      <Button onClick={addToCart}>
-                        Add to Cart
+                      <Button onClick={() => setQuoteOpen(true)}>
+                        Add to Quote
                       </Button>
                     ) : (
                       <Button disabled title="Complete all selections to proceed">
@@ -422,6 +437,29 @@ export default function Design() {
           </div>
         </section>
       </div>
+
+      {/* Quote Dialog */}
+      <Dialog open={quoteOpen} onOpenChange={setQuoteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Submit Quote</DialogTitle>
+            <DialogDescription>Fill in your contact so we can follow up with your design.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Customer name</div>
+              <Input value={custName} onChange={(e)=>setCustName(e.target.value)} placeholder="Your name" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Leave your email</div>
+              <Input type="email" value={custEmail} onChange={(e)=>setCustEmail(e.target.value)} placeholder="you@example.com" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={submitDesignQuote} disabled={!custEmail.trim() || !custName.trim()}>Submit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

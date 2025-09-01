@@ -115,46 +115,111 @@ const Navigation = () => {
           <div className="hidden lg:flex items-center space-x-2">
             <NavigationMenu>
               <NavigationMenuList>
-                {/* Products Dropdown */}
+                {/* Products Dropdown (two-pane: categories -> items) */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Products</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid grid-cols-2 gap-4 p-4 w-[560px] lg:w-[640px]">
-                      <div className="flex flex-col space-y-2">
-                        <h3 className="font-semibold text-foreground px-3">Featured Product (Reagent)</h3>
-                        <ul className="space-y-1">
-                          {featuredProducts.map((product) => (
-                            <ListItem key={product.id} title={displayTitle(product.name)} href={product.link}>
-                              {product.description}
-                            </ListItem>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="flex flex-col space-y-2">
-                        <h3 className="font-semibold text-foreground px-3">Gene Editing Product</h3>
-                        <ul className="space-y-1">
-                          {geneEditingProducts.map((product) => (
-                            <ListItem key={product.id} title={displayTitle(product.name)} href={product.link}>
-                              {product.description}
-                            </ListItem>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                    {
+                      // Build two-pane menu: left shows top-level categories, right shows hovered category items
+                    }
+                    {(() => {
+                      const categories = [
+                        'Reagents and Markers',
+                        'Genome Editing',
+                        'Vector Clones',
+                        'Stable Cell Lines',
+                        'Lentivirus',
+                      ] as const;
+            const items: Record<string, {title:string; href:string}[]> = {
+                        'Reagents and Markers': [
+                          { title: 'GN8K DNA Marker', href: '/products/gn8k-dna-marker' },
+                          { title: 'GN10K DNA Marker', href: '/products/gn10k-dna-marker' },
+                          { title: 'GN15K DNA Marker', href: '/products/gn15k-dna-marker' },
+              { title: 'BioArkLipo© In Vitro Transfection Kit (Ver.II)', href: '/products/bioarklipo-in-vitro-transfection-kit' },
+                          { title: 'BAJet® In Vitro DNA Transfection Reagent', href: '/products/bajet-transfection-reagent' },
+                          { title: 'BAPoly® In Vitro DNA Transfection Reagent', href: '/products/bapoly-transfection-reagent' },
+                          { title: 'Prestained Protein Marker IV', href: '/products/prestained-protein-marker-iv' },
+              { title: 'Western Protein MarkerI(Exposure)', href: '/products/western-protein-marker-i' },
+              { title: '2 x SYBR Green qPCR Master Mix', href: '/products/sybr-green-qpcr-mix' },
+              { title: '2 x Fast SYBR Green qPCR Master Mix', href: '/products/fast-sybr-green-qpcr-mix' },
+                        ],
+                        'Genome Editing': [
+                          { title: 'Overexpression Targeted Knock-In', href: '/products/overexpression-targeted-knock-in' },
+                          { title: 'Gene Knock-In Tagging', href: '/products/gene-knock-in' },
+              { title: 'Gene Knock-Out Kit', href: '/products/gene-knock-out' },
+              { title: 'Genome Deletion', href: '/products/gene-deletion' },
+                          { title: 'CRISPR RNA Knock-down', href: '/products/crispr-knock-down' },
+                        ],
+                        'Vector Clones': [
+                          { title: 'cDNA Vector Stock', href: '/products/cdna-vector-stock' },
+                          { title: 'Functional Vectors Kits Template', href: '/products/functional-vectors-kits-template' },
+                        ],
+                        'Stable Cell Lines': [
+                          { title: 'Stable Cell Line Stock', href: '/products/stable-cell-line-stock' },
+                        ],
+                        'Lentivirus': [
+                          { title: 'cDNA Lentivirus Stock', href: '/products/cdna-lentivirus-stock' },
+                          { title: 'Lentivirus Control Stock', href: '/products/lentivirus-control-stock' },
+                        ],
+                      };
+                      const [activeCat, setActiveCat] = React.useState<typeof categories[number]>('Reagents and Markers');
+                      return (
+                        <div className="grid grid-cols-[240px_minmax(400px,1fr)] gap-6 p-4 w-[860px] lg:w-[980px]">
+                          {/* Left: top-level categories */}
+                          <ul className="space-y-1 pr-2 border-r">
+                            {categories.map((c) => (
+                              <li key={c}>
+                                <button
+                                  type="button"
+                                  onMouseEnter={() => setActiveCat(c)}
+                                  onFocus={() => setActiveCat(c)}
+                                  className={cn(
+                                    'w-full text-left px-3 py-2 rounded-md text-sm transition-colors',
+                                    activeCat === c ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
+                                  )}
+                                >
+                                  {c}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+
+                          {/* Right: items of active category */}
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 pr-1">
+                            {items[activeCat].map((it) => (
+                              <ListItem
+                                key={it.href}
+                                title={it.title}
+                                href={it.href}
+                                className="space-y-0 p-1.5 lg:p-2 rounded-sm"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* Services Dropdown */}
+                {/* Services Dropdown (append Genome Editing Services; homepage services remain unchanged) */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[360px] gap-3 p-4 md:w-[440px] md:grid-cols-2 lg:w-[520px]">
-                      {customerSolutions.map((solution) => (
-                        <ListItem key={solution.id} title={solution.name} href={solution.link}>
-                          {solution.description}
-                        </ListItem>
-                      ))}
-                    </ul>
+                    {(() => {
+                      const navServices = [
+                        ...customerSolutions,
+                        { id: 'svc-02', name: 'Genome Editing Services', description: 'CRISPR overexpression, knockout, RNA knockdown, and ready-to-use kits.', link: '/services/genome-editing' },
+                      ];
+                      return (
+                        <ul className="grid w-[360px] gap-3 p-4 md:w-[440px] md:grid-cols-2 lg:w-[520px]">
+                          {navServices.map((s) => (
+                            <ListItem key={s.id} title={s.name} href={s.link}>
+                              {s.description}
+                            </ListItem>
+                          ))}
+                        </ul>
+                      );
+                    })()}
                   </NavigationMenuContent>
                 </NavigationMenuItem>
               </NavigationMenuList>
@@ -162,10 +227,11 @@ const Navigation = () => {
 
             {/* Other Links */}
             {/* Primary links: remove Contact; add text Design (external) */}
+            {/* Place Design immediately after Services */}
+            <Link to="/design" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/design') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Design</Link>
             <Link to="/blog" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/blog') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Blog</Link>
             <Link to="/investors" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/investors') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Investors</Link>
             <Link to="/why-bioark" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/why-bioark') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Why BioArk</Link>
-            <Link to="/design" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${isActivePath('/design') ? 'text-primary font-semibold' : 'text-inherit opacity-80 hover:text-primary hover:opacity-100'}`}>Design</Link>
 
             <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border">
               <Button asChild size="sm">
@@ -263,6 +329,7 @@ const Navigation = () => {
               {/* Mobile primary links */}
               <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/products') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Products</Link>
               <Link to="/services" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/services') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Services</Link>
+              <Link to="/design" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/design') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Design</Link>
               <Link to="/blog" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/blog') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Blog</Link>
               <Link to="/investors" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/investors') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Investors</Link>
               <Link to="/why-bioark" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/why-bioark') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Why BioArk</Link>

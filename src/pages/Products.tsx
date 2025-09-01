@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 
 const Products = () => {
+  // Group 1: Buyable products (Reagents and Markers)
   const productCategories = [
     {
       title: 'Reagents and Markers',
@@ -23,15 +24,19 @@ const Products = () => {
       ],
       gradient: 'from-primary to-accent'
     },
+  ];
+
+  // Group 2: Quote-only products (all other categories)
+  const quoteCategories = [
     {
       title: 'Genome Editing',
       description: 'Advanced tools for precise genome modifications',
       products: [
-        { name: 'Targeted Knock-In', image: '/lovable-uploads/8c7d4805-5b8f-4763-82c0-91849873a9eb.png', slug: 'targeted-knock-in' },
-        { name: 'Knock-In Tagging', image: '/lovable-uploads/e9da7cfe-7c51-47c2-b80c-b2809f5b8989.png', slug: 'knock-in-tagging' },
+        { name: 'Overexpression Targeted Knock-In', image: '/images/products/Product-1-1-Overexpression-Targeted-Knock-In.png', slug: 'overexpression-targeted-knock-in' },
+  { name: 'Gene Knock-In & Tagging', image: '/images/products/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg', slug: 'gene-knock-in' },
         { name: 'Gene Knock-Out', image: '/lovable-uploads/bab02e81-0734-4a22-a693-1069fa5149d2.png', slug: 'gene-knock-out' },
         { name: 'Gene Deletion', image: '/lovable-uploads/cbfce02c-3f73-4f89-8b47-9f6789acf41c.png', slug: 'gene-deletion' },
-        { name: 'RNA Knock-Down', image: '/lovable-uploads/315b539a-0bec-4f7d-819e-39f0f93464e4.png', slug: 'rna-knock-down' }
+  { name: 'CRISPRi & RNAi Knock-Down', image: '/images/products/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png', slug: 'crispr-knock-down' }
       ],
       gradient: 'from-accent to-secondary'
     },
@@ -77,9 +82,10 @@ const Products = () => {
           </div>
         </section>
 
-        {/* Products Grid */}
+        {/* Buyable Products Grid */}
         <section className="py-16 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold mb-6">Available for Purchase</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {productCategories.map((category, index) => (
                 <Card key={index} className="bioark-card group hover:shadow-lg transition-all duration-300">
@@ -88,11 +94,7 @@ const Products = () => {
                       <div className={`w-12 h-12 rounded-lg bioark-${['primary', 'secondary', 'accent', 'primary', 'secondary'][index % 5]}-gradient mb-4 flex items-center justify-center shadow-lg`}>
                         <div className="w-6 h-6 bg-white/30 rounded-full animate-pulse-glow" />
                       </div>
-                      {category.comingSoon && (
-                        <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                          Coming Soon
-                        </Badge>
-                      )}
+                      {/* Coming Soon badge removed for simplified grouping */}
                     </div>
                     <CardTitle className="text-xl text-foreground group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-secondary group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                       {category.title}
@@ -126,7 +128,63 @@ const Products = () => {
                               {product.name}
                             </Link>
                           ) : (
-                            <span className={`text-sm ${category.comingSoon ? 'text-muted-foreground italic' : 'text-foreground'}`}>
+                            <span className="text-sm text-foreground">{product.name}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Quote-only Products Grid */}
+        <section className="py-16 bg-background border-t">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold mb-6">Request a Quote</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {quoteCategories.map((category, index) => (
+                <Card key={index} className="bioark-card group hover:shadow-lg transition-all duration-300">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className={`w-12 h-12 rounded-lg bioark-${['primary', 'secondary', 'accent', 'primary', 'secondary'][index % 5]}-gradient mb-4 flex items-center justify-center shadow-lg`}>
+                        <div className="w-6 h-6 bg-white/30 rounded-full animate-pulse-glow" />
+                      </div>
+                    </div>
+                    <CardTitle className="text-xl text-foreground group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-secondary group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                      {category.title}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      {category.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {category.products.slice(0, 4).map((product, productIndex) => (
+                        <div key={productIndex} className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-xl overflow-hidden flex items-center justify-center hover:shadow-lg transition-all duration-300">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <ul className="space-y-3">
+                      {category.products.map((product, productIndex) => (
+                        <li key={productIndex} className="flex items-start">
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 mt-2 flex-shrink-0 animate-pulse-glow" />
+                          {product.slug ? (
+                            <Link 
+                              to={`/products/${product.slug}`}
+                              className={`text-sm text-foreground hover:text-primary hover:underline transition-colors cursor-pointer font-medium`}
+                            >
+                              {product.name}
+                            </Link>
+                          ) : (
+                            <span className={`text-sm ${'text-foreground'}`}>
                               {product.name}
                             </span>
                           )}

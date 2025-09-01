@@ -14,8 +14,93 @@ export interface ProductDetailData extends ShowcaseItem {
   storeLink?: string;
 }
 
+// Extra on-the-shelf products accessible via menu only (not shown on homepage)
+const extraProducts: ProductDetailData[] = [
+  {
+    id: 'vc-01',
+    name: 'cDNA Vector Stock',
+    description: 'Ready-to-use cDNA vector stocks for cloning and expression workflows.',
+    imageUrl: '/placeholder.svg',
+    link: '/products/cdna-vector-stock',
+    catalogNumber: 'VC-001',
+    availability: 'In Stock',
+    listPrice: 'Contact for Quote',
+    options: [],
+    keyFeatures: ['High-quality backbone', 'Multiple cloning sites', 'Sequence-verified'],
+    storageStability: 'Store at -20°C. See manual for details.',
+    performanceData: 'Validated for standard cloning workflows.',
+    manuals: ['Vector Handbook (PDF)'],
+    manualUrls: [],
+  },
+  {
+    id: 'vc-02',
+    name: 'Functional Vectors Kits Template',
+    description: 'Templates for building functional vector kits with modular components.',
+    imageUrl: '/placeholder.svg',
+    link: '/products/functional-vectors-kits-template',
+    catalogNumber: 'VC-002',
+    availability: 'In Stock',
+    listPrice: 'Contact for Quote',
+    options: [],
+    keyFeatures: ['Modular design', 'Customizable elements', 'Comprehensive documentation'],
+    storageStability: 'Store at -20°C. See manual for details.',
+    performanceData: 'Suitable for rapid kit assembly and iteration.',
+    manuals: ['Template Guide (PDF)'],
+    manualUrls: [],
+  },
+  {
+    id: 'sc-01',
+    name: 'Stable Cell Line Stock',
+    description: 'Ready-to-use stable cell line stocks for research applications.',
+    imageUrl: '/placeholder.svg',
+    link: '/products/stable-cell-line-stock',
+    catalogNumber: 'SC-001',
+    availability: 'In Stock',
+    listPrice: 'Contact for Quote',
+    options: [],
+    keyFeatures: ['Authenticated', 'Mycoplasma-tested', 'Application-ready'],
+    storageStability: 'Store in liquid nitrogen or as specified.',
+    performanceData: 'QC documentation available upon request.',
+    manuals: ['Cell Line Handling Guide (PDF)'],
+    manualUrls: [],
+  },
+  {
+    id: 'lv-01',
+    name: 'cDNA Lentivirus Stock',
+    description: 'cDNA-expressing lentiviral stocks for gene delivery.',
+    imageUrl: '/placeholder.svg',
+    link: '/products/cdna-lentivirus-stock',
+    catalogNumber: 'LV-001',
+    availability: 'In Stock',
+    listPrice: 'Contact for Quote',
+    options: [],
+    keyFeatures: ['High titer', 'Sterile filtered', 'QC validated'],
+    storageStability: 'Store at -80°C. Avoid repeated freeze-thaw cycles.',
+    performanceData: 'Infectivity verified in standard cell lines.',
+    manuals: ['Lentivirus User Guide (PDF)'],
+    manualUrls: [],
+  },
+  {
+    id: 'lv-02',
+    name: 'Lentivirus Control Stock',
+    description: 'Control lentiviral stocks for assay validation and benchmarking.',
+    imageUrl: '/placeholder.svg',
+    link: '/products/lentivirus-control-stock',
+    catalogNumber: 'LV-002',
+    availability: 'In Stock',
+    listPrice: 'Contact for Quote',
+    options: [],
+    keyFeatures: ['Positive/negative controls', 'Consistent titers', 'Ready-to-use'],
+    storageStability: 'Store at -80°C. Avoid repeated freeze-thaw cycles.',
+    performanceData: 'Validated for use across common cell lines.',
+    manuals: ['Control Stock Guide (PDF)'],
+    manualUrls: [],
+  },
+];
+
 // Combine all products and add detailed mock data
 const allProducts: ProductDetailData[] = [
+  ...extraProducts,
   ...featuredProducts.map((p, i) => ({
     ...p,
     catalogNumber: `FP-00${i + 1}`,
@@ -129,6 +214,11 @@ Zhuang, H., et al. Trimethylamine-N-oxide sensitizes chondrocytes to mechanical 
   }
   return p;
 });
+
+// Expose a readonly list of all catalog products for admin/management UIs
+export const listAllProducts = (): ProductDetailData[] => {
+  return allProducts.slice();
+};
 
 function readLS<T>(key: string, fallback: T): T {
   try {

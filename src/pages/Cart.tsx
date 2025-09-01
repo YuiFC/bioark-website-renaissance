@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
+import { createCheckoutSession } from '@/lib/checkout';
+import { useToast } from '@/hooks/use-toast';
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -9,6 +11,39 @@ function formatCents(cents: number) {
 
 const CartPage = () => {
   const { items, subtotal, updateQty, removeItem, clear } = useCart();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const searchParams = new URLSearchParams(window.location.search);
+  const success = searchParams.get('success');
+  const canceled = searchParams.get('canceled');
+
+  const payableItems = useMemo(() => items.filter(i => i.price > 0), [items]);
+
+  // Clear cart after successful payment
+  React.useEffect(() => {
+    if (success) {
+      clear();
+    }
+  }, [success, clear]);
+
+  const onCheckout = async () => {
+    try {
+      setLoading(true);
+  const payload = payableItems.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity, imageUrl: i.imageUrl, variant: i.variant }));
+      if (!payload.length) {
+  toast({ title: '无法结算', description: '购物车中没有可支付的商品（报价类不支持在线支付）。', variant: 'destructive' });
+        return;
+      }
+  const { url } = await createCheckoutSession(payload, { successUrl: `${window.location.origin}/cart?success=1`, cancelUrl: `${window.location.origin}/cart?canceled=1` });
+      window.location.href = url;
+    } catch (e: any) {
+  console.error('Checkout error', e);
+  const msg = typeof e?.message === 'string' ? e.message : '请稍后重试。';
+  toast({ title: '创建支付会话失败', description: msg, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Layout>
       <div className="min-h-screen bg-[#F8F8F8]">
@@ -16,6 +51,12 @@ const CartPage = () => {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold text-neutral-800 mb-6">Shopping Cart</h1>
 
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-3 mb-4">支付成功，感谢您的购买！</div>
+            )}
+            {canceled && (
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl p-3 mb-4">您已取消支付。</div>
+            )}
             {!items.length ? (
               <div className="bg-white rounded-xl shadow-sm p-8 text-center text-neutral-500">
                 Your cart is empty.
@@ -50,7 +91,9 @@ const CartPage = () => {
                       <span>Subtotal</span>
                       <span className="font-semibold">{formatCents(subtotal)}</span>
                     </div>
-                      <Button className="w-full mt-4 rounded-full bg-blue-700 hover:bg-blue-700/90 text-white">Checkout</Button>
+                      <Button disabled={loading || payableItems.length === 0} onClick={onCheckout} className="w-full mt-4 rounded-full bg-blue-700 hover:bg-blue-700/90 text-white">
+                        {loading ? 'Processing…' : 'Checkout'}
+                      </Button>
                       <div className="mt-4 flex items-center justify-center gap-3 text-neutral-500">
                         <span className="text-xs">Powered by</span>
                         <img src="https://storage.googleapis.com/stripe-sample-images/logo-stripe.png" alt="Stripe" className="h-5" />
