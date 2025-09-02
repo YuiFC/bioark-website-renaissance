@@ -1357,6 +1357,7 @@ function BlogPanel() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search blogs..." value={q} onChange={e=>setQ(e.target.value)} />
+  <Button variant="outline" onClick={async()=>{ try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts }) }); alert('Synced to src/data/blog.ts'); } catch (e:any){ alert('Sync failed: ' + (e?.message||'unknown')); } }}>Sync to Source</Button>
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button>Add</Button>

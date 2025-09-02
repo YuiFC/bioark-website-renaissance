@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const Stripe = require('stripe');
 
 const app = express();
+const MODE = process.env.MODE || 'all'; // 'stripe' | 'content' | 'all'
 // Increase JSON body limit to allow base64 image uploads
 app.use(express.json({ limit: '20mb' }));
 
@@ -18,6 +19,8 @@ app.use(cors({ origin: true, credentials: false }));
 
 // Serve static frontend (so you can open http://localhost:4242/auth.html)
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
+const ROOT_DIR = path.resolve(__dirname, '..');
+const SRC_BLOG_TS = path.join(ROOT_DIR, 'src', 'data', 'blog.ts');
 if (fs.existsSync(PUBLIC_DIR)) {
   app.use(express.static(PUBLIC_DIR));
 }
@@ -98,83 +101,86 @@ function newToken() {
   return crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
 }
 
-// Seed default admin if missing
-(function seedAdmin() {
-  const users = readUsers();
-  const hasAdmin = users.some(u => u.role === 'Admin');
-  if (!hasAdmin) {
-    users.push({ email: 'admin@bioark.com', name: 'BioArk Admin', password: hashPassword('Admin123!'), role: 'Admin' });
-    writeUsers(users);
-  }
-})();
+// ===== Content APIs (only when not in 'stripe' mode) =====
+if (MODE !== 'stripe') {
+  // Products config APIs
+  app.get('/api/products-config', (_req,res)=>{
+    return res.json(readProductsCfg());
+  });
+  app.put('/api/products-config', (req,res)=>{
+    const { version, products, overrides, details, hidden } = req.body || {};
+    const data = {
+      version: typeof version === 'number' ? version : 1,
+      products: Array.isArray(products) ? products : [],
+      overrides: overrides && typeof overrides === 'object' ? overrides : {},
+      details: details && typeof details === 'object' ? details : {},
+      hidden: Array.isArray(hidden) ? hidden : [],
+    };
+    writeProductsCfg(data);
+    return res.json({ ok: true });
+  });
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
-if (!stripeSecret) {
-  console.warn('[Stripe] STRIPE_SECRET_KEY is not set. Set it in your .env file.');
+  // Blog APIs
+  app.get('/api/blog', (_req,res)=>{
+    return res.json(readBlog());
+  });
+  app.put('/api/blog', (req,res)=>{
+    const { version, posts, hidden, overrides } = req.body || {};
+    const data = {
+      version: typeof version === 'string' ? version : 'v1',
+      posts: Array.isArray(posts) ? posts : [],
+      hidden: Array.isArray(hidden) ? hidden : [],
+      overrides: overrides && typeof overrides === 'object' ? overrides : {}
+    };
+    writeBlog(data);
+    return res.json({ ok: true });
+  });
+
+  // Blog media
+  app.get('/api/blog-media', (_req,res)=>{
+    return res.json(readBlogMedia());
+  });
+  app.put('/api/blog-media', (req,res)=>{
+    const { media } = req.body || {};
+    const data = { media: media && typeof media === 'object' ? media : {} };
+    writeBlogMedia(data);
+    return res.json({ ok: true });
+  });
+
+  // Services config APIs
+  app.get('/api/services-config', (_req,res)=>{
+    return res.json(readServicesCfg());
+  });
+  app.put('/api/services-config', (req,res)=>{
+    const { overrides, custom, media } = req.body || {};
+    const data = {
+      overrides: overrides && typeof overrides === 'object' ? overrides : {},
+      custom: Array.isArray(custom) ? custom : [],
+      media: media && typeof media === 'object' ? media : {}
+    };
+    writeServicesCfg(data);
+    return res.json({ ok: true });
+  });
+
+  // SMTP config APIs
+  app.get('/api/smtp-config', (_req,res)=>{
+    return res.json(readSmtpCfg());
+  });
+  app.put('/api/smtp-config', (req,res)=>{
+    const { host, port, secure, user, pass, fromEmail, toEmails } = req.body || {};
+    const cfg = {
+      host: typeof host === 'string' ? host : '',
+      port: Number.isFinite(Number(port)) ? Number(port) : 465,
+      secure: !!secure,
+      user: typeof user === 'string' ? user : '',
+      pass: typeof pass === 'string' ? pass : '',
+      fromEmail: typeof fromEmail === 'string' ? fromEmail : '',
+      toEmails: typeof toEmails === 'string' ? toEmails : ''
+    };
+    writeSmtpCfg(cfg);
+    return res.json({ ok: true });
+  });
 }
-const stripe = stripeSecret ? new Stripe(stripeSecret) : null;
-
-app.get('/health', (_req, res) => {
-  res.json({ ok: true });
-});
-
-// Simple API ping
-app.get('/api/ping', (_req, res) => {
-  res.json({ ok: true, time: Date.now() });
-});
-
-// ===== Simple image upload (base64 data URL) =====
-// body: { dataUrl: 'data:image/png;base64,....' } -> { path: '/lovable-uploads/<file>' }
-// Expose uploads statically
-app.use('/uploads', express.static(UPLOADS_DIR));
-
-app.post('/api/upload-image', (req, res) => {
-  try {
-    const { dataUrl } = req.body || {};
-    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
-      return res.status(400).json({ error: 'Invalid dataUrl' });
-    }
-    const m = dataUrl.match(/^data:(.+);base64,(.*)$/);
-    if (!m) return res.status(400).json({ error: 'Invalid dataUrl format' });
-    const mime = m[1];
-    const b64 = m[2];
-    const buf = Buffer.from(b64, 'base64');
-    const ext = (() => {
-      if (mime.includes('png')) return '.png';
-      if (mime.includes('jpeg') || mime.includes('jpg')) return '.jpg';
-      if (mime.includes('webp')) return '.webp';
-      if (mime.includes('svg')) return '.svg';
-      return '.bin';
-    })();
-    const name = `${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`;
-    const abs = path.join(UPLOADS_DIR, name);
-    fs.writeFileSync(abs, buf);
-    const rel = `/uploads/${name}`;
-    return res.json({ path: rel });
-  } catch (err) {
-    console.error('Upload failed', err);
-    return res.status(500).json({ error: 'Upload failed' });
-  }
-});
-
-// ===== Products config APIs =====
-app.get('/api/products-config', (_req,res)=>{
-  return res.json(readProductsCfg());
-});
-app.put('/api/products-config', (req,res)=>{
-  const { version, products, overrides, details, hidden } = req.body || {};
-  const data = {
-    version: typeof version === 'number' ? version : 1,
-    products: Array.isArray(products) ? products : [],
-    overrides: overrides && typeof overrides === 'object' ? overrides : {},
-    details: details && typeof details === 'object' ? details : {},
-    hidden: Array.isArray(hidden) ? hidden : [],
-  };
-  writeProductsCfg(data);
-  return res.json({ ok: true });
-});
-
-// ===== Blog APIs =====
 app.get('/api/blog', (_req,res)=>{
   return res.json(readBlog());
 });
@@ -188,6 +194,24 @@ app.put('/api/blog', (req,res)=>{
   };
   writeBlog(data);
   return res.json({ ok: true });
+});
+
+// Write current posts into src/data/blog.ts (TypeScript source)
+// body: { posts: BlogPost[] }
+app.post('/api/blog-sync-source', (req,res)=>{
+  try {
+    const { posts } = req.body || {};
+    if (!Array.isArray(posts)) return res.status(400).json({ error: 'posts must be an array' });
+    // Build TypeScript file content
+    const header = `export interface BlogPost {\n  id: number;\n  slug: string;\n  title: string;\n  excerpt: string;\n  content: string;\n  author: string;\n  date: string;\n  category?: string;\n  coverImage?: string;\n  readTime?: number;\n  views?: number;\n  tags?: string[];\n}\n\n`;
+    const body = `export const mockBlogPosts: BlogPost[] = ${JSON.stringify(posts, null, 2)};\n`;
+    const code = header + body;
+    fs.writeFileSync(SRC_BLOG_TS, code, 'utf-8');
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Failed to sync blog.ts', err);
+    return res.status(500).json({ error: 'Failed to write src/data/blog.ts' });
+  }
 });
 
 // Blog media
@@ -334,9 +358,9 @@ app.get('/api/me', (req, res) => {
   return res.json({ user: session });
 });
 
-// POST /create-checkout-session
+// POST /create-checkout-session (only when not in 'content' mode)
 // body: { items: [{ name, price, quantity, imageUrl }], successUrl?, cancelUrl? }
-app.post('/create-checkout-session', async (req, res) => {
+if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe not configured on server' });
@@ -406,5 +430,5 @@ app.post('/create-checkout-session', async (req, res) => {
 
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => {
-  console.log(`Stripe server listening on http://localhost:${PORT}`);
+  console.log(`[${MODE.toUpperCase()}] server listening on http://localhost:${PORT}`);
 });

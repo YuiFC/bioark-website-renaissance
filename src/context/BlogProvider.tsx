@@ -94,7 +94,9 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         // Always cache locally so refresh retains changes even if server is down
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
         // Best-effort push to server
-        try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  // Also best-effort write to source file for persistence in repo
+  try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
       return next;
     });
@@ -120,6 +122,8 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
         // Best-effort push
         try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  // Also best-effort write to source file
+  try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
       return next;
     });
@@ -146,6 +150,8 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
         // Best-effort push
         try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  // Also best-effort write to source file
+  try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
       return next;
     });
