@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "firstName": "test",
+    "lastName": "-",
+    "email": "test@test.com",
+    "phone": "",
+    "company": "Design Page",
+    "department": "",
+    "serviceType": "Custom Design",
+    "timeline": "",
+    "budget": "",
+    "projectDescription": "CRISPR-Cas9 • CRISPR RNA Knockdown • Standard | Promoter:EF1a | Tag:None | Fluo:RFP | Select:Puro | Target:TP53 [Homo Sapies]",
+    "additionalInfo": "{\"summary\":{\"category\":\"CRISPR-Cas9\",\"funcType\":\"CRISPR RNA Knockdown\",\"delivery\":\"Standard\",\"promoter\":\"EF1a\",\"proteinTag\":\"None\",\"fluorescence\":\"RFP\",\"selection\":\"Puro\",\"target\":\"TP53 [Homo Sapies]\"}}",
+    "id": "q_1756811868289",
+    "createdAt": "2025-09-02T11:17:48.289Z",
+    "read": true
+  }
+]

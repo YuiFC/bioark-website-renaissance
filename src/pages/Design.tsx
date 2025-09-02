@@ -120,7 +120,9 @@ export default function Design() {
   const [delivery, setDelivery] = useState<DeliveryType | undefined>();
   const [structure, setStructure] = useState<StructureSelections>({});
   const [targetChoice, setTargetChoice] = useState<TargetChoice | undefined>();
-  const [targetGene, setTargetGene] = useState('');
+  const [geneName, setGeneName] = useState('');
+  const [geneSpecies, setGeneSpecies] = useState('');
+  const [geneSubmitted, setGeneSubmitted] = useState(false);
 
   const canNext = useMemo(() => {
     if (step === 1) return !!category;
@@ -128,11 +130,11 @@ export default function Design() {
     if (step === 3) return !!delivery;
   if (step === 4) return !!structure.promoter && !!structure.selection; // Required example: promoter and selection marker
     if (step === 5) {
-      if (targetChoice === 'Search Target Gene') return targetGene.trim().length > 0;
+      if (targetChoice === 'Search Target Gene') return geneSubmitted; // only after user submits
       return !!targetChoice;
     }
     return false;
-  }, [step, category, funcType, delivery, structure, targetChoice, targetGene]);
+  }, [step, category, funcType, delivery, structure, targetChoice, geneSubmitted]);
 
   const canAddToCart = useMemo(() => step === 5 && canNext, [step, canNext]);
 
@@ -141,7 +143,17 @@ export default function Design() {
   const originalPrice = 0;
   const limitedPrice = 0;
 
-  const summary = useMemo(() => ({ category, funcType, delivery, ...structure, target: targetChoice === 'Search Target Gene' ? targetGene.trim().toUpperCase() : (targetChoice || '') }), [category, funcType, delivery, structure, targetChoice, targetGene]);
+  const summary = useMemo(() => {
+    let target = '';
+    if (targetChoice === 'Search Target Gene') {
+      if (geneSubmitted && geneName.trim() && geneSpecies.trim()) {
+        target = `${geneName.trim()} [${geneSpecies.trim()}]`;
+      }
+    } else {
+      target = targetChoice || '';
+    }
+    return { category, funcType, delivery, ...structure, target } as const;
+  }, [category, funcType, delivery, structure, targetChoice, geneName, geneSpecies, geneSubmitted]);
 
   const productName = useMemo(() => {
     const parts = [category, funcType, delivery].filter(Boolean).join(' • ');
@@ -191,10 +203,10 @@ export default function Design() {
   // Legend overlay removed per request
 
   const resetAfter = (toStep: number) => {
-    if (toStep <= 1) { setFuncType(undefined); setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setTargetGene(''); }
-    else if (toStep <= 2) { setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setTargetGene(''); }
-    else if (toStep <= 3) { setStructure({}); setTargetChoice(undefined); setTargetGene(''); }
-    else if (toStep <= 4) { setTargetChoice(undefined); setTargetGene(''); }
+  if (toStep <= 1) { setFuncType(undefined); setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
+  else if (toStep <= 2) { setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
+  else if (toStep <= 3) { setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
+  else if (toStep <= 4) { setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
     setStep(toStep);
   };
 
@@ -323,7 +335,7 @@ export default function Design() {
                   {step === 2 && 'Step 2 · Select function type'}
                   {step === 3 && 'Step 3 · Select delivery type'}
                   {step === 4 && 'Step 4 · Select structure map'}
-                  {step === 5 && 'Step 5 · Select target gene'}
+                  {step === 5 && 'Step 5 · Provide target gene info'}
                 </CardTitle>
               </CardHeader>
               <CardContent key={step} className="animate-in fade-in-50 slide-in-from-bottom-2">
@@ -392,19 +404,45 @@ export default function Design() {
                   <div className="space-y-6">
                     <div className="flex flex-wrap gap-2">
                       {TARGET_CHOICES.map((t) => (
-                        <OptionButton key={t} label={t} selected={targetChoice === t} onClick={() => setTargetChoice(t)} icon={t === 'Search Target Gene' ? Search : undefined} />
+                        <OptionButton key={t} label={t} selected={targetChoice === t} onClick={() => { setTargetChoice(t); if (t !== 'Search Target Gene') { setGeneSubmitted(true); } }} icon={t === 'Search Target Gene' ? Search : undefined} />
                       ))}
                     </div>
                     {targetChoice === 'Search Target Gene' && (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Enter Gene Symbol (e.g., TP53)"
-                          className="flex-1 rounded-xl border px-3 py-2 bg-background"
-                          value={targetGene}
-                          onChange={(e) => setTargetGene(e.target.value)}
-                        />
-                        <Button onClick={() => setTargetGene((v) => v.trim())}>Search</Button>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <div className="text-sm text-muted-foreground mb-1">Gene Name</div>
+                            <Input
+                              placeholder="e.g., TP53"
+                              value={geneName}
+                              onChange={(e) => { setGeneName(e.target.value); setGeneSubmitted(false); }}
+                            />
+                          </div>
+                          <div>
+                            <div className="text-sm text-muted-foreground mb-1">Gene Species</div>
+                            <Input
+                              placeholder="e.g., Homo sapiens"
+                              value={geneSpecies}
+                              onChange={(e) => { setGeneSpecies(e.target.value); setGeneSubmitted(false); }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-1">
+                          <Button
+                            onClick={() => {
+                              const name = geneName.trim();
+                              const sp = geneSpecies.trim();
+                              if (!name || !sp) {
+                                toast({ title: 'Please complete gene info', description: 'Enter both Gene Name and Gene Species.' });
+                                setGeneSubmitted(false);
+                                return;
+                              }
+                              setGeneSubmitted(true);
+                            }}
+                          >
+                            Submit
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
