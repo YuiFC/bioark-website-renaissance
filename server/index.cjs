@@ -27,9 +27,11 @@ const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const BLOG_FILE = path.join(DATA_DIR, 'blog.json');
+const BLOG_MEDIA_FILE = path.join(DATA_DIR, 'blog-media.json');
 const SERVICES_FILE = path.join(DATA_DIR, 'services.json');
 const QUOTES_FILE = path.join(DATA_DIR, 'quotes.json');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const SMTP_FILE = path.join(DATA_DIR, 'smtp.json');
 // Uploads directory under data (runtime-writable)
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 
@@ -38,9 +40,11 @@ function ensureDataFiles() {
   if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '[]', 'utf-8');
   if (!fs.existsSync(SESSIONS_FILE)) fs.writeFileSync(SESSIONS_FILE, '{}', 'utf-8');
   if (!fs.existsSync(BLOG_FILE)) fs.writeFileSync(BLOG_FILE, JSON.stringify({ version: 'v1', posts: [], hidden: [], overrides: {} }, null, 2), 'utf-8');
+  if (!fs.existsSync(BLOG_MEDIA_FILE)) fs.writeFileSync(BLOG_MEDIA_FILE, JSON.stringify({ media: {} }, null, 2), 'utf-8');
   if (!fs.existsSync(SERVICES_FILE)) fs.writeFileSync(SERVICES_FILE, JSON.stringify({ overrides: {}, custom: [], media: {} }, null, 2), 'utf-8');
   if (!fs.existsSync(QUOTES_FILE)) fs.writeFileSync(QUOTES_FILE, '[]', 'utf-8');
   if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, JSON.stringify({ version: 1, products: [], overrides: {}, details: {}, hidden: [] }, null, 2), 'utf-8');
+  if (!fs.existsSync(SMTP_FILE)) fs.writeFileSync(SMTP_FILE, JSON.stringify({ host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'' }, null, 2), 'utf-8');
   if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 ensureDataFiles();
@@ -63,6 +67,10 @@ function readBlog(){ try { return JSON.parse(fs.readFileSync(BLOG_FILE,'utf-8'))
 }
 function writeBlog(data){ fs.writeFileSync(BLOG_FILE, JSON.stringify(data, null, 2), 'utf-8'); }
 
+// Blog media store
+function readBlogMedia(){ try { return JSON.parse(fs.readFileSync(BLOG_MEDIA_FILE,'utf-8')); } catch { return { media:{} }; } }
+function writeBlogMedia(data){ fs.writeFileSync(BLOG_MEDIA_FILE, JSON.stringify(data, null, 2), 'utf-8'); }
+
 // Services store
 function readServicesCfg(){ try { return JSON.parse(fs.readFileSync(SERVICES_FILE,'utf-8')); } catch { return { overrides:{}, custom:[], media:{} }; }
 }
@@ -78,6 +86,10 @@ function readProductsCfg(){
   catch { return { version: 1, products: [], overrides: {}, details: {}, hidden: [] }; }
 }
 function writeProductsCfg(cfg){ fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
+
+// SMTP config store
+function readSmtpCfg(){ try { return JSON.parse(fs.readFileSync(SMTP_FILE,'utf-8')); } catch { return { host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'' }; } }
+function writeSmtpCfg(cfg){ fs.writeFileSync(SMTP_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
 
 function hashPassword(pw) {
   return crypto.createHash('sha256').update(String(pw)).digest('hex');
@@ -178,6 +190,17 @@ app.put('/api/blog', (req,res)=>{
   return res.json({ ok: true });
 });
 
+// Blog media
+app.get('/api/blog-media', (_req,res)=>{
+  return res.json(readBlogMedia());
+});
+app.put('/api/blog-media', (req,res)=>{
+  const { media } = req.body || {};
+  const data = { media: media && typeof media === 'object' ? media : {} };
+  writeBlogMedia(data);
+  return res.json({ ok: true });
+});
+
 // ===== Services config APIs =====
 app.get('/api/services-config', (_req,res)=>{
   return res.json(readServicesCfg());
@@ -190,6 +213,25 @@ app.put('/api/services-config', (req,res)=>{
     media: media && typeof media === 'object' ? media : {}
   };
   writeServicesCfg(data);
+  return res.json({ ok: true });
+});
+
+// SMTP config APIs
+app.get('/api/smtp-config', (_req,res)=>{
+  return res.json(readSmtpCfg());
+});
+app.put('/api/smtp-config', (req,res)=>{
+  const { host, port, secure, user, pass, fromEmail, toEmails } = req.body || {};
+  const cfg = {
+    host: typeof host === 'string' ? host : '',
+    port: Number.isFinite(Number(port)) ? Number(port) : 465,
+    secure: !!secure,
+    user: typeof user === 'string' ? user : '',
+    pass: typeof pass === 'string' ? pass : '',
+    fromEmail: typeof fromEmail === 'string' ? fromEmail : '',
+    toEmails: typeof toEmails === 'string' ? toEmails : ''
+  };
+  writeSmtpCfg(cfg);
   return res.json({ ok: true });
 });
 

@@ -485,19 +485,37 @@ function ServicesPanel(){
 // ===== Email (SMTP) Config Panel =====
 function EmailPanel(){
   type SMTP = { host:string; port:number; secure:boolean; user:string; pass:string; fromEmail:string; toEmails:string };
-  const KEY = 'bioark_smtp_config_v1';
-  const read = (): SMTP => {
-    try{ const raw = localStorage.getItem(KEY); if(!raw) return {host:'',port:465,secure:true,user:'',pass:'',fromEmail:'',toEmails:''}; const o = JSON.parse(raw); return { host:o.host||'', port:Number(o.port)||465, secure:!!o.secure, user:o.user||'', pass:o.pass||'', fromEmail:o.fromEmail||'', toEmails:o.toEmails||'' }; }catch{ return {host:'',port:465,secure:true,user:'',pass:'',fromEmail:'',toEmails:''}; }
-  };
-  const save = (cfg:SMTP) => localStorage.setItem(KEY, JSON.stringify(cfg));
-
-  const [form, setForm] = useState<SMTP>(read());
+  const [form, setForm] = useState<SMTP>({ host:'',port:465,secure:true,user:'',pass:'',fromEmail:'',toEmails:'' });
   const [saved, setSaved] = useState<string>('');
 
+  React.useEffect(()=>{
+    (async()=>{
+      try {
+        const cfg = await fetchJson('/api/smtp-config');
+        setForm({
+          host: cfg.host||'',
+          port: Number(cfg.port)||465,
+          secure: !!cfg.secure,
+          user: cfg.user||'',
+          pass: cfg.pass||'',
+          fromEmail: cfg.fromEmail||'',
+          toEmails: cfg.toEmails||'',
+        });
+      } catch {}
+    })();
+  },[]);
+
   const onSave = () => {
-    save(form);
-    setSaved('Saved.');
-    setTimeout(()=>setSaved(''), 2000);
+    (async()=>{
+      try {
+        await fetchJson('/api/smtp-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(form) });
+        setSaved('Saved.');
+      } catch {
+        setSaved('Save failed');
+      } finally {
+        setTimeout(()=>setSaved(''), 2000);
+      }
+    })();
   };
 
   return (
@@ -1231,10 +1249,9 @@ function BlogPanel() {
   const [form, setForm] = useState({ title:'', excerpt:'', coverImage:'', category:'General' });
   const [editing, setEditing] = useState<any|null>(null);
   const [editForm, setEditForm] = useState<any|null>(null);
-  const BLOG_MEDIA_KEY = 'bioark_blog_media_v1_paths';
-  const readBlogMedia = () => { try { return JSON.parse(localStorage.getItem(BLOG_MEDIA_KEY)||'{}'); } catch { return {}; } };
-  const [blogMedia, setBlogMedia] = useState<Record<string, string[]>>(readBlogMedia());
-  const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); localStorage.setItem(BLOG_MEDIA_KEY, JSON.stringify(next)); };
+  const [blogMedia, setBlogMedia] = useState<Record<string, string[]>>({});
+  React.useEffect(()=>{ fetchJson('/api/blog-media').then((cfg:any)=>{ setBlogMedia(cfg.media||{}); }).catch(()=>{}); },[]);
+  const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); return fetchJson('/api/blog-media', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ media: next }) }); };
 
   const filtered = useMemo(() => {
     if (!q.trim()) return posts;
