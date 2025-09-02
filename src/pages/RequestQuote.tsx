@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { addQuote } from '@/lib/quotes';
+// import { fetchJson } from '@/lib/api';
 
 const RequestQuote = () => {
   const { toast } = useToast();
@@ -31,23 +32,12 @@ const RequestQuote = () => {
         budget: String(form.get('budget')||''),
         projectDescription: String(form.get('projectDescription')||''),
         additionalInfo: String(form.get('additionalInfo')||''),
-        // user snapshot
-        submittedByEmail: undefined as string|undefined,
-        submittedByAddress: undefined as string|undefined,
+  // user snapshot removed (site-wide login disabled)
       };
 
-      // Try attach registered user snapshot
-      try {
-        const auth = JSON.parse(localStorage.getItem('bioark_auth_user')||'null');
-        const users = JSON.parse(localStorage.getItem('bioark_users')||'[]');
-        if (auth?.email) {
-          const u = (users||[]).find((x:any)=>x.email?.toLowerCase()===auth.email.toLowerCase());
-          payload.submittedByEmail = auth.email;
-          if (u?.address) payload.submittedByAddress = u.address;
-        }
-      } catch {}
+  // No site-wide login: do not attach user snapshot via /api/me
 
-      addQuote(payload as any);
+      await addQuote(payload as any);
 
       // reset form
       (e.currentTarget as HTMLFormElement).reset();

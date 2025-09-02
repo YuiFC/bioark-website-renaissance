@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
-import { Menu, X, ShoppingCart, User } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -47,22 +47,7 @@ const Navigation = () => {
   const externalLinks = [
     { name: 'Shopping Cart', url: '/cart', icon: ShoppingCart },
   ];
-  const [auth, setAuth] = useState<any>(() => { try { return JSON.parse(localStorage.getItem('bioark_auth_user')||'null'); } catch { return null; } });
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const closeTimerRef = useRef<number | null>(null);
-  useEffect(()=>{
-    const onStorage = () => {
-      try { setAuth(JSON.parse(localStorage.getItem('bioark_auth_user')||'null')); } catch { setAuth(null); }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  },[]);
-  const logout = () => {
-    localStorage.removeItem('bioark_auth_user');
-    localStorage.removeItem('bioark_admin_token');
-    setAuth(null);
-    window.location.href = '/';
-  };
+  // User login system removed site-wide; only Admin login remains in /admin.
 
   useEffect(() => {
     const handleScroll = () => {
@@ -237,55 +222,6 @@ const Navigation = () => {
               <Button asChild size="sm">
                 <Link to="/request-quote">Request Quote</Link>
               </Button>
-              {/* Auth/User menu */}
-              <div className="relative">
-                <button
-                  className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200"
-                  aria-haspopup="menu"
-                  aria-expanded={userMenuOpen}
-                  onMouseEnter={() => {
-                    if (closeTimerRef.current) {
-                      window.clearTimeout(closeTimerRef.current);
-                      closeTimerRef.current = null;
-                    }
-                    setUserMenuOpen(true);
-                  }}
-                  onMouseLeave={() => {
-                    // slight delay to allow moving into the dropdown without flicker
-                    closeTimerRef.current = window.setTimeout(() => {
-                      setUserMenuOpen(false);
-                      closeTimerRef.current = null;
-                    }, 120);
-                  }}
-                >
-                  <User size={20} />
-                </button>
-                <div
-                  className={`absolute right-0 mt-2 w-44 bg-background border rounded-md shadow-lg transition-opacity duration-150 ${userMenuOpen ? 'visible opacity-100 pointer-events-auto' : 'invisible opacity-0 pointer-events-none'}`}
-                  role="menu"
-                  onMouseEnter={() => {
-                    if (closeTimerRef.current) {
-                      window.clearTimeout(closeTimerRef.current);
-                      closeTimerRef.current = null;
-                    }
-                    setUserMenuOpen(true);
-                  }}
-                  onMouseLeave={() => {
-                    setUserMenuOpen(false);
-                  }}
-                >
-                  {!auth ? (
-                    <div className="py-1">
-                      <a href="/auth.html" className="block px-3 py-2 text-sm hover:bg-muted">Sign in / Sign up</a>
-                    </div>
-                  ) : (
-                    <div className="py-1">
-                      <Link to="/dashboard" className="block px-3 py-2 text-sm hover:bg-muted">Dashboard</Link>
-                      <button onClick={logout} className="w-full text-left block px-3 py-2 text-sm hover:bg-muted">Log out</button>
-                    </div>
-                  )}
-                </div>
-              </div>
               {externalLinks.map((link) => {
                 const IconComponent = link.icon;
                 return (
@@ -341,17 +277,7 @@ const Navigation = () => {
                   </Link>
                 </Button>
               </div>
-              {/* Mobile user menu */}
-              <div className="border-t border-border mt-2 pt-2">
-                {!auth ? (
-                  <a href="/auth.html" className="block px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">Sign in / Sign up</a>
-                ) : (
-                  <>
-                    <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">Dashboard</Link>
-                    <button onClick={()=>{ logout(); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">Log out</button>
-                  </>
-                )}
-              </div>
+              {/* User login removed from mobile menu */}
               {/* Mobile External Store Links */}
               <div className="border-t border-border mt-2 pt-2">
                 <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">

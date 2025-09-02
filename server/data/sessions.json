@@ -13,5 +13,10 @@
     "email": "test@test.com",
     "role": "User",
     "name": "test"
+  },
+  "1d889b10-02b5-4572-997d-3d6c5306a40f": {
+    "email": "test@test.com",
+    "role": "User",
+    "name": "test"
   }
 }

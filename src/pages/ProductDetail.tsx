@@ -62,7 +62,8 @@ Our design program assists customers in adjusting vector components and developi
       {...productData}
       title={productData.name}
       category={category}
-      mainImage={productData.imageUrl || ''}
+  mainImage={(productData as any).images?.[0] || productData.imageUrl || ''}
+  images={(productData as any).images}
       quoteOnly={quoteOnly}
       contentText={overrideContentText ?? overexpressionContent}
       showBottomAddToCart={slug === 'overexpression-targeted-knock-in'}

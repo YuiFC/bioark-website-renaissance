@@ -9,7 +9,8 @@ const crypto = require('crypto');
 const Stripe = require('stripe');
 
 const app = express();
-app.use(express.json());
+// Increase JSON body limit to allow base64 image uploads
+app.use(express.json({ limit: '20mb' }));
 
 // Allow CORS broadly for development/demo (tighten for production)
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
@@ -25,11 +26,22 @@ if (fs.existsSync(PUBLIC_DIR)) {
 const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+const BLOG_FILE = path.join(DATA_DIR, 'blog.json');
+const SERVICES_FILE = path.join(DATA_DIR, 'services.json');
+const QUOTES_FILE = path.join(DATA_DIR, 'quotes.json');
+const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+// Uploads directory under data (runtime-writable)
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 
 function ensureDataFiles() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '[]', 'utf-8');
   if (!fs.existsSync(SESSIONS_FILE)) fs.writeFileSync(SESSIONS_FILE, '{}', 'utf-8');
+  if (!fs.existsSync(BLOG_FILE)) fs.writeFileSync(BLOG_FILE, JSON.stringify({ version: 'v1', posts: [], hidden: [], overrides: {} }, null, 2), 'utf-8');
+  if (!fs.existsSync(SERVICES_FILE)) fs.writeFileSync(SERVICES_FILE, JSON.stringify({ overrides: {}, custom: [], media: {} }, null, 2), 'utf-8');
+  if (!fs.existsSync(QUOTES_FILE)) fs.writeFileSync(QUOTES_FILE, '[]', 'utf-8');
+  if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, JSON.stringify({ version: 1, products: [], overrides: {}, details: {}, hidden: [] }, null, 2), 'utf-8');
+  if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 ensureDataFiles();
 
@@ -45,6 +57,27 @@ function readSessions() {
 function writeSessions(sessions) {
   fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8');
 }
+
+// Blog store
+function readBlog(){ try { return JSON.parse(fs.readFileSync(BLOG_FILE,'utf-8')); } catch { return { version:'v1', posts:[], hidden:[], overrides:{} }; }
+}
+function writeBlog(data){ fs.writeFileSync(BLOG_FILE, JSON.stringify(data, null, 2), 'utf-8'); }
+
+// Services store
+function readServicesCfg(){ try { return JSON.parse(fs.readFileSync(SERVICES_FILE,'utf-8')); } catch { return { overrides:{}, custom:[], media:{} }; }
+}
+function writeServicesCfg(data){ fs.writeFileSync(SERVICES_FILE, JSON.stringify(data, null, 2), 'utf-8'); }
+
+// Quotes store
+function readQuotes(){ try { return JSON.parse(fs.readFileSync(QUOTES_FILE, 'utf-8')); } catch { return []; } }
+function writeQuotes(list){ fs.writeFileSync(QUOTES_FILE, JSON.stringify(list, null, 2), 'utf-8'); }
+
+// Products config store
+function readProductsCfg(){
+  try { return JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf-8')); }
+  catch { return { version: 1, products: [], overrides: {}, details: {}, hidden: [] }; }
+}
+function writeProductsCfg(cfg){ fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
 
 function hashPassword(pw) {
   return crypto.createHash('sha256').update(String(pw)).digest('hex');
@@ -76,6 +109,143 @@ app.get('/health', (_req, res) => {
 // Simple API ping
 app.get('/api/ping', (_req, res) => {
   res.json({ ok: true, time: Date.now() });
+});
+
+// ===== Simple image upload (base64 data URL) =====
+// body: { dataUrl: 'data:image/png;base64,....' } -> { path: '/lovable-uploads/<file>' }
+// Expose uploads statically
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+app.post('/api/upload-image', (req, res) => {
+  try {
+    const { dataUrl } = req.body || {};
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
+      return res.status(400).json({ error: 'Invalid dataUrl' });
+    }
+    const m = dataUrl.match(/^data:(.+);base64,(.*)$/);
+    if (!m) return res.status(400).json({ error: 'Invalid dataUrl format' });
+    const mime = m[1];
+    const b64 = m[2];
+    const buf = Buffer.from(b64, 'base64');
+    const ext = (() => {
+      if (mime.includes('png')) return '.png';
+      if (mime.includes('jpeg') || mime.includes('jpg')) return '.jpg';
+      if (mime.includes('webp')) return '.webp';
+      if (mime.includes('svg')) return '.svg';
+      return '.bin';
+    })();
+    const name = `${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`;
+    const abs = path.join(UPLOADS_DIR, name);
+    fs.writeFileSync(abs, buf);
+    const rel = `/uploads/${name}`;
+    return res.json({ path: rel });
+  } catch (err) {
+    console.error('Upload failed', err);
+    return res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// ===== Products config APIs =====
+app.get('/api/products-config', (_req,res)=>{
+  return res.json(readProductsCfg());
+});
+app.put('/api/products-config', (req,res)=>{
+  const { version, products, overrides, details, hidden } = req.body || {};
+  const data = {
+    version: typeof version === 'number' ? version : 1,
+    products: Array.isArray(products) ? products : [],
+    overrides: overrides && typeof overrides === 'object' ? overrides : {},
+    details: details && typeof details === 'object' ? details : {},
+    hidden: Array.isArray(hidden) ? hidden : [],
+  };
+  writeProductsCfg(data);
+  return res.json({ ok: true });
+});
+
+// ===== Blog APIs =====
+app.get('/api/blog', (_req,res)=>{
+  return res.json(readBlog());
+});
+app.put('/api/blog', (req,res)=>{
+  const { version, posts, hidden, overrides } = req.body || {};
+  const data = {
+    version: typeof version === 'string' ? version : 'v1',
+    posts: Array.isArray(posts) ? posts : [],
+    hidden: Array.isArray(hidden) ? hidden : [],
+    overrides: overrides && typeof overrides === 'object' ? overrides : {}
+  };
+  writeBlog(data);
+  return res.json({ ok: true });
+});
+
+// ===== Services config APIs =====
+app.get('/api/services-config', (_req,res)=>{
+  return res.json(readServicesCfg());
+});
+app.put('/api/services-config', (req,res)=>{
+  const { overrides, custom, media } = req.body || {};
+  const data = {
+    overrides: overrides && typeof overrides === 'object' ? overrides : {},
+    custom: Array.isArray(custom) ? custom : [],
+    media: media && typeof media === 'object' ? media : {}
+  };
+  writeServicesCfg(data);
+  return res.json({ ok: true });
+});
+
+// ===== Users admin APIs =====
+// List users (without password hashes)
+app.get('/api/users', (_req,res)=>{
+  const users = readUsers().map(u => ({ email: u.email, name: u.name, role: u.role }));
+  return res.json({ users });
+});
+// Upsert user fields; body: { email, name?, role?, password? }
+app.post('/api/users/upsert', (req,res)=>{
+  const { email, name, role, password } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'email required' });
+  const users = readUsers();
+  const i = users.findIndex(u => u.email.toLowerCase() === String(email).toLowerCase());
+  if (i >= 0) {
+    if (name != null) users[i].name = name;
+    if (role != null) users[i].role = role;
+    if (password) users[i].password = hashPassword(password);
+  } else {
+    users.push({ email, name: name || email, role: role || 'User', password: password ? hashPassword(password) : hashPassword('123456') });
+  }
+  writeUsers(users);
+  return res.json({ ok: true });
+});
+// Delete user
+app.delete('/api/users/:email', (req,res)=>{
+  const email = decodeURIComponent(req.params.email||'');
+  const users = readUsers().filter(u => u.email.toLowerCase() !== email.toLowerCase());
+  writeUsers(users);
+  return res.json({ ok: true });
+});
+
+// ===== Quotes APIs =====
+app.get('/api/quotes', (_req,res)=>{
+  return res.json({ quotes: readQuotes() });
+});
+app.post('/api/quotes', (req,res)=>{
+  const input = req.body || {};
+  const q = Object.assign({}, input, { id: `q_${Date.now()}`, createdAt: new Date().toISOString(), read: false });
+  const list = readQuotes();
+  writeQuotes([q, ...list]);
+  return res.json({ quote: q });
+});
+app.put('/api/quotes/:id/read', (req,res)=>{
+  const { id } = req.params;
+  const { read } = req.body || {};
+  const list = readQuotes().map(q => q.id === id ? Object.assign({}, q, { read: !!read }) : q);
+  writeQuotes(list);
+  return res.json({ ok: true });
+});
+app.delete('/api/quotes/:id', (req,res)=>{
+  const { id } = req.params;
+  const list = readQuotes().filter(q => q.id !== id);
+  writeQuotes(list);
+  return res.json({ ok: true });
 });
 
 // Auth: signup

@@ -13,6 +13,8 @@ export interface ProductDetailData extends ShowcaseItem {
   manuals: string[];
   manualUrls?: string[];
   storeLink?: string;
+  // New: multiple images support (first image can mirror imageUrl)
+  images?: string[];
 }
 
 // Extra on-the-shelf products accessible via menu only (not shown on homepage)
@@ -234,6 +236,7 @@ const fileCustom = (cfg.products || []).map(p => ({
   name: p.name || '',
   description: p.description || '',
   imageUrl: p.imageUrl || '/placeholder.svg',
+  images: (p as any).images && (p as any).images!.length ? (p as any).images : (p.imageUrl ? [p.imageUrl] : undefined),
   link: p.link || '',
   catalogNumber: p.catalogNumber || '',
   availability: p.availability || 'In Stock',
@@ -250,6 +253,7 @@ const fileCustom = (cfg.products || []).map(p => ({
 const baseWithFile = [
   ...allProducts.filter(p => !fileHidden.has(p.id)).map(p => ({
     ...p,
+  images: (p as any).images && (p as any).images!.length ? (p as any).images : (p.imageUrl ? [p.imageUrl] : undefined),
     ...(cfg.overrides?.[p.id] || {}),
   } as ProductDetailData)),
   ...fileCustom.filter(c => !fileHidden.has(c.id)),
@@ -286,6 +290,7 @@ export const getProductBySlug = (slug: string): ProductDetailData | undefined =>
         name: found.name,
         description: found.description,
         imageUrl: found.imageUrl,
+  images: (found as any).images && (found as any).images.length ? (found as any).images : (found.imageUrl ? [found.imageUrl] : undefined),
         link: found.link,
         catalogNumber: '',
         availability: 'In Stock',
@@ -321,5 +326,6 @@ export const getProductBySlug = (slug: string): ProductDetailData | undefined =>
     manuals: (detPatch.manuals ?? base.manuals) || [],
   manualUrls: (detPatch as any).manualUrls ?? (base as any).manualUrls,
   optionPrices: (detPatch as any).optionPrices ?? (base as any).optionPrices,
+  images: (detPatch as any).images ?? (dispPatch as any).images ?? (base as any).images,
   } as ProductDetailData;
 };

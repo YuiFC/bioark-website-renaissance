@@ -30,6 +30,7 @@ interface ProductDetailProps {
   manuals: string[];
   manualUrls?: string[];
   mainImage: string;
+  images?: string[];
   storeLink?: string;
   // Quote-only mode: hide price/cart/tabs and show a single content container
   quoteOnly?: boolean;
@@ -53,6 +54,7 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
   manuals,
   manualUrls,
   mainImage,
+  images,
   storeLink,
   quoteOnly,
   contentText,
@@ -62,6 +64,10 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
   const { toast } = useToast();
   const [selectedOpt, setSelectedOpt] = useState(options[0] || 'Default');
   const [qty, setQty] = useState<number>(1);
+  const gallery = useMemo(() => {
+    const list = (images && images.length ? images : [mainImage]).filter(Boolean);
+    return Array.from(new Set(list));
+  }, [images, mainImage]);
   const [activeImage, setActiveImage] = useState<number>(0);
   // Quote dialog state (for quote-only products)
   const [quoteOpen, setQuoteOpen] = useState(false);
@@ -101,8 +107,7 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
       budget: '',
       projectDescription: `${title}${selectedOpt ? ` (${selectedOpt})` : ''}`,
       additionalInfo: JSON.stringify({ catalogNumber: shownCatalog }),
-      submittedByEmail: (JSON.parse(localStorage.getItem('bioark_auth_user')||'null')||{}).email || undefined,
-      submittedByAddress: (JSON.parse(localStorage.getItem('bioark_auth_user')||'null')||{}).address || undefined,
+      // No site-wide login: do not attach user snapshot
     } as const;
     addQuote(payload as any);
     setQuoteOpen(false);
@@ -154,7 +159,7 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                   {/* 容器内用内联块撑开，自适应图片比例，边框紧贴图片 */}
                   <div className="p-3">
                     <img
-                      src={mainImage}
+                      src={gallery[activeImage] || mainImage}
                       alt={title}
                       className="max-w-full h-auto object-contain border rounded-md"
                     />
@@ -162,7 +167,7 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                 </div>
                 {/* Thumbnails */}
         <div className="mt-4 grid grid-cols-5 gap-3">
-                  {[mainImage].map((img, idx) => (
+                  {gallery.map((img, idx) => (
                     <button
                       key={idx}
                       type="button"

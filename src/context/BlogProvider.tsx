@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { mockBlogPosts, BlogPost } from '../data/blog';
+import { fetchJson } from '@/lib/api';
 
 // Bump this when built-in mock posts' content changes and we want to refresh local overrides
 const DATA_VERSION = '2025-08-29-1';
@@ -18,44 +19,27 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<BlogPost[]>(mockBlogPosts);
 
   useEffect(() => {
-    try {
-      // Invalidate stale overrides when data version changes
-      const currentVersion = localStorage.getItem('bioark_blog_data_version');
-      if (currentVersion !== DATA_VERSION) {
-        try {
-          const overrides = JSON.parse(localStorage.getItem('bioark_blog_overrides') || '{}') as Record<number, Partial<BlogPost>>;
-          let changed = false;
-          for (const idStr of Object.keys(overrides)) {
-            const id = Number(idStr);
-            if (RESET_BUILTIN_IDS.has(id)) {
-              delete overrides[id];
-              changed = true;
-            }
-          }
-          if (changed) {
-            localStorage.setItem('bioark_blog_overrides', JSON.stringify(overrides));
-          }
-        } catch {}
-        localStorage.setItem('bioark_blog_data_version', DATA_VERSION);
+    (async () => {
+      try {
+        const data = await fetchJson<any>('/api/blog');
+        const overrides: Record<number, Partial<BlogPost>> = data.overrides || {};
+        const hidden: number[] = data.hidden || [];
+        const saved: BlogPost[] = data.posts || [];
+        let base = mockBlogPosts.map(p => ({ ...p, ...(overrides[p.id] || {}) }));
+        base = base.filter(p => !hidden.includes(p.id));
+        const all = [...base, ...saved];
+        setPosts(all);
+      } catch {
+        setPosts(mockBlogPosts);
       }
-
-      const saved = JSON.parse(localStorage.getItem('bioark_blog_posts') || '[]') as BlogPost[];
-      const hidden = JSON.parse(localStorage.getItem('bioark_blog_hidden') || '[]') as number[];
-      const overrides = JSON.parse(localStorage.getItem('bioark_blog_overrides') || '{}') as Record<number, Partial<BlogPost>>;
-      let base = mockBlogPosts.map(p => ({ ...p, ...(overrides[p.id] || {}) }));
-      base = base.filter(p => !hidden.includes(p.id));
-      const all = [...base, ...saved];
-      setPosts(all);
-    } catch {}
+    })();
   }, []);
 
   const addPost = (post: BlogPost) => {
     setPosts(prev => {
       const next = [post, ...prev];
-      try {
-        const saved = JSON.parse(localStorage.getItem('bioark_blog_posts') || '[]') as BlogPost[];
-        localStorage.setItem('bioark_blog_posts', JSON.stringify([post, ...saved]));
-      } catch {}
+      // Persist full blog state
+      (async ()=>{ try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ version: DATA_VERSION, posts: next.filter(p=>!mockBlogPosts.some(b=>b.id===p.id)), hidden: [], overrides: {} }) }); } catch {} })();
       return next;
     });
   };
@@ -63,18 +47,15 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   const updatePost = (id: number, patch: Partial<BlogPost>) => {
     setPosts(prev => {
       const next = prev.map(p => (p.id === id ? { ...p, ...patch } : p));
-      try {
-        const saved = JSON.parse(localStorage.getItem('bioark_blog_posts') || '[]') as BlogPost[];
-        const isSaved = saved.some(p => p.id === id);
-        if (isSaved) {
-          const updatedSaved = saved.map(p => (p.id === id ? { ...p, ...patch } : p));
-          localStorage.setItem('bioark_blog_posts', JSON.stringify(updatedSaved));
-        } else {
-          const overrides = JSON.parse(localStorage.getItem('bioark_blog_overrides') || '{}');
-          overrides[id] = { ...(overrides[id] || {}), ...patch };
-          localStorage.setItem('bioark_blog_overrides', JSON.stringify(overrides));
-        }
-      } catch {}
+      (async ()=>{
+        try {
+          const builtinIds = new Set(mockBlogPosts.map(p=>p.id));
+          const saved = next.filter(p => !builtinIds.has(p.id));
+          const overrides: Record<number, Partial<BlogPost>> = {};
+          for (const p of next) { if (builtinIds.has(p.id)) { const base = mockBlogPosts.find(b=>b.id===p.id)!; const diff: any = {}; for (const k of Object.keys(p)) { if ((p as any)[k] !== (base as any)[k]) diff[k] = (p as any)[k]; } if (Object.keys(diff).length) overrides[p.id] = diff; } }
+          await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ version: DATA_VERSION, posts: saved, hidden: [], overrides }) });
+        } catch {}
+      })();
       return next;
     });
   };
@@ -82,17 +63,16 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   const deletePost = (id: number) => {
     setPosts(prev => {
       const next = prev.filter(p => p.id !== id);
-      try {
-        const saved = JSON.parse(localStorage.getItem('bioark_blog_posts') || '[]') as BlogPost[];
-        const updatedSaved = saved.filter(p => p.id !== id);
-        localStorage.setItem('bioark_blog_posts', JSON.stringify(updatedSaved));
-        if (!saved.some(p => p.id === id)) {
-          const hidden = JSON.parse(localStorage.getItem('bioark_blog_hidden') || '[]') as number[];
-          if (!hidden.includes(id)) {
-            localStorage.setItem('bioark_blog_hidden', JSON.stringify([...hidden, id]));
-          }
-        }
-      } catch {}
+      (async ()=>{
+        try {
+          const builtinIds = new Set(mockBlogPosts.map(p=>p.id));
+          const saved = next.filter(p => !builtinIds.has(p.id));
+          const overrides: Record<number, Partial<BlogPost>> = {};
+          for (const p of next) { if (builtinIds.has(p.id)) { const base = mockBlogPosts.find(b=>b.id===p.id)!; const diff: any = {}; for (const k of Object.keys(p)) { if ((p as any)[k] !== (base as any)[k]) diff[k] = (p as any)[k]; } if (Object.keys(diff).length) overrides[p.id] = diff; } }
+          // For deletion of builtin, we simulate hide by not including it in next; we don't track hidden list here
+          await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ version: DATA_VERSION, posts: saved, hidden: [], overrides }) });
+        } catch {}
+      })();
       return next;
     });
   };

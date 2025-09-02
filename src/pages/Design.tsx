@@ -178,8 +178,7 @@ export default function Design() {
       budget: '',
       projectDescription: `${productName} | ${productVariant}`,
       additionalInfo: JSON.stringify({ summary }),
-      submittedByEmail: (JSON.parse(localStorage.getItem('bioark_auth_user')||'null')||{}).email || undefined,
-      submittedByAddress: (JSON.parse(localStorage.getItem('bioark_auth_user')||'null')||{}).address || undefined,
+      // No site-wide login: do not attach user snapshot
     } as const;
     addQuote(payload as any);
     setQuoteOpen(false);

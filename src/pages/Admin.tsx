@@ -19,7 +19,8 @@ const Admin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [active, setActive] = useState<'overview'|'user'|'product'|'services'|'blog'|'quotes'|'email'>('overview');
-  const [unreadQuotes, setUnreadQuotes] = useState<number>(()=>getUnreadQuotesCount());
+  const [unreadQuotes, setUnreadQuotes] = useState<number>(0);
+  React.useEffect(()=>{ (async()=>{ try { const n = await getUnreadQuotesCount(); setUnreadQuotes(n); } catch {} })(); },[]);
 
   const metrics = { pageViews: 12890, users: 1, posts: posts.length };
 
@@ -133,29 +134,33 @@ const Admin = () => {
 export default Admin;
 
 // ===== Helpers: Product Manager (local cache) =====
-function getUsers(){ try { return JSON.parse(localStorage.getItem('bioark_users')||'[]'); } catch { return []; } }
-function setUsers(list:any[]){ localStorage.setItem('bioark_users', JSON.stringify(list)); }
+// Users API helpers
+import { listUsers as apiListUsers, upsertUser as apiUpsertUser, deleteUser as apiDeleteUser } from '@/lib/users';
 
 // ===== Services Panel (manage Services data locally) =====
+import { fetchJson } from '@/lib/api';
 function ServicesPanel(){
   type Svc = ReturnType<typeof getAllServices>[number];
   const base = getAllServices();
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
-  const [overrides, setOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_services_overrides')||'{}'); } catch { return {}; } });
-  const [custom, setCustom] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('bioark_services_custom')||'[]'); } catch { return []; } });
+  const [overrides, setOverrides] = useState<Record<string, any>>({});
+  const [custom, setCustom] = useState<any[]>([]);
   const [editing, setEditing] = useState<any|null>(null);
   const [editForm, setEditForm] = useState<any|null>(null);
   const [editingDetail, setEditingDetail] = useState<any|null>(null);
   const [detailForm, setDetailForm] = useState<any|null>(null);
   const MEDIA_KEY = 'bioark_services_media_v2_paths';
-  const readMedia = () => { try { return JSON.parse(localStorage.getItem(MEDIA_KEY)||'{}'); } catch { return {}; } };
-  const [media, setMedia] = useState<Record<string, string[]>>(readMedia());
-  const saveMedia = (next: Record<string, string[]>) => { setMedia(next); localStorage.setItem(MEDIA_KEY, JSON.stringify(next)); };
+  const [media, setMedia] = useState<Record<string, string[]>>({});
+  const saveMedia = async (next: Record<string, string[]>) => { setMedia(next); await fetchJson('/api/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom, media: next }) }); };
 
-  const saveOverrides = (next: Record<string, any>) => { setOverrides(next); localStorage.setItem('bioark_services_overrides', JSON.stringify(next)); };
-  const saveCustom = (next: any[]) => { setCustom(next); localStorage.setItem('bioark_services_custom', JSON.stringify(next)); };
+  React.useEffect(()=>{
+    fetchJson('/api/services-config').then((cfg:any)=>{ setOverrides(cfg.overrides||{}); setCustom(cfg.custom||[]); setMedia(cfg.media||{}); }).catch(()=>{});
+  },[]);
+
+  const saveOverrides = async (next: Record<string, any>) => { setOverrides(next); await fetchJson('/api/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides: next, custom, media }) }); };
+  const saveCustom = async (next: any[]) => { setCustom(next); await fetchJson('/api/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom: next, media }) }); };
 
   const applyOverrides = (s:Svc) => ({ ...s, ...(overrides[s.id]||{}) });
   const baseApplied = base.map(applyOverrides);
@@ -546,10 +551,10 @@ function EmailPanel(){
 // ===== Quotes Panel =====
 function QuotesPanel({ onChangeUnread }:{ onChangeUnread: (n:number)=>void }){
   const [q, setQ] = useState('');
-  const [items, setItems] = useState(()=>getQuotes());
+  const [items, setItems] = useState<any[]>([]);
   const [selected, setSelected] = useState<any|null>(null);
-
-  const refresh = () => { const list = getQuotes(); setItems(list); onChangeUnread(list.filter(x=>!x.read).length); };
+  const refresh = async () => { const list = await getQuotes(); setItems(list); onChangeUnread(list.filter(x=>!x.read).length); };
+  React.useEffect(()=>{ refresh(); },[]);
 
   const filtered = useMemo(()=>{
     const base = items.slice().sort((a:any,b:any)=> new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -560,8 +565,8 @@ function QuotesPanel({ onChangeUnread }:{ onChangeUnread: (n:number)=>void }){
     ].some((v:any)=>String(v||'').toLowerCase().includes(s)));
   },[q, items]);
 
-  const open = (x:any) => { setSelected(x); if (!x.read){ markQuoteRead(x.id, true); refresh(); } };
-  const del = (x:any, e?:React.MouseEvent) => { e?.stopPropagation(); if (confirm('Delete this quote?')){ deleteQuote(x.id); refresh(); if(selected?.id===x.id) setSelected(null); } };
+  const open = async (x:any) => { setSelected(x); if (!x.read){ await markQuoteRead(x.id, true); await refresh(); } };
+  const del = async (x:any, e?:React.MouseEvent) => { e?.stopPropagation(); if (confirm('Delete this quote?')){ await deleteQuote(x.id); await refresh(); if(selected?.id===x.id) setSelected(null); } };
 
   const Badge = ({children}:{children:React.ReactNode}) => (
     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted text-foreground/80">{children}</span>
@@ -608,7 +613,7 @@ function QuotesPanel({ onChangeUnread }:{ onChangeUnread: (n:number)=>void }){
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search quotes..." value={q} onChange={e=>setQ(e.target.value)} />
-        <Button variant="outline" onClick={()=>{ markAllQuotesRead(); refresh(); }}>Mark all read</Button>
+  <Button variant="outline" onClick={async ()=>{ await markAllQuotesRead(); await refresh(); }}>Mark all read</Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] gap-4">
@@ -726,7 +731,8 @@ function QuotesPanel({ onChangeUnread }:{ onChangeUnread: (n:number)=>void }){
 
 function UserPanel(){
   const [q, setQ] = useState('');
-  const [users, setUsersState] = useState<any[]>(getUsers());
+  const [users, setUsersState] = useState<any[]>([]);
+  React.useEffect(()=>{ apiListUsers().then(setUsersState).catch(()=>setUsersState([])); },[]);
 
   const filtered = useMemo(()=>{
     if(!q.trim()) return users;
@@ -734,14 +740,14 @@ function UserPanel(){
     return users.filter(u => (u.name||'').toLowerCase().includes(s) || (u.email||'').toLowerCase().includes(s) || (u.role||'').toLowerCase().includes(s));
   },[q, users]);
 
-  const onEdit = (email:string, patch:Partial<any>) => {
+  const onEdit = async (email:string, patch:Partial<any>) => {
     const next = users.map(u => u.email===email ? { ...u, ...patch } : u);
-    setUsersState(next); setUsers(next);
+    setUsersState(next);
+    try { await apiUpsertUser({ email, ...patch }); } catch (e:any) { alert(e.message||'Save failed'); }
   };
-  const onDelete = (email:string) => {
+  const onDelete = async (email:string) => {
     if (!confirm('Delete this user?')) return;
-    const next = users.filter(u => u.email !== email);
-    setUsersState(next); setUsers(next);
+    try { await apiDeleteUser(email); setUsersState(users.filter(u => u.email !== email)); } catch (e:any) { alert(e.message||'Delete failed'); }
   };
 
   return (
@@ -778,14 +784,56 @@ function UserPanel(){
 function ProductPanel() {
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name:'', description:'', imageUrl:'', link:'', category:'featured' as 'featured'|'gene-editing' });
-  const [hidden, setHidden] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('bioark_products_hidden')||'[]'); } catch { return []; } });
-  const [overrides, setOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_products_overrides')||'{}'); } catch { return {}; } });
-  const [custom, setCustom] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('bioark_products')||'[]'); } catch { return []; } });
-  const [detailsOverrides, setDetailsOverrides] = useState<Record<string, any>>(() => { try { return JSON.parse(localStorage.getItem('bioark_product_details_overrides')||'{}'); } catch { return {}; } });
+  const [form, setForm] = useState({ name:'', description:'', imageUrl:'', imagesText:'', link:'', category:'featured' as 'featured'|'gene-editing' });
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [overrides, setOverrides] = useState<Record<string, any>>({});
+  const [custom, setCustom] = useState<any[]>([]);
+  const [detailsOverrides, setDetailsOverrides] = useState<Record<string, any>>({});
   const [editing, setEditing] = useState<any|null>(null);
   const [detailsForm, setDetailsForm] = useState<any|null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+
+  // Load products config from backend
+  React.useEffect(()=>{
+    (async()=>{
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE|| (window as any).BIOARK_API_BASE || 'http://localhost:4242'}/api/products-config`);
+        const cfg = await res.json();
+        setHidden(Array.isArray(cfg.hidden)?cfg.hidden:[]);
+        setOverrides(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{});
+        setCustom(Array.isArray(cfg.products)?cfg.products:[]);
+        setDetailsOverrides(cfg.details&&typeof cfg.details==='object'?cfg.details:{});
+      } catch (e) {
+        console.warn('Failed to load products-config from backend, fallback to in-memory defaults.', e);
+      }
+    })();
+  },[]);
+
+  const saveAll = async (next:{ products?:any[]; overrides?:Record<string,any>; details?:Record<string,any>; hidden?:string[] }) => {
+    const payload = {
+      version: 1,
+      products: next.products ?? custom,
+      overrides: next.overrides ?? overrides,
+      details: next.details ?? detailsOverrides,
+      hidden: next.hidden ?? hidden,
+    };
+    setCustom(payload.products);
+    setOverrides(payload.overrides);
+    setDetailsOverrides(payload.details);
+    setHidden(payload.hidden);
+    // Mirror to LocalStorage as a read cache for existing product readers (temporary shim)
+    try {
+      localStorage.setItem('bioark_products', JSON.stringify(payload.products));
+      localStorage.setItem('bioark_products_overrides', JSON.stringify(payload.overrides));
+      localStorage.setItem('bioark_product_details_overrides', JSON.stringify(payload.details));
+      localStorage.setItem('bioark_products_hidden', JSON.stringify(payload.hidden));
+    } catch {}
+    try {
+      await fetch(`${import.meta.env.VITE_API_BASE|| (window as any).BIOARK_API_BASE || 'http://localhost:4242'}/api/products-config`, {
+        method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload)
+      });
+    } catch (e){ console.error('Save products-config failed', e); }
+  };
 
   const exportProducts = () => {
     const payload = {
@@ -813,28 +861,18 @@ function ProductPanel() {
       const text = await f.text();
       const data = JSON.parse(text);
       if (data && typeof data === 'object') {
-        if (Array.isArray(data.products)) {
-          setCustom(data.products);
-          localStorage.setItem('bioark_products', JSON.stringify(data.products));
-        }
-        if (data.overrides && typeof data.overrides === 'object') {
-          setOverrides(data.overrides);
-          localStorage.setItem('bioark_products_overrides', JSON.stringify(data.overrides));
-        }
-        if (data.details && typeof data.details === 'object') {
-          setDetailsOverrides(data.details);
-          localStorage.setItem('bioark_product_details_overrides', JSON.stringify(data.details));
-        }
-        if (Array.isArray(data.hidden)) {
-          setHidden(data.hidden);
-          localStorage.setItem('bioark_products_hidden', JSON.stringify(data.hidden));
-        }
-        alert('Imported product settings. 刷新页面以确保所有变更生效。');
+        await saveAll({
+          products: Array.isArray(data.products)?data.products:undefined,
+          overrides: data.overrides&&typeof data.overrides==='object'?data.overrides:undefined,
+          details: data.details&&typeof data.details==='object'?data.details:undefined,
+          hidden: Array.isArray(data.hidden)?data.hidden:undefined,
+        });
+        alert('Imported product settings. Please refresh to ensure all changes take effect.');
         e.target.value = '';
       }
     } catch (err) {
       console.error('Import failed', err);
-      alert('导入失败：文件格式不正确或已损坏。');
+      alert('Import failed: invalid file or corrupted content.');
     }
   };
 
@@ -855,22 +893,10 @@ function ProductPanel() {
   const matches = (p:any) => [p.name, p.description, p.link].some((s)=>String(s||'').toLowerCase().includes(q.toLowerCase()));
   const filteredAll = q ? all.filter(matches) : all;
 
-  const saveCustom = (next: any[]) => {
-    setCustom(next);
-    localStorage.setItem('bioark_products', JSON.stringify(next));
-  };
-  const saveOverrides = (next: Record<string, any>) => {
-    setOverrides(next);
-    localStorage.setItem('bioark_products_overrides', JSON.stringify(next));
-  };
-  const saveHidden = (next: string[]) => {
-    setHidden(next);
-    localStorage.setItem('bioark_products_hidden', JSON.stringify(next));
-  };
-  const saveDetailsOverrides = (next: Record<string, any>) => {
-    setDetailsOverrides(next);
-    localStorage.setItem('bioark_product_details_overrides', JSON.stringify(next));
-  };
+  const saveCustom = (next: any[]) => { void saveAll({ products: next }); };
+  const saveOverrides = (next: Record<string, any>) => { void saveAll({ overrides: next }); };
+  const saveHidden = (next: string[]) => { void saveAll({ hidden: next }); };
+  const saveDetailsOverrides = (next: Record<string, any>) => { void saveAll({ details: next }); };
 
   const onEdit = (item: any, patch: Partial<any>) => {
     if (custom.some(c => c.id === item.id)) {
@@ -893,11 +919,12 @@ function ProductPanel() {
   };
 
   const onAdd = () => {
-    const id = `custom-${Date.now()}`;
-    const payload = { id, ...form };
+  const id = `custom-${Date.now()}`;
+  const images = String(form.imagesText||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const payload = { id, name: form.name, description: form.description, imageUrl: form.imageUrl, images: images.length?images:undefined, link: form.link, category: form.category };
     saveCustom([payload, ...custom]);
     setShowAdd(false);
-    setForm({ name:'', description:'', imageUrl:'', link:'', category: 'featured' });
+  setForm({ name:'', description:'', imageUrl:'', imagesText:'', link:'', category: 'featured' });
   };
 
   const openEditDetails = (p:any) => {
@@ -912,6 +939,7 @@ function ProductPanel() {
       description: p.description,
       imageUrl: p.imageUrl,
       link: p.link,
+      images: (dOv.images || (base as any)?.images || (p.imageUrl ? [p.imageUrl] : [])),
       catalogNumber: base?.catalogNumber || '',
       availability: base?.availability || 'In Stock',
       listPrice: base?.listPrice || '',
@@ -930,6 +958,7 @@ function ProductPanel() {
     };
     setDetailsForm({
       ...merged,
+  imagesText: (merged.images||[]).join('\n'),
       optionsText: (merged.options||[]).join(', '),
       optionPricesText: Object.entries((merged.optionPrices||{} as any)).map(([k,v])=>`${k}=${v}`).join('\n'),
       keyFeaturesText: (merged.keyFeatures||[]).join('\n'),
@@ -976,6 +1005,7 @@ function ProductPanel() {
       storeLink: detailsForm.storeLink || '',
       quoteOnly: !!detailsForm.quoteOnly,
       contentText: detailsForm.contentText || '',
+      images: String(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean),
     };
     const nextDetails = { ...detailsOverrides, [id]: { ...(detailsOverrides[id]||{}), ...normalized } };
     saveDetailsOverrides(nextDetails);
@@ -995,7 +1025,7 @@ function ProductPanel() {
           {items.map(p => (
             <Card key={p.id}>
               <CardContent className="p-4 space-y-3">
-                {p.imageUrl && <img src={p.imageUrl} alt={p.name} className="w-full h-28 object-cover rounded" />}
+                {((p as any).images?.[0] || p.imageUrl) && <img src={(p as any).images?.[0] || p.imageUrl} alt={p.name} className="w-full h-28 object-cover rounded" />}
                 <input className="border rounded-md px-2 py-1 w-full" value={p.name} onChange={e=>onEdit(p,{name:e.target.value})} />
                 <textarea className="border rounded-md px-2 py-1 w-full" rows={3} value={p.description} onChange={e=>onEdit(p,{description:e.target.value})} />
                 <div className="flex justify-between">
@@ -1027,7 +1057,8 @@ function ProductPanel() {
             <div className="grid gap-3">
               <input className="border rounded-md px-3 py-2" placeholder="Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
               <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
-              <input className="border rounded-md px-3 py-2" placeholder="Image URL" value={form.imageUrl} onChange={e=>setForm(f=>({...f,imageUrl:e.target.value}))} />
+              <input className="border rounded-md px-3 py-2" placeholder="Cover Image URL (optional when using list below)" value={form.imageUrl} onChange={e=>setForm(f=>({...f,imageUrl:e.target.value}))} />
+              <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="Gallery Images (one URL per line)" value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
               <input className="border rounded-md px-3 py-2" placeholder="Link (/products/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
               <select className="border rounded-md px-3 py-2" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value as any}))}>
                 <option value="featured">Featured</option>
@@ -1118,6 +1149,18 @@ function ProductPanel() {
                   <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.link||''} onChange={e=>setDetailsForm((f:any)=>({...f,link:e.target.value}))} />
                 </div>
               </div>
+                      {/* Images (multiple) */}
+                      <div>
+                        <label className="text-sm text-muted-foreground">Gallery Images (one URL per line)</label>
+                        <textarea className="border rounded-md px-3 py-2 w-full" rows={4} value={detailsForm.imagesText||''} onChange={e=>setDetailsForm((f:any)=>({...f,imagesText:e.target.value}))} />
+                        <p className="text-xs text-muted-foreground mt-1">The first line is used as the cover image. Paste external URLs or server paths (e.g., /uploads/... or /images/...).</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean).slice(0,6).map((src:string,idx:number)=>(
+                            <img key={idx} src={src} alt="preview" className="h-16 w-16 object-cover rounded border" />
+                          ))}
+                        </div>
+                        
+                      </div>
               {/* Purchasable-only fields */}
               {!detailsForm.quoteOnly && (
                 <>
@@ -1150,7 +1193,7 @@ function ProductPanel() {
                   <div>
                     <label className="text-sm text-muted-foreground">Manual Links (comma separated, aligns by index with Manuals)</label>
                     <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.manualUrlsText||''} onChange={e=>setDetailsForm((f:any)=>({...f,manualUrlsText:e.target.value}))} />
-                    <p className="text-xs text-muted-foreground mt-1">提示：Manuals 与 Links 数量应一致；若某项不填链接，将显示为不可点击文本。</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tip: Manuals and Links should have the same count; if a link is missing, the manual text will be displayed without a hyperlink.</p>
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Store Link</label>

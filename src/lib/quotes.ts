@@ -21,52 +21,34 @@ export type Quote = {
   submittedByAddress?: string;
 };
 
-const KEY = 'bioark_quotes_v1';
+const API_BASE = (import.meta as any).env?.VITE_API_BASE || (typeof window !== 'undefined' && (window as any).BIOARK_API_BASE) || 'http://localhost:4242';
 
-export function getQuotes(): Quote[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const list: Quote[] = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
-  } catch {
-    return [];
-  }
+export async function getQuotes(): Promise<Quote[]> {
+  const r = await fetch(API_BASE + '/api/quotes');
+  const j = await r.json();
+  return Array.isArray(j.quotes) ? j.quotes : [];
 }
 
-function setQuotes(list: Quote[]) {
-  localStorage.setItem(KEY, JSON.stringify(list));
+export async function addQuote(input: Omit<Quote, 'id'|'createdAt'|'read'>): Promise<Quote> {
+  const r = await fetch(API_BASE + '/api/quotes', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(input) });
+  const j = await r.json();
+  return j.quote as Quote;
 }
 
-export function addQuote(input: Omit<Quote, 'id'|'createdAt'|'read'>): Quote {
-  const q: Quote = {
-    ...input,
-    id: `q_${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    read: false,
-  };
-  const list = getQuotes();
-  setQuotes([q, ...list]);
-  return q;
+export async function markQuoteRead(id: string, read = true): Promise<void> {
+  await fetch(API_BASE + `/api/quotes/${encodeURIComponent(id)}/read`, { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ read }) });
 }
 
-export function markQuoteRead(id: string, read = true) {
-  const list = getQuotes();
-  const next = list.map(q => q.id === id ? { ...q, read } : q);
-  setQuotes(next);
+export async function deleteQuote(id: string): Promise<void> {
+  await fetch(API_BASE + `/api/quotes/${encodeURIComponent(id)}`, { method:'DELETE' });
 }
 
-export function deleteQuote(id: string) {
-  const list = getQuotes();
-  const next = list.filter(q => q.id !== id);
-  setQuotes(next);
+export async function markAllQuotesRead(): Promise<void> {
+  const list = await getQuotes();
+  await Promise.all(list.filter(q=>!q.read).map(q => markQuoteRead(q.id, true)));
 }
 
-export function markAllQuotesRead() {
-  const list = getQuotes();
-  const next = list.map(q => ({ ...q, read: true }));
-  setQuotes(next);
-}
-
-export function getUnreadQuotesCount(): number {
-  return getQuotes().filter(q => !q.read).length;
+export async function getUnreadQuotesCount(): Promise<number> {
+  const list = await getQuotes();
+  return list.filter(q => !q.read).length;
 }
