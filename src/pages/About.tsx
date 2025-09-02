@@ -80,7 +80,7 @@ const About = () => {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Dr. Lipeng Wu */}
               <TeamCard
-                avatarSrc="/images/Headshot-1-Lipeng-300x300.jpg"
+                avatarSrc="/images/about/Headshot-1-Lipeng-300x300.jpg"
                 name="Dr. Lipeng Wu"
                 title="Founder & CEO"
                 intro1="Dr. Lipeng Wu is the Founder & CEO of BioArk Technologies, an innovative biotechnology company established in Rockville, Maryland in 2025, specializing in gene editing services and the proprietary CRISPR-Trinity platform. With over 21 years of research experience in molecular biology, cell biology, and cancer biology across both academic and industry settings, he brings deep expertise in genome engineering, viral vector systems, and CAR-T therapy development."
@@ -90,13 +90,24 @@ const About = () => {
 
               {/* Dr. Jingwen Xu */}
               <TeamCard
-                avatarSrc="/images/Jingwen-Xu-HeadShot.jpg"
+                avatarSrc="/images/about/Jingwen-Xu-HeadShot.jpg"
                 name="Dr. Jingwen Xu"
                 title="Co-Founder & Chief Operating Officer"
                 intro1="Dr. Jingwen Xu, M.D., M.Sc., Ph.D., is a physician-scientist, entrepreneur, and biotechnology executive with over three decades of experience in clinical medicine, molecular biology, and translational research. He is the Co-Founder and Chief Operating Officer of BioArk Technologies and also serves as Chief Executive Officer of EGFIE, a company specializing in the marketing and distribution of molecular laboratory consumables, kits, reagents, and equipment."
                 intro2="Dr. Xu completed his postdoctoral research at the University of Helsinki, focusing on biomedicine and orthopaedics. He then served as a Senior Research Scientist at the Albert Einstein College of Medicine, where he conducted studies in rheumatology, oncology, and molecular signaling pathways. He later joined Georgetown University as an Instructor and Assistant Professor, advancing research in molecular biology and immunology."
                 intro3="In addition to his academic appointments, Dr. Xu has held leadership roles in both research and industry. As CEO of Himalayan Biotech and later EGFIE, he has successfully bridged scientific innovation with business development. At BioArk Technologies, he plays a pivotal role in advancing next-generation CRISPR-based platforms and CAR-T therapeutic strategies, integrating laboratory management expertise with commercial strategy."
                 intro4="Today, Dr. Xu combines deep scientific expertise with entrepreneurial leadership to drive innovation at the intersection of biotechnology, clinical application, and commercial development."
+              />
+
+              {/* Dr. Mei Sun */}
+              <TeamCard
+                avatarSrc="/images/about/Mei-Sun.jpeg"
+                name="Dr. Mei Sun"
+                title="Advisor (Neurosensory R&D, Government Funding & Commercialization)"
+                intro1="Dr. Mei Sun is an accomplished professional in the field of neurosensory research and development, with extensive leadership experience in government biomedical research and technology commercialization."
+                intro2="Most recently, in 2025 Dr. Sun founded Heyma Consulting LLC, a firm dedicated to helping startups and established companies pursue government funding opportunities, including DoD, NIH, NSF, and state-level programs. Through this venture, she provides strategic guidance on securing SBIR, OTA, and BAA funding, as well as commercialization strategy and proposal development."
+                intro3="In 2024, Dr. Sun served as Program Manager at the Defense Health Agency (DHA), where she oversaw the Sensory Program, a Department of Defense research portfolio advancing innovations in sensory injury prevention, diagnostics, and treatment. Prior to this role, Dr. Sun was the Neurosensory Portfolio Manager at the US Army Medical Research and Development Command (USMRDC), where she managed Science & Technology funding for a broad range of neurosensory research projects. She also held the role of Program Manager for the Congressionally Directed Medical Research Program’s (CDMRP) Other Transaction Authority (OTA) program, where she facilitated the entire funding cycle—from solicitation announcements through post-award management—enhancing collaboration between agencies and advancing critical research."
+                intro4="Dr. Sun’s expertise extends beyond neurosensory research. From 2017 to 2019, she served as Portfolio Manager for the Medical Simulation and Information Sciences Research Program (MSISRP), managing an annual budget of over twenty million dollars in science and technology funding, and leading collaborations across DoD commands, government agencies, academia, and industry. From 2014 to 2017, Dr. Sun was Senior Scientist and Principal Investigator at the US Army Medical Research Institute of Infectious Diseases (USAMRIID). Earlier in her career, she was a research scientist at the Janelia Research Campus, HHMI (2010–2014), and completed her post-doctoral training at Genentech, Inc. (2008–2010). Dr. Sun earned her PhD in Biology and MBA in Management from UCSD in 2007 and trained with renowned scientists including Nobel laureates Dr. Roger Tsien and Dr. Eric Betzig, contributing to 20+ publications in Science, Nature Cell Biology, Nature Methods, and Nature Microbiology. Beyond her professional career, Dr. Sun serves on the Board of Directors of FITCI, a leading biotech incubator in Frederick, Maryland."
               />
             </div>
           </div>

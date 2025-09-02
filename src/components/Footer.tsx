@@ -32,9 +32,8 @@ const Footer = () => {
           <div>
             <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-4">Store</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="https://store.bioarktech.com/signup" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Account</a></li>
-              <li><a href="https://store.bioarktech.com/cart" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Shopping Cart</a></li>
-              <li><a href="https://store.bioarktech.com/design" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Design</a></li>
+              <li><Link to="/cart" className="hover:text-primary transition-colors">Shopping Cart</Link></li>
+              <li><Link to="/design" className="hover:text-primary transition-colors">Gene Design</Link></li>
             </ul>
           </div>
         </div>
