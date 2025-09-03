@@ -22,7 +22,8 @@ export async function createCheckoutSession(
   items: CheckoutItem[],
   options?: { successUrl?: string; cancelUrl?: string; currency?: string; shippingCents?: number; address?: CheckoutAddress }
 ) {
-  const base = (import.meta.env as any).VITE_STRIPE_API_BASE || (import.meta.env as any).VITE_API_BASE || '';
+  // Default to Nginx path prefix for Stripe API; fall back to content API or empty
+  const base = (import.meta.env as any).VITE_STRIPE_API_BASE || (import.meta.env as any).VITE_API_BASE || '/stripe-api';
   const url = `${base}/create-checkout-session`.replace(/\/\/create/, '/create');
   const res = await fetch(url, {
     method: 'POST',

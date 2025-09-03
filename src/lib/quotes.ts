@@ -1,3 +1,4 @@
+import { getApiBase } from './api';
 export type Quote = {
   id: string;
   createdAt: string; // ISO string
@@ -21,7 +22,7 @@ export type Quote = {
   submittedByAddress?: string;
 };
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || (typeof window !== 'undefined' && (window as any).BIOARK_API_BASE) || '';
+const API_BASE = getApiBase();
 
 export async function getQuotes(): Promise<Quote[]> {
   const r = await fetch(API_BASE + '/api/quotes');

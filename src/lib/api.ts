@@ -5,8 +5,8 @@ export function getApiBase(): string {
   const globalBase = typeof window !== 'undefined' ? (window as any).BIOARK_API_BASE : undefined;
   if (envBase) return String(envBase).replace(/\/$/, '');
   if (globalBase) return String(globalBase).replace(/\/$/, '');
-  // Default: same-origin (empty base) lets fetch use relative /api/... on the current origin
-  return '';
+  // Default: behind Nginx, content API is exposed under /content-api
+  return '/content-api';
 }
 
 export async function fetchJson<T=any>(path: string, init?: RequestInit): Promise<T> {

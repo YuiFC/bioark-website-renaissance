@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   // Set base for GitHub Pages (serving under /bioark-website-renaissance/)
   // Override with env VITE_BASE if needed
-  base: mode === 'development' ? '/' : (process.env.VITE_BASE || '/bioark-website-renaissance/'),
+  base: '/',
   server: {
     host: "::",
     port: 8080,

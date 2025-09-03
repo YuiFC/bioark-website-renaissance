@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
-import Layout from '/src/components/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '/src/components/ui/card';
-import { Button } from '/src/components/ui/button';
-import { Input } from '/src/components/ui/input';
-import { Label } from '/src/components/ui/label';
-import { Textarea } from '/src/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '/src/components/ui/select';
-import { useToast } from '/src/hooks/use-toast';
-import Map from '/src/components/Map';
+import { getApiBase } from '@/lib/api';
+import Layout from '@/components/Layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import Map from '@/components/Map';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -23,7 +24,7 @@ const Contact = () => {
 
     try {
   // TODO: Replace '/api/contact' with your real backend API endpoint
-      const response = await fetch('/api/contact', {
+  const response = await fetch(getApiBase() + '/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
