@@ -13,7 +13,7 @@
     "additionalInfo": "{\"summary\":{\"category\":\"RNAi\",\"funcType\":\"shRNA\",\"delivery\":\"Plasmid\",\"promoter\":\"EF1a\",\"proteinTag\":\"His\",\"fluorescence\":\"GFP\",\"selection\":\"Puro\",\"target\":\"Control (or Scramble)\"}}",
     "id": "q_1756885126220",
     "createdAt": "2025-09-03T07:38:46.220Z",
-    "read": false
+    "read": true
   },
   {
     "firstName": "test",

@@ -357,6 +357,126 @@
       "images": [
         "/images/products/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg"
       ]
+    },
+    "lv-01": {
+      "catalogNumber": "LV-001",
+      "availability": "In Stock",
+      "listPrice": "Contact for Quote",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High titer",
+        "Sterile filtered",
+        "QC validated"
+      ],
+      "storageStability": "Store at -80°C. Avoid repeated freeze-thaw cycles.",
+      "performanceData": "Infectivity verified in standard cell lines.",
+      "manuals": [
+        "Lentivirus User Guide (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "",
+      "quoteOnly": true,
+      "contentText": "# BioArk Technologies\n\nBioArk Technologies is continuously expanding its collection of cDNA lentivirus stocks, offering an ever-growing selection of specific genes and targets. Our mission is to provide high-quality, pre-packaged lentiviruses at an affordable price while promoting scientific collaboration and resource sharing.\n\nExplore our expanding list of cost-effective, pre-constructed lentiviruses here.\n\n---\n\n| Major Vector | | | Donor Vector | | | Scramble Control Vector | | |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **Class** | **Product Name** | **SKU** | **Information** | **Donor Name** | **SKU** | **Information** | **Scramble Name** | **SKU** | **Information** |\n| Non-Viral CDS-P011k | CRISPR KN AIO Kit-Gene AAVS1, Vector type | COT-FXD00A-AAVS1gk | The CRISPR tool specifically designed to target and cut human AAVS1 safe harbor site. | AAVS1 Dnr Std Kit | CDS-FX00PA-XXXXXXk | Insert Customer Gene into human AAVS1 site, please specify your genes by clicking the button | GFP Donor Control AAVS1 Dnr Std Ctrl Kit, vector type | CDS-FX0GPA-000000k | Insert GFP into human AAVS1 site as control |\n| Non-Viral CDS-P011k | CRISPR KN AIO Kit-Gene ROSA26, Vector type | COT-FXD00A-ROSA26gk | The CRISPR tool specifically designed to target and cut mouse ROSA26 safe harbor site. | Dnr Std Kit-ROSA26 Site | TBD | Insert Customer Gene into mouse ROSA26 site, please specify your custom gene by clicking the button | GFP Donor Control Dnr Std Kit-ROSA26 Site, vector type | TBD | Insert GFP into mouse ROSA26 site as control |\n\n*Showing 1 to 3 of 3 entries*\n\n---\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n```",
+      "images": [
+        "/placeholder.svg"
+      ]
+    },
+    "lv-02": {
+      "catalogNumber": "LV-002",
+      "availability": "In Stock",
+      "listPrice": "Contact for Quote",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [
+        "Positive/negative controls",
+        "Consistent titers",
+        "Ready-to-use"
+      ],
+      "storageStability": "Store at -80°C. Avoid repeated freeze-thaw cycles.",
+      "performanceData": "Validated for use across common cell lines.",
+      "manuals": [
+        "Control Stock Guide (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "",
+      "quoteOnly": true,
+      "contentText": "# BioArk Technologies\n\nBioArk Technologies is continuously expanding its collection of cDNA lentivirus stocks, offering a growing selection of control lentiviruses for various research applications. Our mission is to provide high-quality, pre-packaged lentiviruses at an affordable price while fostering scientific collaboration and resource sharing.\n\nExplore our expanding list of cost-effective, pre-constructed lentivirus controls [here](#).\n\n---\n\n## Lentivirus Controls Catalog\n\n| Category        | Class               | Product Name                              | SKU                     | Accessory Virus | Promoter   | Protein Tag | Fluorescence Marker | Selection Marker |\n|-----------------|---------------------|-------------------------------------------|-------------------------|-----------------|------------|-------------|---------------------|------------------|\n| Overexpression  | Viral All-in-one    | OverExp Lenti Ctrl Kit, lentivirus type   | EML-CXDG0C-000000l      | None            | PCMV       | MycDDK      | GFP                 | None             |\n| Inducible       | Viral All-in-one    | Inducible Lenti-AIO Ctrl Kit, lentivirus type | IMM-DXDGPC-000000l  | None            | Inducible  | MycDDK      | GFP                 | Puro             |\n\n*Showing 1 to 3 of 3 entries*  \n*10 entries per page*  \n*Search functionality available*\n\n---\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n```",
+      "images": [
+        "/placeholder.svg"
+      ]
+    },
+    "vc-02": {
+      "catalogNumber": "VC-002",
+      "availability": "In Stock",
+      "listPrice": "Contact for Quote",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [
+        "Modular design",
+        "Customizable elements",
+        "Comprehensive documentation"
+      ],
+      "storageStability": "Store at -20°C. See manual for details.",
+      "performanceData": "Suitable for rapid kit assembly and iteration.",
+      "manuals": [
+        "Template Guide (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "",
+      "quoteOnly": true,
+      "contentText": "# BioArk Technologies\n\nBioArk Technologies offers an extensive inventory of vectors, optimized for automated cloning design and construction. Our pre-assembled templates can be quickly adapted and customized into different kits, tailored for various applications. You can utilize these established systems for your project or design your own system based on your specific preferences.\n\nBelow is a list of our current established function kits. Simply click the SKU number to add your preferred gene information or just select the control or scramble vectors.\n\n---\n\n| Major Vector | Features | | | | | Scramble Vector |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **Class** | **Product Name** | **SKU** | **Accessory Vector** | **Promoter** | **Tag** | **Fluorescence Marker** | **Selection Marker** | **Control Sample** | **SKU** |\n| Non-Viral All-in-One | CRISPRa AIO Kit | CAT-FXD00A-XXXXXXk | None | EF1core | MycDDK | None | None | Scramble Control | CAT-FXD00A-000000k |\n| Viral All-in-one | CRISPRa AIO Kit | CAM-FXD0PC-XXXXXXk | None | EF1core | MycDDK | None | Puro | Scramble Control | CAM-FXD0PC-000000k |\n\n*Showing 1 to 3 of 3 entries*\n\n---\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n```",
+      "images": [
+        "/placeholder.svg"
+      ]
+    },
+    "vc-01": {
+      "catalogNumber": "VC-001",
+      "availability": "In Stock",
+      "listPrice": "Contact for Quote",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High-quality backbone",
+        "Multiple cloning sites",
+        "Sequence-verified"
+      ],
+      "storageStability": "Store at -20°C. See manual for details.",
+      "performanceData": "Validated for standard cloning workflows.",
+      "manuals": [
+        "Vector Handbook (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "",
+      "quoteOnly": true,
+      "contentText": "This technique enables the precise integration of target genes or regulatory cassettes into safe harbor sites—genomic regions where foreign DNA can be inserted without disrupting essential endogenous gene functions or causing adverse cellular effects. These sites are widely used in genome engineering for stable gene insertion, ensuring long-term and predictable transgene expression.\n\nCommonly used safe harbor sites include human AAVS1 and CCR5, as well as the mouse ROSA26 locus. Our standard kit utilizes the AAVS1 site as the default insertion locus. For alternative loci or custom services, please contact us at [support@bioarktech.com](mailto:support@bioarktech.com).\n\n---\n\n| Main Plasmid | Features | | | | | | Scramble Plasmid | Order |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **Class** | **Product Name** | **SKU** | **Accessory** | **Promoter** | **Protein Tag** | **Fluorescence Marker** | **Selection Marker** | **Target Gene** | **Control Sample** | **SKU** |\n| Viral | OverExp Lenti Kit | EML-CXD0PC-LARGETk | None | PCMV | MycDDK | None | Puro | LargeT | GFP control | EML-CXDGPC-000000k |\n| Viral | OverExp Lenti Kit | EML-CXD0BC-LARGETk | None | PCMV | MycDDK | None | BSD | LargeT | GFP control | EML-CXDGBC-000000k |\n\n*Showing 1 to 3 of 3 entries*\n\n---\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n```",
+      "images": [
+        "/placeholder.svg"
+      ]
+    },
+    "sc-01": {
+      "catalogNumber": "SC-001",
+      "availability": "In Stock",
+      "listPrice": "Contact for Quote",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [
+        "Authenticated",
+        "Mycoplasma-tested",
+        "Application-ready"
+      ],
+      "storageStability": "Store in liquid nitrogen or as specified.",
+      "performanceData": "QC documentation available upon request.",
+      "manuals": [
+        "Cell Line Handling Guide (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "",
+      "quoteOnly": true,
+      "contentText": "# BioArk Technologies\n\nBioArk Technologies is continuously expanding its stable cell line stock, offering an ever-growing selection of gene-specific modifications. Our mission is to provide high-quality, pre-validated stable cell lines at an affordable price while fostering scientific collaboration and resource sharing.\n\nExplore our expanding list of cost-effective, pre-constructed stable cell lines here.\n\n---\n\n| Stable Cell Line | | | Gene Editing Feature | | | | |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **Product Name** | **SKU** | **Description** | **Promoter** | **Protein Tag** | **Fluorescence Marker** | **Selection Marker** | **Target Gene** | **Cell Background** |\n| OverExp Lenti Kit | EML-CXD0PC-LARGETc | The large T antigen is integrated by lentivirus | PCMV | MycDDK | None | Puro | LargeT | Fibroblast Cells |\n\n*Showing 1 to 2 of 2 entries*\n\n---\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n\nIf you have any further inquiries regarding your project, please click the button to contact us. We are fully equipped to accommodate a wide range of your requirements.\n```",
+      "images": [
+        "/placeholder.svg"
+      ]
     }
   },
   "hidden": []
