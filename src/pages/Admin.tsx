@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import adminConfig from '@/config/admin.json';
+import { fetchJson } from '@/lib/api';
 import { useBlog } from '@/context/BlogProvider';
 import { featuredProducts, geneEditingProducts } from '@/data/showcase';
 import { getProductBySlug, listAllProducts } from '@/data/products';
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
 import { getAllServices } from '@/data/services';
 
-type AdminUser = { email: string; password: string };
+// Admin login now uses server-side auth (/api/signin) and checks role==='Admin'.
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -24,18 +24,22 @@ const Admin = () => {
 
   const metrics = { pageViews: 12890, users: 1, posts: posts.length };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     try {
-      const users = adminConfig as unknown as AdminUser[];
-      const ok = users.some(u => u.email === email && u.password === password);
-      if (ok){
-        localStorage.setItem('bioark_admin_token', '1');
+      const { token, user } = await fetchJson<{ token: string; user: { name: string; email: string; role: string } }>(
+        '/api/signin',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }
+      );
+      if (user?.role === 'Admin') {
+        // Persist tokens to allow admin session
+        localStorage.setItem('bioark_admin_token', 'ok');
+        localStorage.setItem('bioark_auth_token', token);
         setAuthed(true);
       } else {
-        alert('Invalid credentials');
+        alert('You are not authorized to access Admin Portal.');
       }
-    } catch {
-      alert('Login config error');
+    } catch (e:any) {
+      alert(e?.message || 'Invalid credentials');
     }
   };
 
@@ -139,7 +143,6 @@ export default Admin;
 import { listUsers as apiListUsers, upsertUser as apiUpsertUser, deleteUser as apiDeleteUser } from '@/lib/users';
 
 // ===== Services Panel (manage Services data locally) =====
-import { fetchJson } from '@/lib/api';
 function ServicesPanel(){
   type Svc = ReturnType<typeof getAllServices>[number];
   const base = getAllServices();
@@ -485,9 +488,15 @@ function ServicesPanel(){
 
 // ===== Email (SMTP) Config Panel =====
 function EmailPanel(){
-  type SMTP = { host:string; port:number; secure:boolean; user:string; pass:string; fromEmail:string; toEmails:string };
-  const [form, setForm] = useState<SMTP>({ host:'',port:465,secure:true,user:'',pass:'',fromEmail:'',toEmails:'' });
+  type SMTP = {
+    host:string; port:number; secure:boolean; user:string; pass:string; fromEmail:string; toEmails:string;
+    subjectTemplate?: string; bodyTemplate?: string;
+    subjectTemplateFull?: string; bodyTemplateFull?: string;
+    subjectTemplateProduct?: string; bodyTemplateProduct?: string;
+  };
+  const [form, setForm] = useState<SMTP>({ host:'',port:465,secure:true,user:'',pass:'',fromEmail:'',toEmails:'', subjectTemplate:'', bodyTemplate:'', subjectTemplateFull:'', bodyTemplateFull:'', subjectTemplateProduct:'', bodyTemplateProduct:'' });
   const [saved, setSaved] = useState<string>('');
+  const [testing, setTesting] = useState<boolean>(false);
 
   React.useEffect(()=>{
     (async()=>{
@@ -501,6 +510,12 @@ function EmailPanel(){
           pass: cfg.pass||'',
           fromEmail: cfg.fromEmail||'',
           toEmails: cfg.toEmails||'',
+          subjectTemplate: cfg.subjectTemplate||'New Quote from {{firstName}} {{lastName}} — {{serviceType}}',
+          bodyTemplate: cfg.bodyTemplate||'<h2>New Quote Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<p><strong>Company:</strong> {{company}}</p>\n<p><strong>Service:</strong> {{serviceType}}</p>\n<p><strong>Timeline:</strong> {{timeline}}</p>\n<p><strong>Budget:</strong> {{budget}}</p>\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}',
+          subjectTemplateFull: cfg.subjectTemplateFull||'New Quote (Full) from {{firstName}} {{lastName}} — {{serviceType}}',
+          bodyTemplateFull: cfg.bodyTemplateFull||'<h2>New Quote (Full) Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n{{#if phone}}<p><strong>Phone:</strong> {{phone}}</p>{{/if}}\n<p><strong>Company:</strong> {{company}}</p>\n{{#if department}}<p><strong>Department:</strong> {{department}}</p>{{/if}}\n<p><strong>Service:</strong> {{serviceType}}</p>\n{{#if timeline}}<p><strong>Timeline:</strong> {{timeline}}</p>{{/if}}\n{{#if budget}}<p><strong>Budget:</strong> {{budget}}</p>{{/if}}\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}',
+          subjectTemplateProduct: cfg.subjectTemplateProduct||'New Product Quote from {{firstName}} {{lastName}}',
+          bodyTemplateProduct: cfg.bodyTemplateProduct||'<h2>New Product Quote</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<hr/>\n<p><strong>Product:</strong> {{projectDescription}}</p>\n{{#if catalogNumber}}<p><strong>Catalog #:</strong> {{catalogNumber}}</p>{{/if}}\n<p><strong>Submitted At:</strong> {{createdAt}}</p>'
         });
       } catch {}
     })();
@@ -515,6 +530,21 @@ function EmailPanel(){
         setSaved('Save failed');
       } finally {
         setTimeout(()=>setSaved(''), 2000);
+      }
+    })();
+  };
+
+  const onTest = (type?: 'product'|'full') => {
+    (async()=>{
+      setTesting(true);
+      try {
+        await fetchJson('/api/smtp-test', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ type }) });
+        setSaved('Test email triggered.');
+      } catch {
+        setSaved('Test failed');
+      } finally {
+        setTesting(false);
+        setTimeout(()=>setSaved(''), 2500);
       }
     })();
   };
@@ -557,8 +587,33 @@ function EmailPanel(){
               <input className="border rounded-md px-3 py-2 w-full" value={form.toEmails} onChange={e=>setForm(f=>({...f,toEmails:e.target.value}))} placeholder="admin@yourdomain.com, sales@yourdomain.com" />
             </div>
           </div>
+          <div className="pt-2 border-t" />
+          {/* Full form templates */}
+          <div className="border rounded-md p-3 bg-muted/20">
+            <div className="text-sm font-medium mb-2">Full Form Email Template</div>
+            <div className="text-xs text-muted-foreground mb-2">用于“Request a Quote”完整表单。</div>
+            <div className="text-sm font-medium mb-1">Subject</div>
+            <input className="border rounded-md px-3 py-2 w-full" value={form.subjectTemplateFull||''} onChange={e=>setForm(f=>({...f,subjectTemplateFull:e.target.value}))} placeholder="New Quote (Full) from {{firstName}} {{lastName}} — {{serviceType}}" />
+            <div className="text-sm font-medium mb-1 mt-3">HTML Body</div>
+            <textarea className="border rounded-md px-3 py-2 w-full font-mono text-sm" rows={8} value={form.bodyTemplateFull||''} onChange={e=>setForm(f=>({...f,bodyTemplateFull:e.target.value}))} />
+            <div className="mt-2 flex justify-end"><Button variant="outline" size="sm" onClick={()=>onTest('full')} disabled={testing}>{testing?'Testing...':'Test Full'}</Button></div>
+          </div>
+          {/* Product quote templates */}
+          <div className="border rounded-md p-3 bg-muted/20">
+            <div className="text-sm font-medium mb-2">Product Quote Email Template</div>
+            <div className="text-xs text-muted-foreground mb-2">用于产品详情页的简化报价表单，仅包含姓名、邮箱和产品信息。</div>
+            <div className="text-sm font-medium mb-1">Subject</div>
+            <input className="border rounded-md px-3 py-2 w-full" value={form.subjectTemplateProduct||''} onChange={e=>setForm(f=>({...f,subjectTemplateProduct:e.target.value}))} placeholder="New Product Quote from {{firstName}} {{lastName}}" />
+            <div className="text-sm font-medium mb-1 mt-3">HTML Body</div>
+            <textarea className="border rounded-md px-3 py-2 w-full font-mono text-sm" rows={6} value={form.bodyTemplateProduct||''} onChange={e=>setForm(f=>({...f,bodyTemplateProduct:e.target.value}))} />
+            <div className="mt-2 flex justify-end"><Button variant="outline" size="sm" onClick={()=>onTest('product')} disabled={testing}>{testing?'Testing...':'Test Product'}</Button></div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            模板语法：变量 <code>{"{{key}}"}</code>；条件 <code>{"{{#if key}}"}</code>...<code>{"{{/if}}"}</code>。可用键：firstName, lastName, email, phone, company, department, serviceType, timeline, budget, projectDescription, additionalInfo, createdAt，以及产品模板中的 catalogNumber（若 additionalInfo 提供）。
+          </div>
           <div className="flex justify-end gap-2 pt-2">
             {saved && <span className="text-sm text-green-600 self-center">{saved}</span>}
+            <Button variant="outline" onClick={()=>onTest()} disabled={testing}>{testing ? 'Testing...' : 'Send Test (Default)'}</Button>
             <Button onClick={onSave}>Save</Button>
           </div>
           <p className="text-xs text-muted-foreground">Note: Hostinger 部署后，将在服务器端使用上述配置通过 SMTP 发送邮件；前端仅保存配置并供服务端读取/调用。</p>

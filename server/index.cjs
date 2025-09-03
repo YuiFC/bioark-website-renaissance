@@ -7,6 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const Stripe = require('stripe');
+let nodemailer = null;
+try { nodemailer = require('nodemailer'); } catch { nodemailer = null; }
 
 const app = express();
 // Initialize Stripe client
@@ -60,7 +62,7 @@ function ensureDataFiles() {
   if (!fs.existsSync(SERVICES_FILE)) fs.writeFileSync(SERVICES_FILE, JSON.stringify({ overrides: {}, custom: [], media: {} }, null, 2), 'utf-8');
   if (!fs.existsSync(QUOTES_FILE)) fs.writeFileSync(QUOTES_FILE, '[]', 'utf-8');
   if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, JSON.stringify({ version: 1, products: [], overrides: {}, details: {}, hidden: [] }, null, 2), 'utf-8');
-  if (!fs.existsSync(SMTP_FILE)) fs.writeFileSync(SMTP_FILE, JSON.stringify({ host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'' }, null, 2), 'utf-8');
+  if (!fs.existsSync(SMTP_FILE)) fs.writeFileSync(SMTP_FILE, JSON.stringify({ host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'', subjectTemplate:'New Quote from {{firstName}} {{lastName}} — {{serviceType}}', bodyTemplate:'<h2>New Quote Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<p><strong>Company:</strong> {{company}}</p>\n<p><strong>Service:</strong> {{serviceType}}</p>\n<p><strong>Timeline:</strong> {{timeline}}</p>\n<p><strong>Budget:</strong> {{budget}}</p>\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}' }, null, 2), 'utf-8');
   if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 ensureDataFiles();
@@ -104,7 +106,23 @@ function readProductsCfg(){
 function writeProductsCfg(cfg){ fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
 
 // SMTP config store
-function readSmtpCfg(){ try { return JSON.parse(fs.readFileSync(SMTP_FILE,'utf-8')); } catch { return { host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'' }; } }
+function readSmtpCfg(){
+  const baseDefaults = {
+    host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'',
+    subjectTemplate:'New Quote from {{firstName}} {{lastName}} — {{serviceType}}',
+    bodyTemplate:'<h2>New Quote Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<p><strong>Company:</strong> {{company}}</p>\n<p><strong>Service:</strong> {{serviceType}}</p>\n<p><strong>Timeline:</strong> {{timeline}}</p>\n<p><strong>Budget:</strong> {{budget}}</p>\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}',
+    subjectTemplateFull:'New Quote (Full) from {{firstName}} {{lastName}} — {{serviceType}}',
+    bodyTemplateFull:'<h2>New Quote (Full) Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n{{#if phone}}<p><strong>Phone:</strong> {{phone}}</p>{{/if}}\n<p><strong>Company:</strong> {{company}}</p>\n{{#if department}}<p><strong>Department:</strong> {{department}}</p>{{/if}}\n<p><strong>Service:</strong> {{serviceType}}</p>\n{{#if timeline}}<p><strong>Timeline:</strong> {{timeline}}</p>{{/if}}\n{{#if budget}}<p><strong>Budget:</strong> {{budget}}</p>{{/if}}\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}',
+    subjectTemplateProduct:'New Product Quote from {{firstName}} {{lastName}}',
+    bodyTemplateProduct:'<h2>New Product Quote</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<hr/>\n<p><strong>Product:</strong> {{projectDescription}}</p>\n{{#if catalogNumber}}<p><strong>Catalog #:</strong> {{catalogNumber}}</p>{{/if}}\n<p><strong>Submitted At:</strong> {{createdAt}}</p>'
+  };
+  try {
+    const cfg = JSON.parse(fs.readFileSync(SMTP_FILE,'utf-8'));
+    return Object.assign({}, baseDefaults, cfg);
+  } catch {
+    return baseDefaults;
+  }
+}
 function writeSmtpCfg(cfg){ fs.writeFileSync(SMTP_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
 
 function hashPassword(pw) {
@@ -180,7 +198,7 @@ if (MODE !== 'stripe') {
     return res.json(readSmtpCfg());
   });
   app.put('/api/smtp-config', (req,res)=>{
-    const { host, port, secure, user, pass, fromEmail, toEmails } = req.body || {};
+    const { host, port, secure, user, pass, fromEmail, toEmails, subjectTemplate, bodyTemplate, subjectTemplateFull, bodyTemplateFull, subjectTemplateProduct, bodyTemplateProduct } = req.body || {};
     const cfg = {
       host: typeof host === 'string' ? host : '',
       port: Number.isFinite(Number(port)) ? Number(port) : 465,
@@ -188,9 +206,16 @@ if (MODE !== 'stripe') {
       user: typeof user === 'string' ? user : '',
       pass: typeof pass === 'string' ? pass : '',
       fromEmail: typeof fromEmail === 'string' ? fromEmail : '',
-      toEmails: typeof toEmails === 'string' ? toEmails : ''
+      toEmails: typeof toEmails === 'string' ? toEmails : '',
+      subjectTemplate: typeof subjectTemplate === 'string' ? subjectTemplate : undefined,
+      bodyTemplate: typeof bodyTemplate === 'string' ? bodyTemplate : undefined,
+      subjectTemplateFull: typeof subjectTemplateFull === 'string' ? subjectTemplateFull : undefined,
+      bodyTemplateFull: typeof bodyTemplateFull === 'string' ? bodyTemplateFull : undefined,
+      subjectTemplateProduct: typeof subjectTemplateProduct === 'string' ? subjectTemplateProduct : undefined,
+      bodyTemplateProduct: typeof bodyTemplateProduct === 'string' ? bodyTemplateProduct : undefined,
     };
-    writeSmtpCfg(cfg);
+    const merged = Object.assign(readSmtpCfg(), cfg);
+    writeSmtpCfg(merged);
     return res.json({ ok: true });
   });
 }
@@ -306,11 +331,52 @@ app.delete('/api/users/:email', (req,res)=>{
 app.get('/api/quotes', (_req,res)=>{
   return res.json({ quotes: readQuotes() });
 });
-app.post('/api/quotes', (req,res)=>{
+// basic template renderer: supports {{key}} and {{#if key}}...{{/if}}
+function renderTemplate(tpl, data){
+  if (typeof tpl !== 'string') return '';
+  let out = tpl.replace(/\{\{\#if ([^}]+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, key, inner) => {
+    const v = data && data[String(key).trim()];
+    return v ? inner : '';
+  });
+  out = out.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
+    const k = String(key).trim();
+    const v = data && data[k];
+    return (v == null) ? '' : String(v);
+  });
+  return out;
+}
+async function trySendQuoteEmail(quote){
+  try {
+    const cfg = readSmtpCfg();
+    if (!cfg || !cfg.host || !cfg.user || !cfg.pass || !cfg.fromEmail || !cfg.toEmails) return;
+    if (!nodemailer) { console.warn('[SMTP] nodemailer not installed'); return; }
+    const transporter = nodemailer.createTransport({ host: cfg.host, port: Number(cfg.port)||465, secure: !!cfg.secure, auth: { user: cfg.user, pass: cfg.pass } });
+    const toList = String(cfg.toEmails).split(',').map(s=>s.trim()).filter(Boolean);
+    // derive type: product vs full
+    const isProduct = String(quote?.serviceType||'').toLowerCase().includes('product');
+    // parse additionalInfo for catalogNumber if JSON
+    let catalogNumber = '';
+    try {
+      const ai = quote?.additionalInfo;
+      if (typeof ai === 'string') { const parsed = JSON.parse(ai); if (parsed && typeof parsed === 'object' && parsed.catalogNumber) catalogNumber = String(parsed.catalogNumber); }
+      else if (ai && typeof ai === 'object' && ai.catalogNumber) catalogNumber = String(ai.catalogNumber);
+    } catch {}
+    const data = Object.assign({}, quote, { catalogNumber });
+    const subject = renderTemplate((isProduct ? (cfg.subjectTemplateProduct || cfg.subjectTemplate) : (cfg.subjectTemplateFull || cfg.subjectTemplate)) || 'New Quote {{id}}', data);
+    const html = renderTemplate((isProduct ? (cfg.bodyTemplateProduct || cfg.bodyTemplate) : (cfg.bodyTemplateFull || cfg.bodyTemplate)) || JSON.stringify(data, null, 2), data);
+    await transporter.sendMail({ from: cfg.fromEmail, to: toList, subject, html });
+    console.log('[SMTP] Quote notification sent to', toList.join(', '));
+  } catch (e) {
+    console.warn('[SMTP] Failed to send quote email:', e?.message || e);
+  }
+}
+app.post('/api/quotes', async (req,res)=>{
   const input = req.body || {};
   const q = Object.assign({}, input, { id: `q_${Date.now()}`, createdAt: new Date().toISOString(), read: false });
   const list = readQuotes();
   writeQuotes([q, ...list]);
+  // fire-and-forget email (no await blocking response)
+  trySendQuoteEmail(q);
   return res.json({ quote: q });
 });
 app.put('/api/quotes/:id/read', (req,res)=>{
@@ -325,6 +391,21 @@ app.delete('/api/quotes/:id', (req,res)=>{
   const list = readQuotes().filter(q => q.id !== id);
   writeQuotes(list);
   return res.json({ ok: true });
+});
+
+// SMTP test endpoint: send a test mail with dummy data to verify config
+app.post('/api/smtp-test', async (req,res)=>{
+  try {
+    const { type } = req.body || {};
+    const isProduct = String(type||'').toLowerCase() === 'product';
+    const sample = isProduct
+      ? { id: 'q_test_prod', firstName:'Test', lastName:'User', email:'test@example.com', company:'BioArk', serviceType:'Product Quote', projectDescription:'BADM3362 – GN8K DNA Marker (500 μL)', additionalInfo: JSON.stringify({ catalogNumber: 'BADM3362' }), createdAt: new Date().toISOString() }
+      : { id: 'q_test_full', firstName:'Test', lastName:'User', email:'test@example.com', phone:'123-456', company:'ACME', department:'R&D', serviceType:'Genome Editing', projectDescription:'CRISPR KO in HEK293', timeline:'1-2 months', budget:'$10k-$20k', createdAt: new Date().toISOString() };
+    await trySendQuoteEmail(sample);
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ error: e?.message || String(e) });
+  }
 });
 
 // Auth: signup

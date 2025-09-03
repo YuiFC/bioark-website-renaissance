@@ -18,5 +18,10 @@
     "email": "test@test.com",
     "role": "User",
     "name": "test"
+  },
+  "89c803c8-47b3-44ad-bc35-d2e3f3e5bd3f": {
+    "email": "Lipengwu@bioarktech.com",
+    "role": "Admin",
+    "name": "Lipeng Wu"
   }
 }
