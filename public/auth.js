@@ -49,14 +49,14 @@
     });
   });
 
-  // Backend API base (set via ?api=..., or window.BIOARK_API_BASE, else default localhost)
+  // Backend API base (set via ?api=..., or window.BIOARK_API_BASE, else same-origin)
   const API_BASE = (function(){
     try {
       const fromQuery = new URLSearchParams(window.location.search).get('api');
       if (fromQuery) return fromQuery;
     } catch {}
-    if (window && window.BIOARK_API_BASE) return window.BIOARK_API_BASE;
-    return 'http://localhost:4242';
+    if (window && window.BIOARK_API_BASE != null) return window.BIOARK_API_BASE;
+    return '';
   })();
   const TOKEN_KEY = 'bioark_auth_token';
 

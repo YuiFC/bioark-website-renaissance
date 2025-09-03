@@ -2,35 +2,5 @@
   "version": "2025-08-29-1",
   "posts": [],
   "hidden": [],
-  "overrides": {
-    "1": {
-      "category": "BioArk Insights",
-      "tags": [
-        "CRISPR",
-        "Retrotransposon",
-        "Large Insertion"
-      ]
-    },
-    "2": {
-      "tags": [
-        "CAR-T",
-        "CRISPR",
-        "Oncology"
-      ]
-    },
-    "3": {
-      "tags": [
-        "CRISPR",
-        "PAM",
-        "Cas9"
-      ]
-    },
-    "4": {
-      "tags": [
-        "VLP",
-        "AAV",
-        "Prime Editing"
-      ]
-    }
-  }
+  "overrides": {}
 }

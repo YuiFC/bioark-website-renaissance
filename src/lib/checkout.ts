@@ -7,8 +7,22 @@ export type CheckoutItem = {
   variant?: string;
 };
 
-export async function createCheckoutSession(items: CheckoutItem[], options?: { successUrl?: string; cancelUrl?: string; currency?: string }) {
-  const base = import.meta.env.VITE_API_BASE || 'http://localhost:4242';
+export type CheckoutAddress = {
+  name?: string;
+  email?: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state?: string;
+  postal_code: string;
+  country: string; // ISO 2-letter, e.g., US, CA, CN
+};
+
+export async function createCheckoutSession(
+  items: CheckoutItem[],
+  options?: { successUrl?: string; cancelUrl?: string; currency?: string; shippingCents?: number; address?: CheckoutAddress }
+) {
+  const base = (import.meta.env as any).VITE_STRIPE_API_BASE || (import.meta.env as any).VITE_API_BASE || '';
   const res = await fetch(`${base}/create-checkout-session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

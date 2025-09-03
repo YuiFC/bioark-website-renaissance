@@ -21,7 +21,7 @@ export type Quote = {
   submittedByAddress?: string;
 };
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || (typeof window !== 'undefined' && (window as any).BIOARK_API_BASE) || 'http://localhost:4242';
+const API_BASE = (import.meta as any).env?.VITE_API_BASE || (typeof window !== 'undefined' && (window as any).BIOARK_API_BASE) || '';
 
 export async function getQuotes(): Promise<Quote[]> {
   const r = await fetch(API_BASE + '/api/quotes');

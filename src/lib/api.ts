@@ -27,8 +27,8 @@ export async function fetchJson<T=any>(path: string, init?: RequestInit): Promis
   try {
     const { r, d } = await tryFetch(base + path);
     if (r.ok) return d as T;
-    // Fallback: if same-origin base ('') and API not available, try localhost:4242 for local dev
-    if (!base && path.startsWith('/api/')) {
+    // Fallback: if running on localhost and API not available, try localhost:4242 for local dev only
+    if (typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname) && path.startsWith('/api/')) {
       const { r: r2, d: d2 } = await tryFetch('http://localhost:4242' + path);
       if (r2.ok) return d2 as T;
       const msg2 = (d2 && (d2.error || d2.message)) || `HTTP ${r2.status}`;
@@ -37,8 +37,8 @@ export async function fetchJson<T=any>(path: string, init?: RequestInit): Promis
     const msg = (d && (d.error || d.message)) || `HTTP ${r.status}`;
     throw new Error(msg);
   } catch (e) {
-    // Network error fallback for same-origin path
-    if (!base && path.startsWith('/api/')) {
+    // Network error fallback when on localhost dev only
+    if (typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname) && path.startsWith('/api/')) {
       const { r: r3, d: d3 } = await tryFetch('http://localhost:4242' + path);
       if (r3.ok) return d3 as T;
       const msg3 = (d3 && (d3.error || d3.message)) || `HTTP ${r3.status}`;

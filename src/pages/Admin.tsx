@@ -815,8 +815,7 @@ function ProductPanel() {
   React.useEffect(()=>{
     (async()=>{
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE|| (window as any).BIOARK_API_BASE || 'http://localhost:4242'}/api/products-config`);
-        const cfg = await res.json();
+        const cfg = await fetchJson<any>('/api/products-config');
         setHidden(Array.isArray(cfg.hidden)?cfg.hidden:[]);
         setOverrides(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{});
         setCustom(Array.isArray(cfg.products)?cfg.products:[]);
@@ -847,9 +846,7 @@ function ProductPanel() {
       localStorage.setItem('bioark_products_hidden', JSON.stringify(payload.hidden));
     } catch {}
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE|| (window as any).BIOARK_API_BASE || 'http://localhost:4242'}/api/products-config`, {
-        method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload)
-      });
+      await fetchJson('/api/products-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
     } catch (e){ console.error('Save products-config failed', e); }
   };
 

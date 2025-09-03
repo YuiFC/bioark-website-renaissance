@@ -2,6 +2,362 @@
   "version": 1,
   "products": [],
   "overrides": {},
-  "details": {},
+  "details": {
+    "fp-badm3362": {
+      "catalogNumber": "FP-001",
+      "availability": "In Stock",
+      "listPrice": "$47.00",
+      "options": [
+        "500 μL",
+        "2 x 500 μL",
+        "5 x 500 μL"
+      ],
+      "optionPrices": {
+        "500 μL": "$39.00",
+        "2 x 500 μL": "$75.00",
+        "5 x 500 μL": "$175.00"
+      },
+      "keyFeatures": [
+        "(100 bp、250 bp、500 bp、750 bp、1000 bp、1500 bp、2000 bp、3000 bp、5000 bp、8000bp)"
+      ],
+      "storageStability": "Ship with wet ice; Store at -20℃; valid for 24 months.",
+      "performanceData": "Not available",
+      "manuals": [
+        "BADM3362 GN8K DNA Marker(PDF)"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BADM3362_GN8K_DNA_Marker.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BADM3362_GN8K_DNA_Marker-1-300x300.jpg"
+      ]
+    },
+    "fp-badm3363": {
+      "catalogNumber": "BADM3363",
+      "availability": "In Stock",
+      "listPrice": "$47.00",
+      "options": [
+        "500 μL",
+        "2 x 500 μL",
+        "5 x 500 μL"
+      ],
+      "optionPrices": {
+        "500 μL": "$39.00",
+        "2 x 500 μL": "$75.00",
+        "5 x 500 μL": "$175.00"
+      },
+      "keyFeatures": [
+        "(300 bp、500 bp、800 bp、1000 bp、1500 bp、2000 bp、3000 bp、5000 bp、7500 bp、10000 bp)"
+      ],
+      "storageStability": "Ship with wet ice; Store at -20℃; valid for 24 months.",
+      "performanceData": "\nNot available",
+      "manuals": [
+        "BADM3363 GN10K DNA Marker"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BADM3363_GN10K_DNA_Marker.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BADM3363_GN10K_DNA_Marker-1-300x300.jpg"
+      ]
+    },
+    "fp-badm3364": {
+      "catalogNumber": "BADM3364",
+      "availability": "In Stock",
+      "listPrice": "$47.00",
+      "options": [
+        "500 μL",
+        "2 x 500 μL",
+        "5 x 500 μL"
+      ],
+      "optionPrices": {
+        "500 μL": "$39.00",
+        "2 x 500 μL": "$75.00",
+        "5 x 500 μL": "$175.00"
+      },
+      "keyFeatures": [
+        "(500 bp、1000 bp、1500 bp、2000 bp、3000 bp、5000 bp、7500 bp、10000 bp、15000 bp)"
+      ],
+      "storageStability": "Ship with wet ice; Store at -20℃; valid for 24 months.",
+      "performanceData": "Not available",
+      "manuals": [
+        "BADM3364 GN15K DNA Marker"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BADM3364_GN15K_DNA_Marker.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BADM3364_GN15K_DNA_Marker-1-300x300.jpg"
+      ]
+    },
+    "fp-bal100468": {
+      "catalogNumber": "BAL100468",
+      "availability": "In Stock",
+      "listPrice": "$40.00",
+      "options": [
+        "0.1 mL",
+        "0.5 mL",
+        "1.0 mL",
+        "6 x 1.0 mL"
+      ],
+      "optionPrices": {
+        "0.1 mL": "$35.00",
+        "0.5 mL": "$188.00",
+        "1.0 mL": "$320.00",
+        "6 x 1.0 mL": "$1600.00"
+      },
+      "keyFeatures": [
+        "Versatile: Supports DNA transfection, siRNA transfection, and DNA/siRNA co-transfection.",
+        "Highly Efficient: Optimized for adherent cells with outstanding transfection rates.",
+        "Low Cytotoxicity: Ensures improved cell viability post-transfection.",
+        "Cost-Effective: More transfections per unit with minimal reagent use.",
+        "User-Friendly: Single-tube reaction, serum/antibiotic compatibility, and high-throughput application suitability."
+      ],
+      "storageStability": "BioArkLipo® Reagent: Store at 4°C.\nBioArkLipo® Buffer: Store at room temperature.\nShelf life: 12 months or longer under proper storage conditions.",
+      "performanceData": "•        Higher transfection efficiency than leading competitors like Lipofectamine 2000 (L2K) and BAPoly®.\n•        Lower cytotoxicity, leading to better cell viability post-transfection.\n•        Excellent gene silencing efficiency for siRNA transfection and co-transfection applications.",
+      "manuals": [
+        "BioArkLipo® for DNA siRNA Co-transfection",
+        "BioArkLipo® Manual"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BioArkLipo_for_DNA_siRNA_Co-transfection.pdf",
+        "https://api.bioarktech.com/media/manual_files/BioArkLipo_Manual.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BioArkLipo-1-300x300.png"
+      ]
+    },
+    "fp-bal100668": {
+      "catalogNumber": "BAL100668",
+      "availability": "In Stock",
+      "listPrice": "$26.00",
+      "options": [
+        "0.1 mL",
+        "0.5 mL",
+        "1.0 mL",
+        "5 x 1.0 mL"
+      ],
+      "optionPrices": {
+        "0.1 mL": "$21.00",
+        "0.5 mL": "$89.00",
+        "1.0 mL": "$170.00",
+        "5 x 1.0 mL": "$701.00"
+      },
+      "keyFeatures": [
+        "High transfection efficiency for HEK293 and various mammalian cells",
+        "Optimized for virus production and recombinant protein expression",
+        "Effective for long DNA sequences (up to 180 kb) and suspension 293 cells",
+        "Works efficiently in the presence of serum and antibiotics",
+        "Cost-effective alternative to leading transfection reagents"
+      ],
+      "storageStability": "Stable for 12 months or longer when stored at 4°C.",
+      "performanceData": "BAJet® (Ver. II) has demonstrated superior transfection efficiency compared to Lipofectamine 2000, Fugene HD, 293fectin, and other leading reagents in multiple cell lines, including HepG2, CHO, and primary smooth muscle cells. It also significantly enhances lentivirus production, achieving higher viral titers than competing products.",
+      "manuals": [
+        "BAjet for Lentivirus",
+        "BAjet for suspension cells",
+        "BAjet Manual"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BAjet_for_Lentivirus.pdf",
+        "https://api.bioarktech.com/media/manual_files/BAjet_for_suspension_cells.pdf",
+        "https://api.bioarktech.com/media/manual_files/BAjet_Manual.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BAjet-1-300x300.png"
+      ]
+    },
+    "fp-bal100688": {
+      "catalogNumber": "BAL100688",
+      "availability": "In Stock",
+      "listPrice": "$23.00",
+      "options": [
+        "0.1 mL",
+        "0.5 mL",
+        "1.0 mL",
+        "7 x 1.0 mL"
+      ],
+      "optionPrices": {
+        "0.1 mL": "$20.00",
+        "0.5 mL": "$65.00",
+        "1.0 mL": "$120.00",
+        "7 x 1.0 mL": "$610.00"
+      },
+      "keyFeatures": [
+        "Biodegradable after endocytosis",
+        "Compatible with long DNA sequences (>89 kb)",
+        "Affordable and easy to use",
+        "High transfection efficiency across various mammalian cell types",
+        "Stable for 12+ months when stored at 4°C"
+      ],
+      "storageStability": "Stable for 12 months or longer when stored at 4°C.",
+      "performanceData": "Comparative studies demonstrate superior or comparable performance of BAPoly® against leading transfection reagents (e.g., Lipofectamine 2000, Fugene HD), particularly in HEK293, CHO, HepG2, and MDCK cells. The product (1.0 mL) supports ~667 transfections in 24-well plates or ~333 in 6-well plates.",
+      "manuals": [
+        "BAPoly Manual",
+        "BAPoly for Hard-to-Transfect Mammalian Cells",
+        "BAPoly for Lentivirus",
+        "BAPoly for suspension cells"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BAPoly_Manual.pdf",
+        "https://api.bioarktech.com/media/manual_files/BAPoly_for_Hard-to-Transfect_Mammalian_Cells.pdf",
+        "https://api.bioarktech.com/media/manual_files/BAPoly_for_Lentivirus.pdf",
+        "https://api.bioarktech.com/media/manual_files/BAPoly_for_suspension_cells.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BAPoly-1-300x300.png"
+      ]
+    },
+    "fp-bapm2083": {
+      "catalogNumber": "BAPM2083",
+      "availability": "In Stock",
+      "listPrice": "$59.00",
+      "options": [
+        "250 μL",
+        "2 x 250 μL",
+        "3 x 250 μL"
+      ],
+      "optionPrices": {
+        "250 μL": "$48.00",
+        "2 x 250 μL": "$91.00",
+        "3 x 250 μL": "$139.00"
+      },
+      "keyFeatures": [
+        "(~8, ~13, ~20, ~30, ~40, ~55, ~68, ~90, ~110, ~140, ~200 kDa)"
+      ],
+      "storageStability": "Ship with wet ice; Store at -20℃, valid for 12 months.",
+      "performanceData": "Luo, J., et al.Anti-Obesity Effects of Adzuki Bean Saponins in Improving Lipid Metabolism Through Reducing Oxidative Stress and Alleviating Mitochondrial Abnormality by Activating the PI3K/Akt/GSK3β/β-Catenin Signaling Pathway.Antioxidants (Basel)13(2024).PMID 39594522IF 6",
+      "manuals": [
+        "BAPM2083 Prestained Protein Marker Ⅳ(PDF)"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BAPM2083_Prestained_Protein_Marker_%E2%85%A3.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg"
+      ]
+    },
+    "fp-bapm2086": {
+      "catalogNumber": "BAPM2086",
+      "availability": "In Stock",
+      "listPrice": "$59.00",
+      "options": [
+        "250 μL",
+        "2 × 250 μL",
+        "3 × 250 μL"
+      ],
+      "optionPrices": {
+        "250 μL": "$48.00",
+        "2 × 250 μL": "$91.00",
+        "3 × 250 μL": "$139.00"
+      },
+      "keyFeatures": [
+        "Ten bands: ~12, ~22, ~28, ~38, ~50, ~62, ~70, ~78, ~113, ~154 kDa",
+        "Color markers: orange-red at 70 kDa, blue at 12 kDa"
+      ],
+      "storageStability": "Ship with wet ice; Store at -20°C; Valid for 12 months.",
+      "performanceData": "Zhang, N., et al. High expression of peroxisomal D-bifunctional protein in cytosol regulates apoptosis and energy metabolism of hepatocellular carcinoma cells via PI3K/AKT pathway. Am J Cancer Res 13, 1884-1903 (2023). PMID 37293151 IF 5.3\nQiu, P., et al. SPI1 Mediates N-Myristoyltransferase 1 to Advance Gastric Cancer Progression via PI3K/AKT/mTOR Pathway. Canadian Journal of Gastroenterology and Hepatology 2023, 2021515 (2023). PMID 36967718 IF 2.7",
+      "manuals": [
+        "BAPM2086 Western Protein Marker I"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BAPM2086_Western_Protein_Marker_I.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg"
+      ]
+    },
+    "fp-bsy3320": {
+      "catalogNumber": "BSY3320",
+      "availability": "In Stock",
+      "listPrice": "$208.34",
+      "options": [
+        "1 mL (None ROX)",
+        "1 mL (Low ROX)",
+        "1 mL (High ROX)"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "Easy to use: 2× premixed, requires only primers and DNA, reducing contamination risk.",
+        "High accuracy: Hot-start Taq polymerase prevents non-specific amplification.",
+        "Reliable results: Optimized buffer ensures accurate quantification and reproducibility."
+      ],
+      "storageStability": "Ship with wet ice. Store at -20°C without light, valid for 12 months. Avoid freeze-thaw cycles. After thawing, it can be stably stored at 4°C for one month without light.",
+      "performanceData": "Zhuang, H., et al. Cartilage-targeting peptide-modified cerium oxide nanoparticles alleviate oxidative stress and cartilage damage in osteoarthritis. J Nanobiotechnology 22, 784 (2024). PMID 39702137 IF 10.2\nLiu, S., et al. Therapeutic biomaterials with liver X receptor agonists based on the horizon of material biology to regulate atherosclerotic plaque regression in situ for devices surface engineering. Regen Biomater 11, rbae089 (2024). PMID 39165884 IF 6.7\nHuang, M., et al. 3-Hydroxybutyrate ameliorates sepsis-associated acute lung injury by promoting autophagy through the activation of GPR109α in macrophages. Biochemical Pharmacology 213, 115632 (2023). PMID 37263300 IF 5.8\nSun, W., et al. 4-Iodo-6-phenylpyrimidine (4-IPP) suppresses fibroblast-like synoviocyte-mediated inflammation and joint destruction associated with rheumatoid arthritis. International Immunopharmacology 115, 109714 (2023). PMID 36657337 IF 5.6\nZhou, Y., et al. Guominkang formula alleviate inflammation in eosinophilic asthma by regulating immune balance of Th1/2 and Treg/Th17 cells. Front Pharmacol 13, 978421 (2022). PMID 36330091 IF 5.6\nLiu, Y.-Y., et al. Pilose antler (Cervus elaphus Linnaeus) polysaccharide and polypeptide extract inhibits bone resorption in high turnover type osteoporosis by stimulating the MAKP and MMP-9 signaling pathways. Journal of Ethnopharmacology 304, 116052 (2023). PMID 36529246 IF 5.4\nLi, M., et al. Atorvastatin calcium alleviates UVB-induced HaCat cell senescence and skin photoaging. Sci Rep 14, 30010 (2024). PMID 39622974 IF 4.6\nZhu, J., et al. Molybdenum and cadmium co-induce apoptosis and ferroptosis through inhibiting Nrf2 signaling pathway in duck (Anas platyrhyncha) testes. Poult Sci 24, 103653 (2024). PMID 38537407 IF 4.4\nZhuang, H., et al. Trimethylamine-N-oxide sensitizes chondrocytes to mechanical loading through the upregulation of Piezo1. Food and Chemical Toxicology 175, 113726 (2023). PMID 36925039 IF 4.3",
+      "manuals": [
+        "BSY3320 2 × SYBR Green qPCR Master Mix (High ROX)",
+        "BSY3320 2 × SYBR Green qPCR Master Mix (Low ROX)",
+        "BSY3320 2 × SYBR Green qPCR Master Mix (None ROX)"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BSY3320_2__SYBR_Green_qPCR_Master_Mix_High_ROX.pdf",
+        "https://api.bioarktech.com/media/manual_files/BSY3320_2__SYBR_Green_qPCR_Master_Mix_Low_ROX.pdf",
+        "https://api.bioarktech.com/media/manual_files/BSY3320_2__SYBR_Green_qPCR_Master_Mix_None_ROX.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/products/bsy3320-sybr-green-qpcr-master-mix",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/1-BSY3320_2__SYBR_Green_qPCR_Master_Mix-300x300.jpg"
+      ]
+    },
+    "fp-bsy3323": {
+      "catalogNumber": "BSY3323",
+      "availability": "In Stock",
+      "listPrice": "$59.89",
+      "options": [
+        "1 mL (None ROX)",
+        "1 mL (Low ROX)",
+        "1 mL (High ROX)"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "Fast & easy: 2× premixed, requires only primers and DNA, completing qPCR in 30 minutes.",
+        "High precision: Hot-start Taq polymerase prevents non-specific amplification.",
+        "Reliable results: Optimized buffer ensures accurate quantification and good reproducibility."
+      ],
+      "storageStability": "Ship with wet ice. Store at -20°C without light, valid for 12 months. Avoid freeze-thaw cycles. After thawing, it can be stably stored at 4℃ for one month without light.",
+      "performanceData": "Validated with various gene targets and sample types. Ct values typically 0.5-1 cycle earlier than competitor products.",
+      "manuals": [
+        "BSY3323 2 × Fast SYBR Green qPCR Master Mix (Low ROX)",
+        "BSY3323 2 × Fast SYBR Green qPCR Master Mix (High ROX)",
+        "BSY3323 2 × Fast SYBR Green qPCR Master Mix (None ROX)"
+      ],
+      "manualUrls": [
+        "https://api.bioarktech.com/media/manual_files/BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix_Low_ROX.pdf",
+        "https://api.bioarktech.com/media/manual_files/BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix_High_ROX.pdf",
+        "https://api.bioarktech.com/media/manual_files/BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix_None_ROX.pdf"
+      ],
+      "storeLink": "https://store.bioarktech.com/products/bsy3323-fast-sybr-green-qpcr-master-mix",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg"
+      ]
+    }
+  },
   "hidden": []
 }

@@ -9,6 +9,18 @@ const crypto = require('crypto');
 const Stripe = require('stripe');
 
 const app = express();
+// Initialize Stripe client
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SK || '';
+let stripe = null;
+if (STRIPE_SECRET_KEY) {
+  try {
+    stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+  } catch (e) {
+    console.error('[Stripe] Invalid STRIPE_SECRET_KEY', e?.message || e);
+  }
+} else {
+  console.warn('[Stripe] STRIPE_SECRET_KEY not set; Stripe checkout will be disabled');
+}
 const MODE = process.env.MODE || 'all'; // 'stripe' | 'content' | 'all'
 // Increase JSON body limit to allow base64 image uploads
 app.use(express.json({ limit: '20mb' }));
@@ -359,13 +371,18 @@ app.get('/api/me', (req, res) => {
 });
 
 // POST /create-checkout-session (only when not in 'content' mode)
-// body: { items: [{ name, price, quantity, imageUrl }], successUrl?, cancelUrl? }
+// body: {
+//   items: [{ name, price, quantity, imageUrl }],
+//   successUrl?, cancelUrl?, currency?,
+//   shippingCents?: number,
+//   address?: { name?: string; email?: string; line1: string; line2?: string; city: string; state?: string; postal_code: string; country: string }
+// }
 if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe not configured on server' });
     }
-  const { items, successUrl, cancelUrl, currency } = req.body || {};
+  const { items, successUrl, cancelUrl, currency, shippingCents, address } = req.body || {};
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'No items provided' });
     }
@@ -379,7 +396,7 @@ if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) =>
     // Map cart items to Stripe line_items. Expect price is in cents on frontend already.
     const line_items = items
       .filter((it) => typeof it.price === 'number' && it.price > 0 && typeof it.quantity === 'number' && it.quantity > 0)
-  .map((it, idx) => ({
+      .map((it, idx) => ({
         price_data: {
           currency: (currency || 'usd').toLowerCase(),
           product_data: {
@@ -405,7 +422,37 @@ if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) =>
       .join('; ')
       .slice(0, 500);
 
-  console.log('[Stripe] Creating session with', { count: items.length, summary });
+  // Prepare shipping and tax
+    const shipAmount = Number.isFinite(Number(shippingCents)) && Number(shippingCents) > 0 ? Math.round(Number(shippingCents)) : 4000; // default $40
+    const cur = (currency || 'usd').toLowerCase();
+
+    // If address provided, create a Customer to prefill details
+    let customerId = null;
+    let allowedCountries = null;
+    try {
+      if (address && typeof address === 'object' && address.country) {
+        const addr = {
+          line1: String(address.line1 || ''),
+          line2: address.line2 ? String(address.line2) : undefined,
+          city: String(address.city || ''),
+          state: address.state ? String(address.state) : undefined,
+          postal_code: String(address.postal_code || ''),
+          country: String(address.country).toUpperCase(),
+        };
+        const created = await stripe.customers.create({
+          name: address.name ? String(address.name) : undefined,
+          email: address.email ? String(address.email) : undefined,
+          address: addr,
+          shipping: { name: address.name ? String(address.name) : undefined, address: addr }
+        });
+        customerId = created.id;
+        allowedCountries = [addr.country];
+      }
+    } catch (e) {
+      console.warn('Failed to create customer for provided address, will proceed without prefill', e?.message || e);
+    }
+
+    console.log('[Stripe] Creating session with', { count: items.length, summary });
   const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -413,6 +460,18 @@ if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) =>
       success_url: toHttpUrlOrNull(successUrl) || `${origin.replace(/\/?$/, '')}/cart?success=1`,
       cancel_url: toHttpUrlOrNull(cancelUrl) || `${origin.replace(/\/?$/, '')}/cart?canceled=1`,
       billing_address_collection: 'auto',
+      automatic_tax: { enabled: true },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            display_name: 'Standard Shipping',
+      type: 'fixed_amount',
+            fixed_amount: { amount: shipAmount, currency: cur },
+          },
+        },
+      ],
+    shipping_address_collection: { allowed_countries: allowedCountries || ['US'] },
+      customer: customerId || undefined,
       metadata: {
         cart_summary: summary,
         cart_count: String(items.length),

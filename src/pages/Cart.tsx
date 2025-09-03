@@ -29,21 +29,30 @@ const CartPage = () => {
   const onCheckout = async () => {
     try {
       setLoading(true);
-  const payload = payableItems.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity, imageUrl: i.imageUrl, variant: i.variant }));
+      const payload = payableItems.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity, imageUrl: i.imageUrl, variant: i.variant }));
       if (!payload.length) {
-  toast({ title: '无法结算', description: '购物车中没有可支付的商品（报价类不支持在线支付）。', variant: 'destructive' });
+        toast({ title: 'Cannot checkout', description: 'No payable items in the cart (quote-based items are not eligible for online payment).', variant: 'destructive' });
         return;
       }
-  const { url } = await createCheckoutSession(payload, { successUrl: `${window.location.origin}/cart?success=1`, cancelUrl: `${window.location.origin}/cart?canceled=1` });
+      const { url } = await createCheckoutSession(payload, {
+        successUrl: `${window.location.origin}/cart?success=1`,
+        cancelUrl: `${window.location.origin}/cart?canceled=1`,
+        shippingCents: 4000,
+      });
       window.location.href = url;
     } catch (e: any) {
-  console.error('Checkout error', e);
-  const msg = typeof e?.message === 'string' ? e.message : '请稍后重试。';
-  toast({ title: '创建支付会话失败', description: msg, variant: 'destructive' });
+      console.error('Checkout error', e);
+      const msg = typeof e?.message === 'string' ? e.message : 'Please try again later.';
+      toast({ title: 'Failed to create checkout session', description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
+
+  const shipping = 4000; // $40 flat
+  const total = subtotal + (payableItems.length > 0 ? shipping : 0);
+
+  // No in-site address collection; users will fill it on Stripe.
   return (
     <Layout>
       <div className="min-h-screen bg-[#F8F8F8]">
@@ -52,10 +61,10 @@ const CartPage = () => {
             <h1 className="text-3xl font-bold text-neutral-800 mb-6">Shopping Cart</h1>
 
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-3 mb-4">支付成功，感谢您的购买！</div>
+              <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-3 mb-4">Payment successful. Thank you for your purchase!</div>
             )}
             {canceled && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl p-3 mb-4">您已取消支付。</div>
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl p-3 mb-4">You canceled the payment.</div>
             )}
             {!items.length ? (
               <div className="bg-white rounded-xl shadow-sm p-8 text-center text-neutral-500">
@@ -91,7 +100,15 @@ const CartPage = () => {
                       <span>Subtotal</span>
                       <span className="font-semibold">{formatCents(subtotal)}</span>
                     </div>
-                      <Button disabled={loading || payableItems.length === 0} onClick={onCheckout} className="w-full mt-4 rounded-full bg-blue-700 hover:bg-blue-700/90 text-white">
+                    <div className="flex justify-between text-neutral-700 mt-2">
+                      <span>Shipping</span>
+                      <span className="font-semibold">{payableItems.length > 0 ? formatCents(shipping) : '$0.00'}</span>
+                    </div>
+                    <div className="flex justify-between text-neutral-900 mt-2 border-t pt-2">
+                      <span className="font-semibold">Estimated Total</span>
+                      <span className="font-bold">{formatCents(payableItems.length > 0 ? total : subtotal)}</span>
+                    </div>
+                      <Button disabled={loading || payableItems.length === 0} onClick={() => onCheckout()} className="w-full mt-4 rounded-full bg-blue-700 hover:bg-blue-700/90 text-white">
                         {loading ? 'Processing…' : 'Checkout'}
                       </Button>
                       <div className="mt-4 flex items-center justify-center gap-2 text-neutral-500">
@@ -107,6 +124,7 @@ const CartPage = () => {
                 </div>
               </div>
             )}
+            {/* No address modal: users will fill shipping/billing details on Stripe. */}
           </div>
         </section>
       </div>

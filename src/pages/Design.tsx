@@ -15,6 +15,8 @@ type FunctionType =
   | 'shRNA' | 'siRNA' | 'Overexpression' | 'Knock-In' | 'Knock-Out';
 type DeliveryType = 'Standard' | 'All-in-One' | 'Lenti' | 'Lenti-AIO' | 'Plasmid' | 'AAV';
 
+type FormatType = 'vector' | 'Lentivirus' | 'Cell';
+
 type StructureSelections = {
   promoter?: 'PCMV' | 'EF1a' | 'EF1a Core';
   proteinTag?: 'His' | 'MycDDK' | 'None' | 'Customized';
@@ -80,6 +82,24 @@ const SELECTION: StructureSelections['selection'][] = ['Puro', 'BSD', 'Neo', 'No
 
 const TARGET_CHOICES: TargetChoice[] = ['Search Target Gene', 'Control (or Scramble)', 'Non-Insert (or Template)'];
 
+const FORMAT_INFO: Record<FormatType, { label: string; caption: string }> = {
+  vector: {
+    label: 'Vector',
+    caption:
+      'The products are provided as a kit containing all the essential components for convenient use in your experiments. For CRISPR/RNAi targeting a specific gene, three distinct gRNAs/shRNAs are designed to target the specified genes or RNAs, with a scramble tube included as a control. If ordering only a CRISPR/RNAi control, non-insert vector, overexpression or inducible expression, the corresponding tube is included in the kit.',
+  },
+  Lentivirus: {
+    label: 'Lentivirus',
+    caption:
+      'The product is provided as lentivirus at titers specified by the customer, with three available options: 1×10⁷, 1×10⁸, and 1×10⁹ TU/mL. For CRISPR/RNAi targeting a specific gene, three DNA constructs are combined to create the lentiviral mixture, with a separate scramble tube included as a control. If ordering only a CRISPR/RNAi control, overexpression or inducible expression, the corresponding tube is included in the package.',
+  },
+  Cell: {
+    label: 'Cell',
+    caption:
+      'The constructed stable cell line is provided as frozen cells in quantities specified by the customer.',
+  },
+};
+
 const StepBadge = ({ index, title, active, done }: { index: number; title: string; active?: boolean; done?: boolean }) => (
   <div className={`flex items-center gap-3 px-3 py-2 rounded-lg border transition-all ${active ? 'border-primary bg-primary/5 shadow-sm' : 'border-border'} ${done ? 'opacity-80' : ''}`}>
     <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${active ? 'bg-primary text-primary-foreground scale-105' : 'bg-muted text-foreground'} ${done ? 'bg-primary text-primary-foreground' : ''}`}>
@@ -123,6 +143,7 @@ export default function Design() {
   const [geneName, setGeneName] = useState('');
   const [geneSpecies, setGeneSpecies] = useState('');
   const [geneSubmitted, setGeneSubmitted] = useState(false);
+  const [formats, setFormats] = useState<FormatType[]>([]);
 
   const canNext = useMemo(() => {
     if (step === 1) return !!category;
@@ -133,10 +154,13 @@ export default function Design() {
       if (targetChoice === 'Search Target Gene') return geneSubmitted; // only after user submits
       return !!targetChoice;
     }
+    if (step === 6) {
+      return formats.length > 0;
+    }
     return false;
-  }, [step, category, funcType, delivery, structure, targetChoice, geneSubmitted]);
+  }, [step, category, funcType, delivery, structure, targetChoice, geneSubmitted, formats]);
 
-  const canAddToCart = useMemo(() => step === 5 && canNext, [step, canNext]);
+  const canAddToCart = useMemo(() => step === 6 && canNext, [step, canNext]);
 
   // Pricing policy for Gene Design
   // Pricing hidden per request
@@ -167,8 +191,9 @@ export default function Design() {
     if (structure.fluorescence) s.push(`Fluo:${structure.fluorescence}`);
     if (structure.selection) s.push(`Select:${structure.selection}`);
     if (summary.target) s.push(`Target:${summary.target}`);
+    if (formats.length) s.push(`Format:${formats.map(f => FORMAT_INFO[f].label).join('+')}`);
     return s.join(' | ');
-  }, [structure, summary]);
+  }, [structure, summary, formats]);
 
   // Quote dialog state
   const [quoteOpen, setQuoteOpen] = useState(false);
@@ -203,14 +228,14 @@ export default function Design() {
   // Legend overlay removed per request
 
   const resetAfter = (toStep: number) => {
-  if (toStep <= 1) { setFuncType(undefined); setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
-  else if (toStep <= 2) { setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
-  else if (toStep <= 3) { setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
-  else if (toStep <= 4) { setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); }
+  if (toStep <= 1) { setFuncType(undefined); setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); setFormats([]); }
+  else if (toStep <= 2) { setDelivery(undefined); setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); setFormats([]); }
+  else if (toStep <= 3) { setStructure({}); setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); setFormats([]); }
+  else if (toStep <= 4) { setTargetChoice(undefined); setGeneName(''); setGeneSpecies(''); setGeneSubmitted(false); setFormats([]); }
     setStep(toStep);
   };
 
-  const goNext = () => { if (canNext) setStep((s) => Math.min(5, s + 1)); };
+  const goNext = () => { if (canNext) setStep((s) => Math.min(6, s + 1)); };
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
   const currentFunctions = category ? FUNCTION_BY_CATEGORY[category] : [];
@@ -221,18 +246,19 @@ export default function Design() {
       <div className="min-h-screen bg-background">
         {/* Step indicator */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <StepBadge index={1} title="Select category" active={step === 1} done={step > 1} />
             <StepBadge index={2} title="Select function type" active={step === 2} done={step > 2} />
             <StepBadge index={3} title="Select delivery type" active={step === 3} done={step > 3} />
             <StepBadge index={4} title="Select structure map" active={step === 4} done={step > 4} />
-            <StepBadge index={5} title="Select target gene" active={step === 5} />
+            <StepBadge index={5} title="Select target gene" active={step === 5} done={step > 5} />
+            <StepBadge index={6} title="TypeFunctional Format" active={step === 6} />
           </div>
           {/* Progress bar */}
           <div className="mt-3 h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
               className="h-full bg-primary transition-all"
-              style={{ width: `${((step - 1) / 4) * 100}%` }}
+              style={{ width: `${((step - 1) / 5) * 100}%` }}
             />
           </div>
         </div>
@@ -336,6 +362,7 @@ export default function Design() {
                   {step === 3 && 'Step 3 · Select delivery type'}
                   {step === 4 && 'Step 4 · Select structure map'}
                   {step === 5 && 'Step 5 · Provide target gene info'}
+                  {step === 6 && 'Step 6 · TypeFunctional Format (multi-select)'}
                 </CardTitle>
               </CardHeader>
               <CardContent key={step} className="animate-in fade-in-50 slide-in-from-bottom-2">
@@ -440,7 +467,7 @@ export default function Design() {
                               setGeneSubmitted(true);
                             }}
                           >
-                            Submit
+                            Submit to Quote
                           </Button>
                         </div>
                       </div>
@@ -448,19 +475,41 @@ export default function Design() {
                   </div>
                 )}
 
+                {step === 6 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {(Object.keys(FORMAT_INFO) as FormatType[]).map((ft) => {
+                        const selected = formats.includes(ft);
+                        return (
+                          <div key={ft} className={`rounded-xl border p-3 ${selected ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                            <OptionButton
+                              label={FORMAT_INFO[ft].label}
+                              selected={selected}
+                              onClick={() => {
+                                setFormats((prev) => (prev.includes(ft) ? prev.filter((x) => x !== ft) : [...prev, ft]));
+                              }}
+                            />
+                            <p className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap">{FORMAT_INFO[ft].caption}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Navigation */}
-                <div className="mt-8 flex items-center justify-between">
+        <div className="mt-8 flex items-center justify-between">
                   <Button variant="ghost" onClick={goBack} disabled={step === 1} className="transition-transform hover:-translate-x-0.5">
                     <ChevronLeft className="h-4 w-4 mr-1" /> Back
                   </Button>
                   <div className="flex items-center gap-2">
-                    {step < 5 ? (
+          {step < 6 ? (
                       <Button onClick={goNext} disabled={!canNext} className={`transition-transform ${canNext ? 'hover:translate-x-0.5' : ''}`}>
                         Next <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     ) : canAddToCart ? (
                       <Button onClick={() => setQuoteOpen(true)}>
-                        Add to Quote
+            Submit to Quote
                       </Button>
                     ) : (
                       <Button disabled title="Complete all selections to proceed">
@@ -493,7 +542,7 @@ export default function Design() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={submitDesignQuote} disabled={!custEmail.trim() || !custName.trim()}>Submit</Button>
+            <Button onClick={submitDesignQuote} disabled={!custEmail.trim() || !custName.trim()}>Submit to Quote</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

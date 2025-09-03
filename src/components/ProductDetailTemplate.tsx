@@ -317,9 +317,8 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                       <CardTitle>Performance</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">{performanceData || 'No performance data available. Contact technical support for detailed reports.'}</p>
-                      <div className="w-full h-56 bg-muted rounded-md border flex items-center justify-center text-muted-foreground">
-                        Chart/Table Placeholder
+                      <div className="text-sm text-foreground whitespace-pre-wrap border rounded-md p-3 bg-background min-h-[120px]">
+                        {performanceData || 'No performance data available. Contact technical support for detailed reports.'}
                       </div>
                     </CardContent>
                   </Card>

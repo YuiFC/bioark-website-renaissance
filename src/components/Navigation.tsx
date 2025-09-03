@@ -186,15 +186,13 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* Services Dropdown (append Genome Editing Services; homepage services remain unchanged) */}
+        {/* Services Dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     {(() => {
-                      const navServices = [
-                        ...customerSolutions,
-                        { id: 'svc-02', name: 'Genome Editing Services', description: 'CRISPR overexpression, knockout, RNA knockdown, and ready-to-use kits.', link: '/services/genome-editing' },
-                      ];
+          // Use customerSolutions directly to avoid duplicates
+          const navServices = customerSolutions;
                       return (
                         <ul className="grid w-[360px] gap-3 p-4 md:w-[440px] md:grid-cols-2 lg:w-[520px]">
                           {navServices.map((s) => (
