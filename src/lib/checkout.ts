@@ -23,8 +23,8 @@ export async function createCheckoutSession(
   options?: { successUrl?: string; cancelUrl?: string; currency?: string; shippingCents?: number; address?: CheckoutAddress }
 ) {
   // Default to Nginx path prefix for Stripe API; fall back to content API or empty
-  const base = (import.meta.env as any).VITE_STRIPE_API_BASE || (import.meta.env as any).VITE_API_BASE || '/stripe-api';
-  const url = `${base}/create-checkout-session`.replace(/\/\/create/, '/create');
+  const base = (import.meta.env as any).VITE_STRIPE_API_BASE || '/stripe-api';
+  const url = `${base}/create-checkout-session`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

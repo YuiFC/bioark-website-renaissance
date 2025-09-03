@@ -15,7 +15,7 @@ import { fetchJson } from './lib/api'
 // Sync backend products-config to LocalStorage on app load (compat shim)
 async function syncProductsConfigOnce(){
   try {
-    const cfg = await fetchJson<any>('/api/products-config');
+  const cfg = await fetchJson<any>('/products-config');
     // Mirror to legacy LocalStorage keys used by data/products.ts fallback
     localStorage.setItem('bioark_products', JSON.stringify(Array.isArray(cfg.products)?cfg.products:[]));
     localStorage.setItem('bioark_products_overrides', JSON.stringify(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{}));

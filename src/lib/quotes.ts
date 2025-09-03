@@ -25,23 +25,23 @@ export type Quote = {
 const API_BASE = getApiBase();
 
 export async function getQuotes(): Promise<Quote[]> {
-  const r = await fetch(API_BASE + '/api/quotes');
+  const r = await fetch(API_BASE + '/quotes');
   const j = await r.json();
   return Array.isArray(j.quotes) ? j.quotes : [];
 }
 
 export async function addQuote(input: Omit<Quote, 'id'|'createdAt'|'read'>): Promise<Quote> {
-  const r = await fetch(API_BASE + '/api/quotes', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(input) });
+  const r = await fetch(API_BASE + '/quotes', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(input) });
   const j = await r.json();
   return j.quote as Quote;
 }
 
 export async function markQuoteRead(id: string, read = true): Promise<void> {
-  await fetch(API_BASE + `/api/quotes/${encodeURIComponent(id)}/read`, { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ read }) });
+  await fetch(API_BASE + `/quotes/${encodeURIComponent(id)}/read`, { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ read }) });
 }
 
 export async function deleteQuote(id: string): Promise<void> {
-  await fetch(API_BASE + `/api/quotes/${encodeURIComponent(id)}`, { method:'DELETE' });
+  await fetch(API_BASE + `/quotes/${encodeURIComponent(id)}`, { method:'DELETE' });
 }
 
 export async function markAllQuotesRead(): Promise<void> {

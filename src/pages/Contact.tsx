@@ -23,8 +23,8 @@ const Contact = () => {
     const data = Object.fromEntries(formData.entries());
 
     try {
-  // TODO: Replace '/api/contact' with your real backend API endpoint
-  const response = await fetch(getApiBase() + '/api/contact', {
+  // POST to content API (behind Nginx at /content-api)
+  const response = await fetch(getApiBase() + '/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

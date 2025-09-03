@@ -11,13 +11,16 @@ export function getApiBase(): string {
 
 export async function fetchJson<T=any>(path: string, init?: RequestInit): Promise<T> {
   const base = getApiBase();
+  // If caller already passes an absolute URL with expected nginx prefixes or http(s), use it directly
+  const isAbsolute = /^https?:\/\//.test(path) || path.startsWith('/content-api') || path.startsWith('/stripe-api');
+  const urlToFetch = isAbsolute ? path : (base + path);
   const tryFetch = async (url: string) => {
     const r = await fetch(url, init);
     const d = await r.json().catch(() => ({} as any));
     return { r, d } as const;
   };
   try {
-    const { r, d } = await tryFetch(base + path);
+    const { r, d } = await tryFetch(urlToFetch);
     if (r.ok) return d as T;
     const msg = (d && (d.error || d.message)) || `HTTP ${r.status}`;
     throw new Error(msg);

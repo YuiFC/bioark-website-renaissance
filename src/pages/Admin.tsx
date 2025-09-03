@@ -27,7 +27,7 @@ const Admin = () => {
   const handleLogin = async () => {
     try {
       const { token, user } = await fetchJson<{ token: string; user: { name: string; email: string; role: string } }>(
-        '/api/signin',
+        '/signin',
         { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }
       );
       if (user?.role === 'Admin') {
@@ -157,14 +157,14 @@ function ServicesPanel(){
   const [detailForm, setDetailForm] = useState<any|null>(null);
   const MEDIA_KEY = 'bioark_services_media_v2_paths';
   const [media, setMedia] = useState<Record<string, string[]>>({});
-  const saveMedia = async (next: Record<string, string[]>) => { setMedia(next); await fetchJson('/api/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom, media: next }) }); };
+  const saveMedia = async (next: Record<string, string[]>) => { setMedia(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom, media: next }) }); };
 
   React.useEffect(()=>{
-    fetchJson('/api/services-config').then((cfg:any)=>{ setOverrides(cfg.overrides||{}); setCustom(cfg.custom||[]); setMedia(cfg.media||{}); }).catch(()=>{});
+  fetchJson('/services-config').then((cfg:any)=>{ setOverrides(cfg.overrides||{}); setCustom(cfg.custom||[]); setMedia(cfg.media||{}); }).catch(()=>{});
   },[]);
 
-  const saveOverrides = async (next: Record<string, any>) => { setOverrides(next); await fetchJson('/api/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides: next, custom, media }) }); };
-  const saveCustom = async (next: any[]) => { setCustom(next); await fetchJson('/api/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom: next, media }) }); };
+  const saveOverrides = async (next: Record<string, any>) => { setOverrides(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides: next, custom, media }) }); };
+  const saveCustom = async (next: any[]) => { setCustom(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom: next, media }) }); };
 
   const applyOverrides = (s:Svc) => ({ ...s, ...(overrides[s.id]||{}) });
   const baseApplied = base.map(applyOverrides);
@@ -501,7 +501,7 @@ function EmailPanel(){
   React.useEffect(()=>{
     (async()=>{
       try {
-        const cfg = await fetchJson('/api/smtp-config');
+  const cfg = await fetchJson('/smtp-config');
         setForm({
           host: cfg.host||'',
           port: Number(cfg.port)||465,
@@ -524,7 +524,7 @@ function EmailPanel(){
   const onSave = () => {
     (async()=>{
       try {
-        await fetchJson('/api/smtp-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(form) });
+  await fetchJson('/smtp-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(form) });
         setSaved('Saved.');
       } catch {
         setSaved('Save failed');
@@ -538,7 +538,7 @@ function EmailPanel(){
     (async()=>{
       setTesting(true);
       try {
-        await fetchJson('/api/smtp-test', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ type }) });
+  await fetchJson('/smtp-test', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ type }) });
         setSaved('Test email triggered.');
       } catch {
         setSaved('Test failed');
@@ -871,7 +871,7 @@ function ProductPanel() {
   React.useEffect(()=>{
     (async()=>{
       try {
-        const cfg = await fetchJson<any>('/api/products-config');
+  const cfg = await fetchJson<any>('/products-config');
         setHidden(Array.isArray(cfg.hidden)?cfg.hidden:[]);
         setOverrides(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{});
         setCustom(Array.isArray(cfg.products)?cfg.products:[]);
@@ -902,7 +902,7 @@ function ProductPanel() {
       localStorage.setItem('bioark_products_hidden', JSON.stringify(payload.hidden));
     } catch {}
     try {
-      await fetchJson('/api/products-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+  await fetchJson('/products-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
     } catch (e){ console.error('Save products-config failed', e); }
   };
 
@@ -1303,8 +1303,8 @@ function BlogPanel() {
   const [editing, setEditing] = useState<any|null>(null);
   const [editForm, setEditForm] = useState<any|null>(null);
   const [blogMedia, setBlogMedia] = useState<Record<string, string[]>>({});
-  React.useEffect(()=>{ fetchJson('/api/blog-media').then((cfg:any)=>{ setBlogMedia(cfg.media||{}); }).catch(()=>{}); },[]);
-  const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); return fetchJson('/api/blog-media', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ media: next }) }); };
+  React.useEffect(()=>{ fetchJson('/blog-media').then((cfg:any)=>{ setBlogMedia(cfg.media||{}); }).catch(()=>{}); },[]);
+  const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); return fetchJson('/blog-media', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ media: next }) }); };
 
   const filtered = useMemo(() => {
     if (!q.trim()) return posts;
@@ -1410,7 +1410,7 @@ function BlogPanel() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search blogs..." value={q} onChange={e=>setQ(e.target.value)} />
-  <Button variant="outline" onClick={async()=>{ try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts }) }); alert('Synced to src/data/blog.ts'); } catch (e:any){ alert('Sync failed: ' + (e?.message||'unknown')); } }}>Sync to Source</Button>
+  <Button variant="outline" onClick={async()=>{ try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts }) }); alert('Synced to src/data/blog.ts'); } catch (e:any){ alert('Sync failed: ' + (e?.message||'unknown')); } }}>Sync to Source</Button>
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button>Add</Button>

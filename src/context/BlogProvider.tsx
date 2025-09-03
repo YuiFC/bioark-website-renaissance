@@ -23,7 +23,7 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
     (async () => {
       try {
         // 1) Load from server
-        const server = await fetchJson<any>('/api/blog');
+  const server = await fetchJson<any>('/blog');
         const sOverrides: Record<number, Partial<BlogPost>> = server.overrides || {};
         const sHidden: number[] = server.hidden || [];
         const sSaved: BlogPost[] = server.posts || [];
@@ -63,7 +63,7 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         // 5) Persist merged both locally and back to server (best-effort)
         const payload = { version: DATA_VERSION, posts: mergedSaved, hidden: mergedHidden, overrides: mergedOverrides };
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
-        try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
       } catch {
         // Fallback to local cache, then mock
         try {
@@ -94,9 +94,9 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         // Always cache locally so refresh retains changes even if server is down
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
         // Best-effort push to server
-  try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
   // Also best-effort write to source file for persistence in repo
-  try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
+  try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
       return next;
     });
@@ -121,9 +121,9 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         // Always cache locally
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
         // Best-effort push
-        try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
   // Also best-effort write to source file
-  try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
+  try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
       return next;
     });
@@ -149,9 +149,9 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         // Always cache locally
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
         // Best-effort push
-        try { await fetchJson('/api/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+  try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
   // Also best-effort write to source file
-  try { await fetchJson('/api/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
+  try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
       return next;
     });
