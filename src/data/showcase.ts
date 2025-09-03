@@ -12,70 +12,70 @@ export interface ShowcaseItem {
 export const featuredProducts: ShowcaseItem[] = [
   {
     id: 'fp-badm3362',
-    name: 'BADM3362 – GN8K DNA Marker (100-8000bp)',
+    name: 'GN8K DNA Marker (100-8000bp)',
     description: 'Ideal for routine DNA analysis and sizing from 100 bp to 8 kb.',
     imageUrl: '/images/products/BADM3362_GN8K_DNA_Marker-1-300x300.jpg',
     link: '/products/gn8k-dna-marker'
   },
   {
     id: 'fp-badm3363',
-    name: 'BADM3363 – GN10K DNA Marker (300-10000bp)',
+    name: 'GN10K DNA Marker (300-10000bp)',
     description: 'Ready-to-use DNA ladder for precise sizing of a wide range of DNA fragments.',
     imageUrl: '/images/products/BADM3363_GN10K_DNA_Marker-1-300x300.jpg',
     link: '/products/gn10k-dna-marker'
   },
   {
     id: 'fp-badm3364',
-    name: 'BADM3364 – GN15K DNA Marker (500-15000bp)',
+    name: 'GN15K DNA Marker (500-15000bp)',
     description: 'For sizing large DNA fragments with high accuracy up to 15 kb.',
     imageUrl: '/images/products/BADM3364_GN15K_DNA_Marker-1-300x300.jpg',
     link: '/products/gn15k-dna-marker'
   },
   {
     id: 'fp-bal100468',
-    name: 'BAL100468 – BioArkLipo® In Vitro Transfection Kit (Ver. II)',
+    name: 'BioArkLipo® In Vitro Transfection Kit (Ver. II)',
     description: 'High-efficiency, low-toxicity lipid-based transfection for a wide range of cell lines.',
     imageUrl: '/images/products/BioArkLipo-1-300x300.png',
     link: '/products/bioarklipo-in-vitro-transfection-kit'
   },
   {
     id: 'fp-bal100668',
-    name: 'BAL100668 – BAJet® In Vitro DNA Transfection Reagent',
+    name: 'BAJet® In Vitro DNA Transfection Reagent',
     description: 'A powerful reagent for efficient delivery of nucleic acids for gene editing.',
     imageUrl: '/images/products/BAjet-1-300x300.png',
     link: '/products/bajet-transfection-reagent'
   },
   {
     id: 'fp-bal100688',
-    name: 'BAL100688 – BAPoly® In Vitro DNA Transfection Reagent',
+    name: 'BAPoly® In Vitro DNA Transfection Reagent',
     description: 'Polymer-based reagent for efficient transfection of various cell types.',
     imageUrl: '/images/products/BAPoly-1-300x300.png',
     link: '/products/bapoly-transfection-reagent'
   },
   {
     id: 'fp-bapm2083',
-    name: 'BAPM2083 – Prestained Protein Marker IV (8-200 kDa)',
+    name: 'Prestained Protein Marker IV (8-200 kDa)',
     description: 'Broad-range, three-color protein standard for monitoring protein separation.',
     imageUrl: '/images/products/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg',
     link: '/products/prestained-protein-marker-iv'
   },
   {
     id: 'fp-bapm2086',
-    name: 'BAPM2086 – Western Protein Marker I (Exposure)',
+    name: 'Western Protein Marker I (Exposure)',
     description: 'High-quality protein standard for accurate molecular weight estimation.',
     imageUrl: '/images/products/BAPM2086_Western_Protein_Marker_I-1-300x300.jpg',
     link: '/products/western-protein-marker-i'
   },
   {
     id: 'fp-bsy3320',
-    name: 'BSY3320 – 2 × SYBR Green qPCR Master Mix',
+    name: '2 × SYBR Green qPCR Master Mix',
     description: 'A reliable and cost-effective solution for standard real-time PCR.',
     imageUrl: '/images/products/1-BSY3320_2__SYBR_Green_qPCR_Master_Mix-300x300.jpg',
     link: '/products/sybr-green-qpcr-mix'
   },
   {
     id: 'fp-bsy3323',
-    name: 'BSY3323 – 2 × Fast SYBR Green qPCR Master Mix',
+    name: '2 × Fast SYBR Green qPCR Master Mix',
     description: 'Optimized for rapid and accurate quantification of DNA targets in real-time PCR.',
     imageUrl: '/images/products/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg',
     link: '/products/fast-sybr-green-qpcr-mix'

@@ -26,10 +26,11 @@ const MODE = process.env.MODE || 'all'; // 'stripe' | 'content' | 'all'
 app.use(express.json({ limit: '20mb' }));
 
 // Allow CORS broadly for development/demo (tighten for production)
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
+// FRONTEND_URL can be provided in production to construct absolute redirect URLs if needed
+const FRONTEND_URL = process.env.FRONTEND_URL || '';
 app.use(cors({ origin: true, credentials: false }));
 
-// Serve static frontend (so you can open http://localhost:4242/auth.html)
+// Serve static frontend (for demo auth.html and assets)
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const SRC_BLOG_TS = path.join(ROOT_DIR, 'src', 'data', 'blog.ts');
@@ -415,7 +416,16 @@ if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) =>
     }
 
   const rawOrigin = req.headers.origin || FRONTEND_URL;
-  const origin = toHttpUrlOrNull(rawOrigin) || 'http://localhost:8080';
+  // Derive a safe origin for absolute URLs without hardcoded localhost
+  const xfHost = req.headers['x-forwarded-host'];
+  const host = (typeof xfHost === 'string' && xfHost) ? xfHost : req.headers.host;
+  const xfProto = req.headers['x-forwarded-proto'];
+  const proto = (typeof xfProto === 'string' && xfProto) ? xfProto : req.protocol;
+  const inferredOrigin = (host && proto) ? `${proto}://${host}` : '';
+  const origin = toHttpUrlOrNull(rawOrigin)
+    || toHttpUrlOrNull(FRONTEND_URL)
+    || toHttpUrlOrNull(inferredOrigin)
+    || '';
     // Build a cart summary metadata string (max 500 chars for safety)
     const summary = items
       .map((it) => `${it.name}${it.variant ? ` (${it.variant})` : ''} x${it.quantity}${typeof it.price === 'number' ? ` @$${(it.price/100).toFixed(2)}` : ''}`)
@@ -489,5 +499,5 @@ if (MODE !== 'content') app.post('/create-checkout-session', async (req, res) =>
 
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => {
-  console.log(`[${MODE.toUpperCase()}] server listening on http://localhost:${PORT}`);
+  console.log(`[${MODE.toUpperCase()}] server listening on port ${PORT}`);
 });

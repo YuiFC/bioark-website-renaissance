@@ -70,6 +70,7 @@ const Admin = () => {
         <div className="px-3 sm:px-4 h-14 w-full flex items-center justify-between">
           <div className="font-semibold">Admin Portal</div>
           <div className="flex items-center gap-3">
+            <Button asChild variant="secondary"><Link to="/">Back to Homepage</Link></Button>
             <Button variant="outline" onClick={handleLogout}>Logout</Button>
           </div>
         </div>

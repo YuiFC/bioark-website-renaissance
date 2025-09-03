@@ -79,7 +79,7 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 1) 复制 `.env.example` 为 `.env` 并设置：
 
 - `STRIPE_SECRET_KEY`：你的 Stripe Secret Key，只保存在服务器端
-- `VITE_API_BASE`：前端调用后端地址（默认 `http://localhost:4242`）
+- `VITE_API_BASE`：前端调用后端地址。开发环境可指向 `http://localhost:4242`；生产建议留空使用同源相对地址，或配置为你的域名，如 `https://api.example.com`。
 
 2) 在本地分别启动：
 

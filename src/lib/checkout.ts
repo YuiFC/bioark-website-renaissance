@@ -23,7 +23,8 @@ export async function createCheckoutSession(
   options?: { successUrl?: string; cancelUrl?: string; currency?: string; shippingCents?: number; address?: CheckoutAddress }
 ) {
   const base = (import.meta.env as any).VITE_STRIPE_API_BASE || (import.meta.env as any).VITE_API_BASE || '';
-  const res = await fetch(`${base}/create-checkout-session`, {
+  const url = `${base}/create-checkout-session`.replace(/\/\/create/, '/create');
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ items, ...options }),
