@@ -13,7 +13,16 @@ export async function fetchJson<T=any>(path: string, init?: RequestInit): Promis
   const base = getApiBase();
   // If caller already passes an absolute URL with expected nginx prefixes or http(s), use it directly
   const isAbsolute = /^https?:\/\//.test(path) || path.startsWith('/content-api') || path.startsWith('/stripe-api');
-  const urlToFetch = isAbsolute ? path : (base + path);
+  // Build URL with smart '/api' insertion so that callers can use '/foo' instead of '/api/foo'
+  let urlToFetch: string;
+  if (isAbsolute) {
+    urlToFetch = path;
+  } else {
+    const baseHasApiSuffix = /\/api\/?$/i.test(base);
+    const shouldPrefixApi = !baseHasApiSuffix && !path.startsWith('/api') && !path.startsWith('/stripe-api') && !path.startsWith('/content-api');
+    const normalizedPath = shouldPrefixApi ? (`/api${path.startsWith('/') ? '' : '/'}${path}`) : path;
+    urlToFetch = `${base}${normalizedPath}`;
+  }
   const tryFetch = async (url: string) => {
     const r = await fetch(url, init);
     const d = await r.json().catch(() => ({} as any));
