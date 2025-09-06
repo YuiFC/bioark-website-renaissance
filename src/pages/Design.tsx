@@ -200,7 +200,7 @@ export default function Design() {
   const [custName, setCustName] = useState('');
   const [custEmail, setCustEmail] = useState('');
 
-  const submitDesignQuote = () => {
+  const submitDesignQuote = async () => {
     const [firstName, ...rest] = custName.trim().split(/\s+/);
     const lastName = rest.join(' ');
     const payload = {
@@ -217,11 +217,15 @@ export default function Design() {
       additionalInfo: JSON.stringify({ summary }),
       // No site-wide login: do not attach user snapshot
     } as const;
-    addQuote(payload as any);
-    setQuoteOpen(false);
-    setCustName('');
-    setCustEmail('');
-    toast({ title: 'Quote submitted', description: 'We will contact you soon.' });
+    try {
+      await addQuote(payload as any);
+      setQuoteOpen(false);
+      setCustName('');
+      setCustEmail('');
+      toast({ title: 'Quote submitted', description: 'We will contact you soon.' });
+    } catch (e:any) {
+      toast({ title: 'Submit failed', description: e?.message || 'Please try again later.' });
+    }
   };
 
   // Legend overlay config for on-image markers

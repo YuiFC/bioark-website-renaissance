@@ -92,7 +92,7 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
   toast({ title: 'Added to cart', description: `${title}${selectedOpt ? ` (${selectedOpt})` : ''} × ${quantity} added to your cart.` });
   };
 
-  const handleSubmitQuote = () => {
+  const handleSubmitQuote = async () => {
     const [firstName, ...rest] = custName.trim().split(/\s+/);
     const lastName = rest.join(' ');
     const payload = {
@@ -109,11 +109,15 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
       additionalInfo: JSON.stringify({ catalogNumber: shownCatalog }),
       // No site-wide login: do not attach user snapshot
     } as const;
-    addQuote(payload as any);
-    setQuoteOpen(false);
-    setCustName('');
-    setCustEmail('');
-    toast({ title: 'Quote submitted', description: 'We will contact you soon.' });
+    try {
+      await addQuote(payload as any);
+      setQuoteOpen(false);
+      setCustName('');
+      setCustEmail('');
+      toast({ title: 'Quote submitted', description: 'We will contact you soon.' });
+    } catch (e:any) {
+      toast({ title: 'Submit failed', description: e?.message || 'Please try again later.' });
+    }
   };
 
   // Derive display name and extra metadata from title when encoded like "BADM3362 – Name (100-8000bp)"

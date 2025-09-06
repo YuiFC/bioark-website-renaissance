@@ -1,4 +1,4 @@
-import { getApiBase } from './api';
+import { fetchJson } from './api';
 export type Quote = {
   id: string;
   createdAt: string; // ISO string
@@ -22,26 +22,30 @@ export type Quote = {
   submittedByAddress?: string;
 };
 
-const API_BASE = getApiBase();
+// Using fetchJson for base URL handling
 
 export async function getQuotes(): Promise<Quote[]> {
-  const r = await fetch(API_BASE + '/quotes');
-  const j = await r.json();
+  const j = await fetchJson<{ quotes: Quote[] }>('/quotes');
   return Array.isArray(j.quotes) ? j.quotes : [];
 }
 
 export async function addQuote(input: Omit<Quote, 'id'|'createdAt'|'read'>): Promise<Quote> {
-  const r = await fetch(API_BASE + '/quotes', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(input) });
-  const j = await r.json();
+  const j = await fetchJson<{ quote: Quote }>(
+    '/quotes',
+    { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(input) }
+  );
   return j.quote as Quote;
 }
 
 export async function markQuoteRead(id: string, read = true): Promise<void> {
-  await fetch(API_BASE + `/quotes/${encodeURIComponent(id)}/read`, { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ read }) });
+  await fetchJson(
+    `/quotes/${encodeURIComponent(id)}/read`,
+    { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ read }) }
+  );
 }
 
 export async function deleteQuote(id: string): Promise<void> {
-  await fetch(API_BASE + `/quotes/${encodeURIComponent(id)}`, { method:'DELETE' });
+  await fetchJson(`/quotes/${encodeURIComponent(id)}`, { method:'DELETE' });
 }
 
 export async function markAllQuotesRead(): Promise<void> {
