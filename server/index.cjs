@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const Stripe = require('stripe');
 let nodemailer = null;
 try { nodemailer = require('nodemailer'); } catch { nodemailer = null; }
+const { spawn } = require('child_process');
 
 const app = express();
 // Initialize Stripe client
@@ -279,6 +280,49 @@ function newToken() {
   return crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
 }
 
+// ===== Admin helpers (session-based auth) =====
+function getSessionUserFromReq(req){
+  try {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return null;
+    const sessions = readSessions();
+    const session = sessions[token];
+    return session || null;
+  } catch { return null; }
+}
+function runCmd(cmd, args, { cwd, timeoutMs = 60_000, useShell = true } = {}){
+  return new Promise((resolve) => {
+    let output = '';
+    let finished = false;
+    try {
+      const p = spawn(cmd, args, { cwd, shell: !!useShell });
+      const timer = setTimeout(() => {
+        try { p.kill('SIGKILL'); } catch {}
+        output += `\n[timeout ${timeoutMs}ms]`;
+      }, timeoutMs);
+      p.stdout.on('data', d => { output += d.toString(); });
+      p.stderr.on('data', d => { output += d.toString(); });
+      p.on('error', (err) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        output += `\n[spawn error] ${err?.message || String(err)}`;
+        resolve({ code: -1, output });
+      });
+      p.on('close', (code) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        resolve({ code: code ?? -1, output });
+      });
+    } catch (err) {
+      output += `\n[spawn exception] ${err?.message || String(err)}`;
+      resolve({ code: -1, output });
+    }
+  });
+}
+
 // ===== Content APIs (only when not in 'stripe' mode) =====
 if (MODE !== 'stripe') {
   // Products config APIs
@@ -442,6 +486,22 @@ app.put('/api/smtp-config', (req,res)=>{
   };
   writeSmtpCfg(cfg);
   return res.json({ ok: true });
+});
+
+// ===== Admin system ops =====
+app.post('/api/admin/restart', async (req, res) => {
+  try {
+    const user = getSessionUserFromReq(req);
+    if (!user || (user.role !== 'Admin' && user.role !== 'Owner')) return res.status(403).json({ error: 'FORBIDDEN' });
+    // Per request: use Restart to trigger a frontend build instead of pm2 restart.
+    // Cross-platform: run via shell to resolve npm on Windows/Linux.
+    const projectRoot = path.resolve(__dirname, '..');
+    const r = await runCmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'build'], { cwd: projectRoot, timeoutMs: 10 * 60_000, useShell: true });
+    const ok = r.code === 0;
+    return res.status(ok ? 200 : 500).json({ ok, log: r.output });
+  } catch (e) {
+    return res.status(500).json({ ok:false, error: e?.message || String(e) });
+  }
 });
 
 // ===== Users admin APIs =====

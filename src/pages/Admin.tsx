@@ -9,6 +9,7 @@ import { getProductBySlug, listAllProducts } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
 import { getAllServices } from '@/data/services';
+import { restartContentApi } from '@/lib/admin';
 import { uploadImageBase64, fetchImageByUrl } from '@/lib/media';
 
 // Admin login now uses server-side auth (/api/signin) and checks role==='Admin'.
@@ -16,7 +17,7 @@ import { uploadImageBase64, fetchImageByUrl } from '@/lib/media';
 const Admin = () => {
   const navigate = useNavigate();
   const { posts } = useBlog();
-  const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token'));
+  const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token') && !!localStorage.getItem('bioark_auth_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [active, setActive] = useState<'overview'|'user'|'product'|'services'|'blog'|'quotes'|'email'|'media'>('overview');
@@ -46,6 +47,7 @@ const Admin = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('bioark_admin_token');
+  localStorage.removeItem('bioark_auth_token');
     setAuthed(false);
     navigate('/');
   };
@@ -75,6 +77,12 @@ const Admin = () => {
         <div className="px-3 sm:px-4 h-14 w-full flex items-center justify-between">
           <div className="font-semibold">Admin Portal</div>
           <div className="flex items-center gap-3">
+      <Button variant="outline" onClick={async()=>{
+              try {
+                const r = await restartContentApi();
+        if (r.ok) alert('Build completed successfully.'); else alert('Build failed:\n' + (r.error||r.log||'unknown'));
+              } catch (e:any) { alert('Request failed: ' + (e?.message||String(e))); }
+      }}>Build</Button>
             <Button asChild variant="secondary"><Link to="/">Back to Homepage</Link></Button>
             <Button variant="outline" onClick={handleLogout}>Logout</Button>
           </div>
