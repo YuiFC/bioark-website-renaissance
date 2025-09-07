@@ -2,5 +2,13 @@
   "version": "2025-08-29-1",
   "posts": [],
   "hidden": [],
-  "overrides": {}
+  "overrides": {
+    "1": {
+      "tags": [
+        "CRISPR",
+        "Retrotransposon",
+        "Large Insertion"
+      ]
+    }
+  }
 }

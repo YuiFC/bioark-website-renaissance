@@ -53,6 +53,8 @@ const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const SMTP_FILE = path.join(DATA_DIR, 'smtp.json');
 // Uploads directory under data (runtime-writable)
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+// Images DB (admin-managed assets)
+const IMAGES_DB_FILE = path.join(DATA_DIR, 'images.json');
 
 function ensureDataFiles() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -65,8 +67,13 @@ function ensureDataFiles() {
   if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, JSON.stringify({ version: 1, products: [], overrides: {}, details: {}, hidden: [] }, null, 2), 'utf-8');
   if (!fs.existsSync(SMTP_FILE)) fs.writeFileSync(SMTP_FILE, JSON.stringify({ host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'', subjectTemplate:'New Quote from {{firstName}} {{lastName}} — {{serviceType}}', bodyTemplate:'<h2>New Quote Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<p><strong>Company:</strong> {{company}}</p>\n<p><strong>Service:</strong> {{serviceType}}</p>\n<p><strong>Timeline:</strong> {{timeline}}</p>\n<p><strong>Budget:</strong> {{budget}}</p>\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}' }, null, 2), 'utf-8');
   if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  if (!fs.existsSync(IMAGES_DB_FILE)) fs.writeFileSync(IMAGES_DB_FILE, JSON.stringify({ images: [] }, null, 2), 'utf-8');
 }
 ensureDataFiles();
+
+// Serve uploaded files under /uploads/*
+app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/content-api/uploads', express.static(UPLOADS_DIR));
 
 // ===== Media helpers (save to public/images/<folder>) =====
 const IMAGES_DIR = path.join(PUBLIC_DIR, 'images');
@@ -94,6 +101,175 @@ function inferExtFromMime(mime){
 function getFilenameFromUrl(u){
   try { const p = new URL(u).pathname; return path.basename(p||''); } catch { return ''; }
 }
+
+// ===== Image Assets DB helpers =====
+function readImagesDb(){ try { return JSON.parse(fs.readFileSync(IMAGES_DB_FILE, 'utf-8')); } catch { return { images: [] }; } }
+function writeImagesDb(db){ fs.writeFileSync(IMAGES_DB_FILE, JSON.stringify(db, null, 2), 'utf-8'); }
+function nextImageId(db){ try { const arr = Array.isArray(db.images)?db.images:[]; return (arr.reduce((m,x)=>Math.max(m, Number(x.id)||0),0) + 1); } catch { return Date.now(); } }
+function safeExtByMime(mime){
+  const m = String(mime||'').toLowerCase();
+  if (m.includes('png')) return '.png';
+  if (m.includes('jpeg') || m.includes('jpg')) return '.jpg';
+  if (m.includes('gif')) return '.gif';
+  if (m.includes('webp')) return '.webp';
+  if (m.includes('svg')) return '.svg';
+  return '.bin';
+}
+
+// In-memory signed upload tokens
+const uploadTokens = new Map(); // token -> { storageKey, fullPath, expiresAt }
+function newUploadTokenFor(storageKey){
+  const token = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+  const fullPath = path.join(UPLOADS_DIR, storageKey.replace(/^uploads\//,''));
+  // Ensure folder exists
+  fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+  const expiresAt = Date.now() + 5*60*1000; // 5 minutes
+  uploadTokens.set(token, { storageKey, fullPath, expiresAt });
+  return token;
+}
+function cleanupTokens(){
+  const now = Date.now();
+  for (const [k,v] of uploadTokens.entries()) if (!v || v.expiresAt < now) uploadTokens.delete(k);
+}
+setInterval(cleanupTokens, 60*1000).unref?.();
+
+// Request a pre-signed upload (simulated)
+// body: { fileName, mimeType, size }
+app.post('/api/admin/images/request-upload', (req,res)=>{
+  try {
+    const { fileName, mimeType, size } = req.body || {};
+    if (!fileName || !mimeType || !Number.isFinite(Number(size))) return res.status(400).json({ error: 'Missing fields' });
+    const base = sanitizeFilename(String(fileName));
+    const ext = path.extname(base) || safeExtByMime(mimeType);
+    const uuid = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    const storageKey = `uploads/originals/${uuid}${ext}`;
+    const token = newUploadTokenFor(storageKey);
+  // Return path under /api so client can prefix with getApiBase()
+  return res.json({ storageKey, uploadUrl: `/api/admin/images/upload/${token}`, headers: { 'Content-Type': String(mimeType) } });
+  } catch (e){
+    return res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// Binary upload receiver for signed token
+const rawBody = express.raw({ type: '*/*', limit: '20mb' });
+app.put('/api/admin/images/upload/:token', rawBody, (req,res)=>{
+  try {
+    const token = req.params.token;
+    const rec = uploadTokens.get(token);
+    if (!rec) return res.status(404).json({ error: 'Invalid or expired token' });
+    if (!req.body || !(req.body instanceof Buffer) || !req.body.length) return res.status(400).json({ error: 'Empty body' });
+    fs.mkdirSync(path.dirname(rec.fullPath), { recursive: true });
+    fs.writeFileSync(rec.fullPath, req.body);
+    uploadTokens.delete(token);
+    return res.status(200).json({ ok: true });
+  } catch (e){
+    return res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// Finalize upload => create ImageAsset record and trigger async processing (simulated)
+// body: { storageKey, fileName, mimeType, size }
+app.post('/api/admin/images/finalize-upload', (req,res)=>{
+  try {
+    const { storageKey, fileName, mimeType, size } = req.body || {};
+    if (!storageKey || typeof storageKey !== 'string') return res.status(400).json({ error: 'storageKey required' });
+    const rel = `/${storageKey.replace(/^\/+/, '')}`; // '/uploads/originals/xxx.ext'
+    const full = path.join(UPLOADS_DIR, storageKey.replace(/^uploads\//,''));
+    if (!fs.existsSync(full)) return res.status(400).json({ error: 'File not found for storageKey' });
+    const db = readImagesDb();
+    const id = nextImageId(db);
+    const asset = {
+      id,
+      status: 'processing',
+      altText: null,
+      fileName: String(fileName||path.basename(full)),
+      mimeType: mimeType || null,
+      size: Number(size)||null,
+      variants: { original: `/content-api${rel}` },
+      createdAt: new Date().toISOString(),
+    };
+    db.images = [asset, ...(Array.isArray(db.images)?db.images:[])];
+    writeImagesDb(db);
+    // Simulate async processing by flipping to completed shortly after
+    setTimeout(()=>{
+      try {
+        const cur = readImagesDb();
+        const i = cur.images.findIndex(x=>String(x.id)===String(id));
+        if (i>=0) { cur.images[i].status = 'completed'; writeImagesDb(cur); }
+      } catch {}
+    }, 300);
+    return res.status(202).json({ image: asset });
+  } catch (e){
+    return res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// Import from remote URL
+// body: { url, fileName? }
+app.post('/api/admin/images/import', async (req,res)=>{
+  try {
+    const { url, fileName } = req.body || {};
+    if (!url || !/^https?:\/\//i.test(String(url))) return res.status(400).json({ error: 'Invalid url' });
+    const resp = await fetch(url);
+    if (!resp.ok) return res.status(400).json({ error: 'Failed to download' });
+    const ctype = resp.headers.get('content-type') || '';
+    if (!/^image\//i.test(ctype)) return res.status(400).json({ error: 'URL is not an image' });
+    const buf = Buffer.from(await resp.arrayBuffer());
+    if (buf.length > 15*1024*1024) return res.status(413).json({ error: 'File too large' });
+    const ext = path.extname(String(fileName||'')) || safeExtByMime(ctype);
+    const uuid = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    const storageKey = `uploads/originals/${uuid}${ext}`;
+    const full = path.join(UPLOADS_DIR, storageKey.replace(/^uploads\//,''));
+    fs.mkdirSync(path.dirname(full), { recursive: true });
+    fs.writeFileSync(full, buf);
+    const db = readImagesDb();
+    const id = nextImageId(db);
+    const asset = {
+      id,
+      status: 'completed',
+      altText: null,
+      fileName: String(fileName || path.basename(new URL(url).pathname) || `image_${id}${ext}`),
+      mimeType: ctype,
+      size: buf.length,
+      variants: { original: `/content-api/${storageKey}` },
+      createdAt: new Date().toISOString(),
+    };
+    db.images = [asset, ...(Array.isArray(db.images)?db.images:[])];
+    writeImagesDb(db);
+    return res.json({ image: asset });
+  } catch (e){
+    return res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
+// List / Delete image assets
+app.get('/api/admin/images', (_req,res)=>{
+  const db = readImagesDb();
+  return res.json({ images: Array.isArray(db.images) ? db.images : [] });
+});
+app.delete('/api/admin/images/:id', (req,res)=>{
+  try {
+    const id = String(req.params.id||'');
+    const db = readImagesDb();
+    const idx = db.images.findIndex(x=>String(x.id)===id);
+    if (idx<0) return res.status(404).json({ error: 'Not found' });
+    const asset = db.images[idx];
+    // Try to delete original file
+    const orig = asset?.variants?.original;
+    if (typeof orig === 'string'){
+      const rel = orig.replace(/^\/?content-api\//,'');
+      const p = rel.startsWith('uploads/') ? rel.replace(/^uploads\//,'') : (orig.startsWith('/uploads/') ? orig.replace(/^\/?uploads\//,'') : null);
+      const full = p ? path.join(UPLOADS_DIR, p) : null;
+      try { if (fs.existsSync(full)) fs.unlinkSync(full); } catch {}
+    }
+    db.images.splice(idx,1);
+    writeImagesDb(db);
+    return res.json({ ok: true });
+  } catch (e){
+    return res.status(500).json({ error: e?.message || String(e) });
+  }
+});
 
 // Upload base64 data URL
 app.post('/api/upload-image', async (req,res)=>{
