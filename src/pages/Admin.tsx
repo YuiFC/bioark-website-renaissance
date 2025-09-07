@@ -9,6 +9,7 @@ import { getProductBySlug, listAllProducts } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
 import { getAllServices } from '@/data/services';
+import { uploadImageBase64, fetchImageByUrl } from '@/lib/media';
 
 // Admin login now uses server-side auth (/api/signin) and checks role==='Admin'.
 
@@ -18,7 +19,7 @@ const Admin = () => {
   const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [active, setActive] = useState<'overview'|'user'|'product'|'services'|'blog'|'quotes'|'email'>('overview');
+  const [active, setActive] = useState<'overview'|'user'|'product'|'services'|'blog'|'quotes'|'email'|'media'>('overview');
   const [unreadQuotes, setUnreadQuotes] = useState<number>(0);
   React.useEffect(()=>{ (async()=>{ try { const n = await getUnreadQuotesCount(); setUnreadQuotes(n); } catch {} })(); },[]);
 
@@ -91,6 +92,7 @@ const Admin = () => {
               {k:'blog', label:'Blog'},
               {k:'quotes', label:'Quotes'},
               {k:'email', label:'Email (SMTP)'},
+              {k:'media', label:'Media'},
             ].map(i => (
               <button key={i.k} onClick={()=>{
                 setActive(i.k as any);
@@ -130,6 +132,7 @@ const Admin = () => {
           {active === 'blog' && <BlogPanel />}
           {active === 'quotes' && <QuotesPanel onChangeUnread={setUnreadQuotes} />}
           {active === 'email' && <EmailPanel />}
+          {active === 'media' && <MediaPanel />}
         </main>
       </div>
     </div>
@@ -158,6 +161,7 @@ function ServicesPanel(){
   const MEDIA_KEY = 'bioark_services_media_v2_paths';
   const [media, setMedia] = useState<Record<string, string[]>>({});
   const saveMedia = async (next: Record<string, string[]>) => { setMedia(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom, media: next }) }); };
+  const svcFileRef = React.useRef<HTMLInputElement|null>(null);
 
   React.useEffect(()=>{
   fetchJson('/services-config').then((cfg:any)=>{ setOverrides(cfg.overrides||{}); setCustom(cfg.custom||[]); setMedia(cfg.media||{}); }).catch(()=>{});
@@ -306,6 +310,53 @@ function ServicesPanel(){
     saveMedia(next);
   };
 
+  const handleSvcChooseFile = () => svcFileRef.current?.click();
+  const handleSvcFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      if (!editingDetail) return;
+      const f = e.target.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('image/')) { alert('Please choose an image file.'); e.target.value=''; return; }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const dataUrl = String(reader.result||'');
+          const { path } = await uploadImageBase64('services', f.name, dataUrl);
+          const name = path.split('/').pop() || f.name;
+          const key = String(editingDetail.id);
+          const list = media[key] || [];
+          const next = { ...media, [key]: [name, ...list.filter(x=>x!==name)] };
+          await saveMedia(next);
+          alert(`Uploaded to ${path}`);
+        } catch (err:any) {
+          alert('Upload failed: ' + (err?.message||String(err)));
+        } finally { e.target.value=''; }
+      };
+      reader.onerror = () => { alert('Failed to read file'); e.target.value=''; };
+      reader.readAsDataURL(f);
+    } finally {
+      // no-op
+    }
+  };
+  const handleSvcImportFromUrl = async () => {
+    if (!editingDetail) return;
+    const url = window.prompt('Enter a direct image URL (public):');
+    if (!url) return;
+    const suggested = url.split('/').pop() || 'image';
+    const name = window.prompt('Save as (optional filename):', suggested) || suggested;
+    try {
+      const { path } = await fetchImageByUrl('services', url, name);
+      const savedName = path.split('/').pop() || name;
+      const key = String(editingDetail.id);
+      const list = media[key] || [];
+      const next = { ...media, [key]: [savedName, ...list.filter(x=>x!==savedName)] };
+      await saveMedia(next);
+      alert(`Imported to ${path}`);
+    } catch (err:any) {
+      alert('Import failed: ' + (err?.message||String(err)));
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
@@ -396,15 +447,18 @@ function ServicesPanel(){
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium">Images</div>
-                    <div className="text-xs text-muted-foreground">Place files under public/images/services. This panel will reference images by filename and help you insert the Markdown snippet that links to /images/services/filename.</div>
+          <div className="text-xs text-muted-foreground">Upload or import images saved under /images/services. You can also type a filename that already exists on server.</div>
                   </div>
                   <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={handleSvcChooseFile}>Upload</Button>
+          <Button size="sm" variant="outline" onClick={handleSvcImportFromUrl}>Import URL</Button>
                     <input id="svc-media-name" className="border rounded-md px-2 py-1 text-sm" placeholder="filename.png (in public/images/services)" onKeyDown={(e)=>{ if(e.key==='Enter'){ addImageByName((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value=''; } }} />
                     <Button size="sm" variant="outline" onClick={()=>{
                       const el = document.getElementById('svc-media-name') as HTMLInputElement|null; if(el){ addImageByName(el.value); el.value=''; }
                     }}>Add</Button>
                   </div>
                 </div>
+        <input ref={svcFileRef} type="file" accept="image/*" className="hidden" onChange={handleSvcFileChange} />
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(media[detailForm.id]||[]).map((name,idx)=>(
                     <div key={idx} className="border rounded-md p-2 bg-background">
@@ -619,6 +673,123 @@ function EmailPanel(){
           <p className="text-xs text-muted-foreground">Note: Hostinger 部署后，将在服务器端使用上述配置通过 SMTP 发送邮件；前端仅保存配置并供服务端读取/调用。</p>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ===== Media Panel (Resource Explorer for public/images) =====
+import { listMedia, deleteImage as apiDeleteImage } from '@/lib/media-admin';
+function MediaPanel(){
+  const [loading, setLoading] = useState<boolean>(true);
+  const [folders, setFolders] = useState<{ name:string; files: { name:string; path:string; size:number; mtime:number }[] }[]>([]);
+  const [q, setQ] = useState('');
+  const upFileRef = React.useRef<HTMLInputElement|null>(null);
+  const [currentFolder, setCurrentFolder] = useState<string>('blog');
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const { folders } = await listMedia();
+      setFolders(folders);
+  if (!folders.find(f=>f.name===currentFolder) && folders[0]) setCurrentFolder(folders[0].name);
+    } catch (e){ console.error(e); }
+    setLoading(false);
+  };
+  React.useEffect(()=>{ void refresh(); },[]);
+
+  const filtered = React.useMemo(()=>{
+    const test = (s:string) => s.toLowerCase().includes(q.toLowerCase());
+    return folders.map(f=>({ ...f, files: q? f.files.filter(x=>test(x.name)||test(x.path)) : f.files }));
+  },[folders,q]);
+
+  const handleDelete = async (folder:string, name:string) => {
+    if (!confirm(`Delete ${folder}/${name}?`)) return;
+    try {
+      await apiDeleteImage(folder, name);
+      await refresh();
+    } catch (e:any) {
+      alert('Delete failed: ' + (e?.message||'unknown'));
+    }
+  };
+  const handleInsertMarkdown = async (file:{ path:string; name:string }) => {
+    const alt = file.name.replace(/\.[^.]+$/, '').replace(/[\-_]+/g,' ');
+    const snippet = `\n\n![${alt}](${file.path})\n\n`;
+    try { await navigator.clipboard.writeText(snippet); alert('Markdown copied. Paste into your editor.'); }
+    catch { alert('Copy failed. You can manually copy: ' + snippet); }
+  };
+
+  const chooseUpload = () => upFileRef.current?.click();
+  const onUploadChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      const f = e.target.files?.[0]; if (!f) return;
+      if (!f.type.startsWith('image/')) { alert('Please choose an image file.'); e.target.value=''; return; }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const dataUrl = String(reader.result||'');
+          const { uploadImageBase64 } = await import('@/lib/media');
+          await uploadImageBase64(currentFolder||'blog', f.name, dataUrl);
+          await refresh();
+        } catch (err:any) { alert('Upload failed: ' + (err?.message||String(err))); }
+        finally { e.target.value=''; }
+      };
+      reader.onerror = () => { alert('Failed to read file'); e.target.value=''; };
+      reader.readAsDataURL(f);
+    } finally {}
+  };
+  const importFromUrl = async () => {
+    const url = window.prompt('Enter a direct image URL (public):'); if (!url) return;
+    const suggested = url.split('/').pop() || 'image';
+    const name = window.prompt('Save as (optional filename):', suggested) || suggested;
+    try {
+      const { fetchImageByUrl } = await import('@/lib/media');
+      await fetchImageByUrl(currentFolder||'blog', url, name);
+      await refresh();
+    } catch (err:any) { alert('Import failed: ' + (err?.message||String(err))); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search by name or path" value={q} onChange={e=>setQ(e.target.value)} />
+        <select className="border rounded-md px-2 py-2" value={currentFolder} onChange={e=>setCurrentFolder(e.target.value)}>
+          {folders.length ? folders.map(f=> <option key={f.name} value={f.name}>{f.name}</option>) : <option value="">No folders</option>}
+        </select>
+        <button className="border rounded px-3 py-2" onClick={chooseUpload}>Upload</button>
+        <button className="border rounded px-3 py-2" onClick={importFromUrl}>Import URL</button>
+        <button className="border rounded px-3 py-2" onClick={refresh} disabled={loading}>{loading?'Loading...':'Refresh'}</button>
+        <input ref={upFileRef} type="file" accept="image/*" className="hidden" onChange={onUploadChange} />
+      </div>
+      {!folders.length && !loading && (
+        <p className="text-sm text-muted-foreground">No images found under /public/images. Use Upload/Import to add some.</p>
+      )}
+  <div className="grid grid-cols-1 gap-4">
+        {filtered.map(folder => (
+          <Card key={folder.name}>
+            <CardHeader><CardTitle className="text-base">{folder.name} <span className="text-xs text-muted-foreground">({folder.files.length})</span></CardTitle></CardHeader>
+            <CardContent>
+              {!folder.files.length && <p className="text-sm text-muted-foreground">Empty</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {folder.files.map(file => (
+                  <div key={file.path} className="border rounded-md p-2 bg-background">
+                    <div className="flex items-center gap-2">
+                      <img src={file.path} alt={file.name} className="w-16 h-16 object-cover rounded" onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.opacity='0.4'; }} />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm truncate" title={file.name}>{file.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{file.path}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2 justify-end">
+                      <Button size="sm" variant="outline" onClick={()=>handleInsertMarkdown(file)}>Insert as Markdown</Button>
+                      <Button size="sm" variant="destructive" onClick={()=>handleDelete(folder.name, file.name)}>Delete</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
@@ -866,6 +1037,7 @@ function ProductPanel() {
   const [editing, setEditing] = useState<any|null>(null);
   const [detailsForm, setDetailsForm] = useState<any|null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const productImgFileRef = React.useRef<HTMLInputElement|null>(null);
 
   // Load products config from backend
   React.useEffect(()=>{
@@ -1085,6 +1257,51 @@ function ProductPanel() {
     alert('Saved product details.');
   };
 
+  const handleProductChooseFile = () => productImgFileRef.current?.click();
+  const handleProductFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      if (!detailsForm) return;
+      const f = e.target.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('image/')) { alert('Please choose an image file.'); e.target.value=''; return; }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const dataUrl = String(reader.result||'');
+          const { path } = await uploadImageBase64('products', f.name, dataUrl);
+          const list = String(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean);
+          const nextName = path;
+          const next = [nextName, ...list.filter((x:string)=>x!==nextName)].join('\n');
+          setDetailsForm((df:any)=>({ ...df, imagesText: next, imageUrl: nextName }));
+          alert(`Uploaded to ${path}`);
+        } catch (err:any) {
+          alert('Upload failed: ' + (err?.message||String(err)));
+        } finally { e.target.value=''; }
+      };
+      reader.onerror = () => { alert('Failed to read file'); e.target.value=''; };
+      reader.readAsDataURL(f);
+    } finally {
+      // no-op
+    }
+  };
+  const handleProductImportFromUrl = async () => {
+    if (!detailsForm) return;
+    const url = window.prompt('Enter a direct image URL (public):');
+    if (!url) return;
+    const suggested = url.split('/').pop() || 'image';
+    const name = window.prompt('Save as (optional filename):', suggested) || suggested;
+    try {
+      const { path } = await fetchImageByUrl('products', url, name);
+      const list = String(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean);
+      const nextName = path;
+      const next = [nextName, ...list.filter((x:string)=>x!==nextName)].join('\n');
+      setDetailsForm((df:any)=>({ ...df, imagesText: next, imageUrl: nextName }));
+      alert(`Imported to ${path}`);
+    } catch (err:any) {
+      alert('Import failed: ' + (err?.message||String(err)));
+    }
+  };
+
   const Section = ({title, items}:{title:string, items:any[]}) => (
     <Card>
       <CardHeader className="flex items-center justify-between">
@@ -1224,7 +1441,12 @@ function ProductPanel() {
                       <div>
                         <label className="text-sm text-muted-foreground">Gallery Images (one URL per line)</label>
                         <textarea className="border rounded-md px-3 py-2 w-full" rows={4} value={detailsForm.imagesText||''} onChange={e=>setDetailsForm((f:any)=>({...f,imagesText:e.target.value}))} />
-                        <p className="text-xs text-muted-foreground mt-1">The first line is used as the cover image. Paste external URLs or server paths (e.g., /uploads/... or /images/...).</p>
+                        <p className="text-xs text-muted-foreground mt-1">First line is cover image. You can upload/import and it will be saved under /images/products.</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button size="sm" variant="outline" onClick={handleProductChooseFile}>Upload</Button>
+                          <Button size="sm" variant="outline" onClick={handleProductImportFromUrl}>Import URL</Button>
+                        </div>
+                        <input ref={productImgFileRef} type="file" accept="image/*" className="hidden" onChange={handleProductFileChange} />
                         <div className="mt-2 flex flex-wrap gap-2">
                           {(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean).slice(0,6).map((src:string,idx:number)=>(
                             <img key={idx} src={src} alt="preview" className="h-16 w-16 object-cover rounded border" />
@@ -1305,6 +1527,7 @@ function BlogPanel() {
   const [blogMedia, setBlogMedia] = useState<Record<string, string[]>>({});
   React.useEffect(()=>{ fetchJson('/blog-media').then((cfg:any)=>{ setBlogMedia(cfg.media||{}); }).catch(()=>{}); },[]);
   const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); return fetchJson('/blog-media', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ media: next }) }); };
+  const blogFileRef = React.useRef<HTMLInputElement|null>(null);
 
   const filtered = useMemo(() => {
     if (!q.trim()) return posts;
@@ -1383,6 +1606,53 @@ function BlogPanel() {
     const nextList = list.filter((_,i)=>i!==idx);
     const next = { ...blogMedia, [key]: nextList };
     saveBlogMedia(next);
+  };
+
+  const handleBlogChooseFile = () => blogFileRef.current?.click();
+  const handleBlogFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      if (!editing) return;
+      const f = e.target.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('image/')) { alert('Please choose an image file.'); e.target.value=''; return; }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const dataUrl = String(reader.result||'');
+          const { path } = await uploadImageBase64('blog', f.name, dataUrl);
+          const name = path.split('/').pop() || f.name;
+          const key = String(editing.id);
+          const list = blogMedia[key] || [];
+          const next = { ...blogMedia, [key]: [name, ...list.filter(x=>x!==name)] };
+          await saveBlogMedia(next);
+          alert(`Uploaded to ${path}`);
+        } catch (err:any) {
+          alert('Upload failed: ' + (err?.message||String(err)));
+        } finally { e.target.value=''; }
+      };
+      reader.onerror = () => { alert('Failed to read file'); e.target.value=''; };
+      reader.readAsDataURL(f);
+    } finally {
+      // no-op
+    }
+  };
+  const handleBlogImportFromUrl = async () => {
+    if (!editing) return;
+    const url = window.prompt('Enter a direct image URL (public):');
+    if (!url) return;
+    const suggested = url.split('/').pop() || 'image';
+    const name = window.prompt('Save as (optional filename):', suggested) || suggested;
+    try {
+      const { path } = await fetchImageByUrl('blog', url, name);
+      const savedName = path.split('/').pop() || name;
+      const key = String(editing.id);
+      const list = blogMedia[key] || [];
+      const next = { ...blogMedia, [key]: [savedName, ...list.filter(x=>x!==savedName)] };
+      await saveBlogMedia(next);
+      alert(`Imported to ${path}`);
+    } catch (err:any) {
+      alert('Import failed: ' + (err?.message||String(err)));
+    }
   };
 
   const saveEdit = () => {
@@ -1470,13 +1740,16 @@ function BlogPanel() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium">Images</div>
-                    <div className="text-xs text-muted-foreground">Place files under public/images/blog. This panel references images by filename and helps you insert Markdown linking to /images/blog/filename.</div>
+          <div className="text-xs text-muted-foreground">Upload or import images saved under /images/blog. You can also type a filename that already exists on server.</div>
                   </div>
                   <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={handleBlogChooseFile}>Upload</Button>
+          <Button size="sm" variant="outline" onClick={handleBlogImportFromUrl}>Import URL</Button>
                     <input id="blog-media-name" className="border rounded-md px-2 py-1 text-sm" placeholder="filename.png (in public/images/blog)" onKeyDown={(e)=>{ if(e.key==='Enter'){ addBlogImageByName((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value=''; } }} />
                     <Button size="sm" variant="outline" onClick={()=>{ const el=document.getElementById('blog-media-name') as HTMLInputElement|null; if(el){ addBlogImageByName(el.value); el.value=''; } }}>Add</Button>
                   </div>
                 </div>
+        <input ref={blogFileRef} type="file" accept="image/*" className="hidden" onChange={handleBlogFileChange} />
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(blogMedia[String(editing.id)]||[]).map((name,idx)=>(
                     <div key={idx} className="border rounded-md p-2 bg-background">

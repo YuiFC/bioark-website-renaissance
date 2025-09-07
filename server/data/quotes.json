@@ -13,7 +13,7 @@
     "additionalInfo": "{\"summary\":{\"category\":\"Mammalian Cloning\",\"funcType\":\"Knock-In\",\"delivery\":\"AAV\",\"promoter\":\"EF1a Core\",\"proteinTag\":\"None\",\"fluorescence\":\"Luciferase\",\"selection\":\"Neo\",\"target\":\"Non-Insert (or Template)\"}}",
     "id": "q_1757181304128",
     "createdAt": "2025-09-06T17:55:04.128Z",
-    "read": false
+    "read": true
   },
   {
     "firstName": "test",
@@ -29,7 +29,7 @@
     "additionalInfo": "",
     "id": "q_1757181276260",
     "createdAt": "2025-09-06T17:54:36.260Z",
-    "read": false
+    "read": true
   },
   {
     "firstName": "test",
@@ -45,6 +45,6 @@
     "additionalInfo": "",
     "id": "q_1757181274897",
     "createdAt": "2025-09-06T17:54:34.897Z",
-    "read": false
+    "read": true
   }
 ]

@@ -67,6 +67,153 @@ function ensureDataFiles() {
 }
 ensureDataFiles();
 
+// ===== Media helpers (save to public/images/<folder>) =====
+const IMAGES_DIR = path.join(PUBLIC_DIR, 'images');
+function ensureImagesSubdir(folder){
+  if (!folder || typeof folder !== 'string') return null;
+  const safe = String(folder).toLowerCase().replace(/[^a-z0-9_-]/g,'');
+  if (!safe) return null;
+  const dir = path.join(IMAGES_DIR, safe);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return { safe, dir };
+}
+function sanitizeFilename(name){
+  const base = String(name||'').trim().replace(/[^a-zA-Z0-9_.-]/g,'_');
+  return base || (`img_${Date.now()}.png`);
+}
+function inferExtFromMime(mime){
+  const m = String(mime||'').toLowerCase();
+  if (m.includes('png')) return '.png';
+  if (m.includes('jpeg') || m.includes('jpg')) return '.jpg';
+  if (m.includes('gif')) return '.gif';
+  if (m.includes('webp')) return '.webp';
+  if (m.includes('svg')) return '.svg';
+  return '';
+}
+function getFilenameFromUrl(u){
+  try { const p = new URL(u).pathname; return path.basename(p||''); } catch { return ''; }
+}
+
+// Upload base64 data URL
+app.post('/api/upload-image', async (req,res)=>{
+  try {
+    const { folder, name, dataUrl } = req.body || {};
+    const sub = ensureImagesSubdir(folder||'');
+    if (!sub) return res.status(400).json({ error: 'Invalid folder' });
+    if (typeof dataUrl !== 'string' || !/^data:image\//i.test(dataUrl)) return res.status(400).json({ error: 'Invalid dataUrl' });
+    // dataUrl format: data:image/png;base64,XXXXX
+    const m = dataUrl.match(/^data:([^;]+);base64,(.*)$/i);
+    if (!m) return res.status(400).json({ error: 'Invalid dataUrl format' });
+    const mime = m[1];
+    const b64 = m[2];
+    const buf = Buffer.from(b64, 'base64');
+    // Basic size limit ~10MB
+    if (buf.length > 10 * 1024 * 1024) return res.status(413).json({ error: 'File too large (>10MB)' });
+    const ext = path.extname(String(name||'')) || inferExtFromMime(mime) || '.png';
+    const fname = sanitizeFilename((name||'').replace(/\.[^.]+$/, '')) + (ext.startsWith('.')? ext : ('.'+ext));
+    const full = path.join(sub.dir, fname);
+    fs.writeFileSync(full, buf);
+    const rel = `/images/${sub.safe}/${fname}`;
+    return res.json({ ok: true, path: rel, name: fname });
+  } catch (e) {
+    console.error('[upload-image] error', e?.message || e);
+    return res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// Fetch remote image by URL and save
+app.post('/api/fetch-image', async (req,res)=>{
+  try {
+    const { folder, url, name } = req.body || {};
+    const sub = ensureImagesSubdir(folder||'');
+    if (!sub) return res.status(400).json({ error: 'Invalid folder' });
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return res.status(400).json({ error: 'Invalid url' });
+    const resp = await fetch(url).catch((e)=>{ throw new Error('Fetch failed: ' + (e?.message||e)); });
+    if (!resp || !resp.ok) return res.status(400).json({ error: 'Failed to download' });
+    const ctype = resp.headers.get('content-type') || '';
+    if (!/^image\//i.test(ctype)) return res.status(400).json({ error: 'URL is not an image' });
+    const buf = Buffer.from(await resp.arrayBuffer());
+    if (buf.length > 10 * 1024 * 1024) return res.status(413).json({ error: 'File too large (>10MB)' });
+    const raw = sanitizeFilename(name || getFilenameFromUrl(url) || `img_${Date.now()}`);
+    const ext = path.extname(raw) || inferExtFromMime(ctype) || '.png';
+    const fname = (raw.replace(/\.[^.]+$/,'') || `img_${Date.now()}`) + (ext.startsWith('.')? ext : ('.'+ext));
+    const full = path.join(sub.dir, fname);
+    fs.writeFileSync(full, buf);
+    const rel = `/images/${sub.safe}/${fname}`;
+    return res.json({ ok: true, path: rel, name: fname });
+  } catch (e) {
+    console.error('[fetch-image] error', e?.message || e);
+    return res.status(500).json({ error: 'Fetch failed' });
+  }
+});
+
+// List media under public/images
+app.get('/api/media-list', (_req, res) => {
+  try {
+    const folders = [];
+    if (!fs.existsSync(IMAGES_DIR)) fs.mkdirSync(IMAGES_DIR, { recursive: true });
+    const entries = fs.readdirSync(IMAGES_DIR, { withFileTypes: true });
+    // Collect root-level files as a special folder '_root'
+    const rootFiles = [];
+    for (const ent of entries) {
+      if (ent.isFile()) {
+        const ext = path.extname(ent.name).toLowerCase();
+        if (!['.png','.jpg','.jpeg','.gif','.webp','.svg'].includes(ext)) continue;
+        const full = path.join(IMAGES_DIR, ent.name);
+        let stat = null; try { stat = fs.statSync(full); } catch {}
+        rootFiles.push({ name: ent.name, path: `/images/${ent.name}`, size: stat?.size||0, mtime: stat?.mtimeMs||0 });
+      }
+    }
+    if (rootFiles.length) folders.push({ name: '_root', files: rootFiles });
+    // Collect subfolders
+    for (const ent of entries) {
+      if (!ent.isDirectory()) continue;
+      const folder = ent.name;
+      const sub = path.join(IMAGES_DIR, folder);
+      const files = [];
+      const fileEntries = fs.readdirSync(sub, { withFileTypes: true });
+      for (const f of fileEntries) {
+        if (!f.isFile()) continue;
+        const ext = path.extname(f.name).toLowerCase();
+        if (!['.png','.jpg','.jpeg','.gif','.webp','.svg'].includes(ext)) continue;
+        const full = path.join(sub, f.name);
+        let stat = null; try { stat = fs.statSync(full); } catch {}
+        files.push({ name: f.name, path: `/images/${folder}/${f.name}`, size: stat?.size||0, mtime: stat?.mtimeMs||0 });
+      }
+      folders.push({ name: folder, files });
+    }
+    return res.json({ ok: true, folders });
+  } catch (e) {
+    console.error('[media-list] error', e?.message||e);
+    return res.status(500).json({ error: 'List failed' });
+  }
+});
+
+// Delete an image by folder & name
+app.post('/api/delete-image', (req, res) => {
+  try {
+    const { folder, name } = req.body || {};
+    const base = sanitizeFilename(name||'');
+    if (!base) return res.status(400).json({ error: 'Invalid filename' });
+    let full = '';
+    if (String(folder) === '_root') {
+      full = path.join(IMAGES_DIR, base);
+      if (!full.startsWith(IMAGES_DIR)) return res.status(400).json({ error: 'Invalid path' });
+    } else {
+      const sub = ensureImagesSubdir(folder||'');
+      if (!sub) return res.status(400).json({ error: 'Invalid folder' });
+      full = path.join(sub.dir, base);
+      if (!full.startsWith(sub.dir)) return res.status(400).json({ error: 'Invalid path' });
+    }
+    if (!fs.existsSync(full)) return res.status(404).json({ error: 'Not found' });
+    fs.unlinkSync(full);
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('[delete-image] error', e?.message||e);
+    return res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
 function readUsers() {
   try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8')); } catch { return []; }
 }
