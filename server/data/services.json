@@ -1,5 +1,42 @@
 {
-  "overrides": {},
+  "overrides": {
+    "svc-01": {
+      "name": "Custom Cloning Services",
+      "description": "End-to-end plasmid design, cloning, synthesis, and delivery with collaborative web-based design.",
+      "link": "/services/custom-cloning",
+      "imageUrl": "",
+      "longDescription": "Comprehensive plasmid construction services with collaborative design to fit your exact research needs.",
+      "keyBenefits": [
+        "Custom plasmid design tailored to your research",
+        "Advanced cloning technologies and expert team",
+        "Streamlined, efficient workflows",
+        "Web platform for collaborative design review"
+      ],
+      "processOverview": [
+        {
+          "step": "Project Intake",
+          "description": "We align on goals, vector backbones, promoters, tags, and constraints."
+        },
+        {
+          "step": "Design & Review",
+          "description": "In-silico design and web-based review/approval."
+        },
+        {
+          "step": "Build & QC",
+          "description": "Fragment synthesis/subcloning, assembly, and quality control."
+        },
+        {
+          "step": "Delivery",
+          "description": "Plasmid preparation, optional endotoxin-free prep, normalization, and shipment."
+        }
+      ],
+      "relatedProducts": [],
+      "caseStudies": [],
+      "markdown": "At BioArk Technologies, we offer comprehensive plasmid construction services designed for molecular biology and genetics research. Our intuitive web platform lets you collaborate in real time to ensure vectors fit your exact specifications.\n\n## Why Choose Our Vector Cloning Service?\n- Custom Plasmid Design — Tailored to your specific research needs\n- Advanced Technologies — Leveraging technical expertise and innovative solutions\n- Efficient Process — Streamlined for fast and reliable results\n- Customer Collaboration — Web-based platform for seamless design involvement\n\nContact us: support@bioarktech.com\n\n## Service Offerings\n### Comprehensive Project Support\nAssist in vector design (backbone, promoter, insertion sites, tags) tailored to your project.\n\n### Subcloning Service\nAdapt your vector to viral systems (lentivirus, dual promoter, inducible, CRISPR platforms).\n\n### Fragment Synthesis and Cloning\nHigh-quality fragment synthesis at competitive prices; we clone into custom or BioArk vectors.\n\n### Plasmid Delivery and Expression\nDownstream services including lentivirus packaging and stable cell line development.\n\n## Plasmid Construction Services — Pricing\n| Service | Catalog Number | Price | Time |\n| --- | --- | --- | --- |\n| Subcloning Services | PCSVC02 | $199 | 2 weeks |\n| Fragment synthesis & Cloning | PCSVC03 | Pricing Policy Details Below | 2–3 weeks |\n| Custom Cloning Project | PCSVC04 | Above pricing + Project Fee ($200–$1000) | > 3 weeks |\n\n## Synthesis & Cloning Pricing\n| Synthesis & Cloning | <60bp | 60bp–0.5kb | 0.5kb–3kb | 3kb–5kb |\n| --- | --- | --- | --- | --- |\n| BioArk Vectors | $120/seq | $150/seq | $0.2/bp | $0.24/bp |\n| Custom Vector | $120/seq | $150/seq | $0.24/bp | $0.28/bp |\n\n## Plasmid Services\n| Scale | 2 µg – 10 µg | 10 µg–50 µg | 50 µg–300 µg | 300 µg–1 mg |\n| --- | --- | --- | --- | --- |\n| Plasmid Scale | Included | $30.00/seq | $90.00/seq | $150.00/seq |\n| Endotoxin Free (<0.1 EU/µg) | - | $20.00 per seq | $50.00 per seq | $50.00 per seq |\n| DNA Normalization | $15.00 per seq | $15.00 per seq | $15.00 per seq | $15.00 per seq |\n| Glycerol Stock | $10.00 per seq | $10.00 per seq | $10.00 per seq | $10.00 per seq |\n"
+    }
+  },
   "custom": [],
-  "media": {}
+  "media": {
+    "svc-01": []
+  }
 }

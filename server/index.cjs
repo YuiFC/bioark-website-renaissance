@@ -51,6 +51,7 @@ const SERVICES_FILE = path.join(DATA_DIR, 'services.json');
 const QUOTES_FILE = path.join(DATA_DIR, 'quotes.json');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const SMTP_FILE = path.join(DATA_DIR, 'smtp.json');
+const METRICS_FILE = path.join(DATA_DIR, 'metrics.json');
 // Uploads directory under data (runtime-writable)
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 // Images DB (admin-managed assets)
@@ -66,6 +67,7 @@ function ensureDataFiles() {
   if (!fs.existsSync(QUOTES_FILE)) fs.writeFileSync(QUOTES_FILE, '[]', 'utf-8');
   if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, JSON.stringify({ version: 1, products: [], overrides: {}, details: {}, hidden: [] }, null, 2), 'utf-8');
   if (!fs.existsSync(SMTP_FILE)) fs.writeFileSync(SMTP_FILE, JSON.stringify({ host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'', subjectTemplate:'New Quote from {{firstName}} {{lastName}} — {{serviceType}}', bodyTemplate:'<h2>New Quote Notification</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<p><strong>Company:</strong> {{company}}</p>\n<p><strong>Service:</strong> {{serviceType}}</p>\n<p><strong>Timeline:</strong> {{timeline}}</p>\n<p><strong>Budget:</strong> {{budget}}</p>\n<p><strong>Submitted At:</strong> {{createdAt}}</p>\n<hr/>\n<p><strong>Project Description:</strong></p>\n<p style="white-space:pre-wrap">{{projectDescription}}</p>\n{{#if additionalInfo}}<hr/><p><strong>Additional Info:</strong></p><pre style="white-space:pre-wrap">{{additionalInfo}}</pre>{{/if}}' }, null, 2), 'utf-8');
+  if (!fs.existsSync(METRICS_FILE)) fs.writeFileSync(METRICS_FILE, JSON.stringify({ pageViews: 0 }, null, 2), 'utf-8');
   if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   if (!fs.existsSync(IMAGES_DB_FILE)) fs.writeFileSync(IMAGES_DB_FILE, JSON.stringify({ images: [] }, null, 2), 'utf-8');
 }
@@ -429,6 +431,10 @@ function readProductsCfg(){
 }
 function writeProductsCfg(cfg){ fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
 
+// Metrics store
+function readMetrics(){ try { return JSON.parse(fs.readFileSync(METRICS_FILE,'utf-8')); } catch { return { pageViews: 0 }; } }
+function writeMetrics(m){ fs.writeFileSync(METRICS_FILE, JSON.stringify({ pageViews: Number(m.pageViews)||0 }, null, 2), 'utf-8'); }
+
 // SMTP config store
 function readSmtpCfg(){
   const baseDefaults = {
@@ -585,6 +591,26 @@ if (MODE !== 'stripe') {
     writeSmtpCfg(merged);
     return res.json({ ok: true });
   });
+
+  // Metrics APIs (content mode only)
+  app.get('/api/metrics', (_req,res)=>{
+    return res.json(readMetrics());
+  });
+  // Increment page views (homepage hit)
+  app.post('/api/metrics/hit', (_req,res)=>{
+    const m = readMetrics();
+    m.pageViews = (Number(m.pageViews)||0) + 1;
+    writeMetrics(m);
+    return res.json({ ok: true, pageViews: m.pageViews });
+  });
+  // Reset metrics (admin only)
+  app.post('/api/metrics/reset', (req,res)=>{
+    const user = getSessionUserFromReq(req);
+    if (!user || user.role !== 'Admin') return res.status(403).json({ error: 'FORBIDDEN' });
+    const m = { pageViews: 0 };
+    writeMetrics(m);
+    return res.json({ ok: true, pageViews: 0 });
+  });
 }
 app.get('/api/blog', (_req,res)=>{
   return res.json(readBlog());
@@ -681,29 +707,40 @@ app.post('/api/admin/restart', async (req, res) => {
 });
 
 // ===== Users admin APIs =====
+// All user management endpoints require Admin session
 // List users (without password hashes)
-app.get('/api/users', (_req,res)=>{
-  const users = readUsers().map(u => ({ email: u.email, name: u.name, role: u.role }));
+app.get('/api/users', (req,res)=>{
+  const me = getSessionUserFromReq(req);
+  if (!me || (me.role !== 'Admin' && me.role !== 'Owner')) return res.status(403).json({ error: 'FORBIDDEN' });
+  const users = readUsers()
+    .filter(u => u.role === 'Admin')
+    .map(u => ({ email: u.email, name: u.name, role: u.role, address: u.address }));
   return res.json({ users });
 });
-// Upsert user fields; body: { email, name?, role?, password? }
+// Upsert user fields; body: { email, name?, role? (ignored; enforced Admin), password?, address? }
 app.post('/api/users/upsert', (req,res)=>{
-  const { email, name, role, password } = req.body || {};
+  const me = getSessionUserFromReq(req);
+  if (!me || (me.role !== 'Admin' && me.role !== 'Owner')) return res.status(403).json({ error: 'FORBIDDEN' });
+  const { email, name, role, password, address } = req.body || {};
   if (!email) return res.status(400).json({ error: 'email required' });
   const users = readUsers();
   const i = users.findIndex(u => u.email.toLowerCase() === String(email).toLowerCase());
+  const enforcedRole = 'Admin';
   if (i >= 0) {
     if (name != null) users[i].name = name;
-    if (role != null) users[i].role = role;
+    users[i].role = enforcedRole; // enforce Admin only
+    if (address != null) users[i].address = address;
     if (password) users[i].password = hashPassword(password);
   } else {
-    users.push({ email, name: name || email, role: role || 'User', password: password ? hashPassword(password) : hashPassword('123456') });
+    users.push({ email, name: name || email, role: enforcedRole, address: address || '', password: password ? hashPassword(password) : hashPassword('123456') });
   }
   writeUsers(users);
   return res.json({ ok: true });
 });
 // Delete user
 app.delete('/api/users/:email', (req,res)=>{
+  const me = getSessionUserFromReq(req);
+  if (!me || (me.role !== 'Admin' && me.role !== 'Owner')) return res.status(403).json({ error: 'FORBIDDEN' });
   const email = decodeURIComponent(req.params.email||'');
   const users = readUsers().filter(u => u.email.toLowerCase() !== email.toLowerCase());
   writeUsers(users);

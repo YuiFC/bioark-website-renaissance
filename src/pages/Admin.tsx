@@ -24,7 +24,8 @@ const Admin = () => {
   const [unreadQuotes, setUnreadQuotes] = useState<number>(0);
   React.useEffect(()=>{ (async()=>{ try { const n = await getUnreadQuotesCount(); setUnreadQuotes(n); } catch {} })(); },[]);
 
-  const metrics = { pageViews: 12890, users: 1, posts: posts.length };
+  const [metrics, setMetrics] = useState<{ pageViews: number; users: number; posts: number }>(()=>({ pageViews: 0, users: 0, posts: posts.length }));
+  React.useEffect(()=>{ (async()=>{ try { const m = await fetchJson<{ pageViews:number }>('/metrics'); setMetrics({ pageViews: Number(m?.pageViews||0), users: 0, posts: posts.length }); } catch {} })(); },[posts.length]);
 
   const handleLogin = async () => {
     try {
@@ -130,7 +131,10 @@ const Admin = () => {
                   </Card>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground">Note: Metrics are placeholders. Future: analytics, OA, payments.</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Metrics update when the homepage is visited.</p>
+                <Button variant="outline" size="sm" onClick={async()=>{ try { const auth = localStorage.getItem('bioark_auth_token'); const r = await fetchJson<{ok:boolean;pageViews:number}>(('/metrics/reset'), { method:'POST', headers: auth? { Authorization: `Bearer ${auth}` } : undefined as any }); setMetrics(s=>({ ...s, pageViews: r.pageViews||0 })); } catch (e:any){ alert(e?.message||'Reset failed'); } }}>Reset Page Views</Button>
+              </div>
             </div>
           )}
 
@@ -970,9 +974,12 @@ function UserPanel(){
   },[q, users]);
 
   const onEdit = async (email:string, patch:Partial<any>) => {
-    const next = users.map(u => u.email===email ? { ...u, ...patch } : u);
+    // Force role to Admin only
+    const enforced: any = { ...patch };
+    if (enforced.role && enforced.role !== 'Admin') enforced.role = 'Admin';
+    const next = users.map(u => u.email===email ? { ...u, ...enforced } : u);
     setUsersState(next);
-    try { await apiUpsertUser({ email, ...patch }); } catch (e:any) { alert(e.message||'Save failed'); }
+    try { await apiUpsertUser({ email, ...enforced }); } catch (e:any) { alert(e.message||'Save failed'); }
   };
   const onDelete = async (email:string) => {
     if (!confirm('Delete this user?')) return;
@@ -981,8 +988,9 @@ function UserPanel(){
 
   return (
     <div className="space-y-4">
+      <AddAdminForm onAdded={(u)=>setUsersState(prev=>[u, ...prev])} />
       <div className="flex items-center gap-3">
-        <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search users..." value={q} onChange={e=>setQ(e.target.value)} />
+        <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search admins..." value={q} onChange={e=>setQ(e.target.value)} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(u => (
@@ -990,10 +998,7 @@ function UserPanel(){
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="font-semibold text-foreground">{u.name || '—'}</div>
-                <select className="border rounded-md px-2 py-1 text-sm" value={u.role||'User'} onChange={e=>onEdit(u.email,{ role: e.target.value })}>
-                  <option value="User">User</option>
-                  <option value="Admin">Admin</option>
-                </select>
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Admin</span>
               </div>
               <input className="border rounded-md px-2 py-1 w-full" value={u.name||''} placeholder="Full name" onChange={e=>onEdit(u.email,{ name:e.target.value })} />
               <input className="border rounded-md px-2 py-1 w-full" value={u.email||''} disabled />
@@ -1005,8 +1010,40 @@ function UserPanel(){
           </Card>
         ))}
       </div>
-      {!filtered.length && <p className="text-sm text-muted-foreground">No users found.</p>}
+      {!filtered.length && <p className="text-sm text-muted-foreground">No admins found.</p>}
     </div>
+  );
+}
+
+function AddAdminForm({ onAdded }:{ onAdded: (u:any)=>void }){
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    if (!email || !password) { alert('Email and password are required'); return; }
+    setSaving(true);
+    try {
+      await apiUpsertUser({ email, name, role: 'Admin', password });
+      onAdded({ email, name, role: 'Admin' });
+      setEmail(''); setName(''); setPassword('');
+    } catch (e:any){ alert(e?.message||'Failed to add admin'); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Admin</CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <input className="border rounded-md px-3 py-2 w-full" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+        <input className="border rounded-md px-3 py-2 w-full" placeholder="Full name (optional)" value={name} onChange={e=>setName(e.target.value)} />
+        <input className="border rounded-md px-3 py-2 w-full" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+        <div className="flex items-center">
+          <Button onClick={submit} disabled={saving}>{saving?'Saving...':'Add Admin'}</Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -8,6 +8,7 @@ import NotFound from './NotFound';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
+import { fetchJson } from '@/lib/api';
 
 const ServiceDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,6 +19,26 @@ const ServiceDetail = () => {
   }
 
   const Icon = service.icon;
+
+  // Load optional media gallery saved from Admin (/services-config -> media[id])
+  const [gallery, setGallery] = React.useState<string[]>([]);
+  const [mainSrc, setMainSrc] = React.useState<string | undefined>(service.imageUrl);
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const cfg = await fetchJson<any>('/services-config');
+        const list: string[] = (cfg && cfg.media && cfg.media[service.id]) || [];
+        if (!mounted) return;
+        setGallery(list);
+        // Prefer Admin cover if set; otherwise fall back to first gallery image
+        setMainSrc((prev) => prev || list[0]);
+      } catch {
+        // optionally ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [service.id, service.imageUrl]);
 
   return (
     <Layout>
@@ -40,6 +61,33 @@ const ServiceDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left Column: Details */}
           <div className="lg:col-span-2 space-y-8">
+            {(!!mainSrc || (gallery && gallery.length > 0)) && (
+              <Card>
+                <CardContent className="p-3">
+                  <div className="w-full bg-muted rounded-lg overflow-hidden">
+                    {mainSrc ? (
+                      <img src={mainSrc} alt={service.name} className="w-full h-64 md:h-80 object-cover" />
+                    ) : (
+                      <div className="w-full h-64 md:h-80 flex items-center justify-center text-muted-foreground">No image</div>
+                    )}
+                  </div>
+                  {gallery && gallery.length > 1 && (
+                    <div className="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-2">
+                      {gallery.slice(0, 12).map((src, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setMainSrc(src)}
+                          className={`aspect-square rounded-md overflow-hidden border ${src === mainSrc ? 'ring-2 ring-primary' : ''}`}
+                          title={src}
+                        >
+                          <img src={src} alt={`thumb-${idx}`} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             {service.markdown ? (
               <Card>
                 <CardHeader>
