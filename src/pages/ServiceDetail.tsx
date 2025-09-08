@@ -66,9 +66,9 @@ const ServiceDetail = () => {
                 <CardContent className="p-3">
                   <div className="w-full bg-muted rounded-lg overflow-hidden">
                     {mainSrc ? (
-                      <img src={mainSrc} alt={service.name} className="w-full h-64 md:h-80 object-cover" />
+                      <img src={mainSrc} alt={service.name} className="w-full h-auto" />
                     ) : (
-                      <div className="w-full h-64 md:h-80 flex items-center justify-center text-muted-foreground">No image</div>
+                      <div className="w-full py-16 flex items-center justify-center text-muted-foreground">No image</div>
                     )}
                   </div>
                   {gallery && gallery.length > 1 && (
