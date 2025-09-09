@@ -1210,8 +1210,9 @@ function ProductPanel() {
   manuals: base?.manuals || [],
   manualUrls: (base as any)?.manualUrls || [],
       storeLink: base?.storeLink || '',
-      quoteOnly: !!(dOv.quoteOnly ?? (slug && !String(base?.catalogNumber||'').startsWith('FP'))),
-      contentText: dOv.contentText || '',
+  quoteOnly: !!(dOv.quoteOnly ?? (base as any)?.quoteOnly ?? (slug && !String(base?.catalogNumber||'').startsWith('FP'))),
+  // Ensure existing content is shown: prefer details override, then base, then display override
+  contentText: (dOv as any).contentText ?? (base as any)?.contentText ?? (dispOv as any)?.contentText ?? '',
       ...dispOv,
       ...dOv,
     };

@@ -7,6 +7,11 @@
       "description": "GN8K DNA Marker consists of 10 linear double-stranded DNA (100 bp, 250 bp, 500 bp, 750 bp, 1000 bp, 1500 bp, 2000 bp, 3000 bp, 5000 bp, 8000 bp) bands mixed with 1×DNA Loading Buffer containing blue indicator dye, and is suitable for the analysis of DNA bands in agarose gel electrophoresis. This product is ready-to-use, according to the experimental needs, directly take 5-10 μL for electrophoresis, easy to use, clear electrophoresis bands, easy to accurately determine the content of the target product DNA. The 500 bp band in the GN8K DNA Marker has a DNA concentration of 100 ng/5 μL and shows a bright band; the remaining bands have a DNA concentration of 50 ng/5 μL.",
       "imageUrl": "/images/products/BADM3362_GN8K_DNA_Marker-1-300x300.jpg",
       "link": "/products/gn8k-dna-marker"
+    },
+    "gep-01": {
+      "name": "Gene Knock-In & Tagging",
+      "description": "Precision services for endogenous gene tagging and reporter knock-in.",
+      "link": "/products/gene-knock-in"
     }
   },
   "details": {
@@ -484,6 +489,35 @@
       "contentText": "# BioArk Technologies\n\nBioArk Technologies is continuously expanding its stable cell line stock, offering an ever-growing selection of gene-specific modifications. Our mission is to provide high-quality, pre-validated stable cell lines at an affordable price while fostering scientific collaboration and resource sharing.\n\nExplore our expanding list of cost-effective, pre-constructed stable cell lines here.\n\n---\n\n| Stable Cell Line | | | Gene Editing Feature | | | | |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **Product Name** | **SKU** | **Description** | **Promoter** | **Protein Tag** | **Fluorescence Marker** | **Selection Marker** | **Target Gene** | **Cell Background** |\n| OverExp Lenti Kit | EML-CXD0PC-LARGETc | The large T antigen is integrated by lentivirus | PCMV | MycDDK | None | Puro | LargeT | Fibroblast Cells |\n\n*Showing 1 to 2 of 2 entries*\n\n---\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n\nIf you have any further inquiries regarding your project, please click the button to contact us. We are fully equipped to accommodate a wide range of your requirements.\n```",
       "images": [
         "/placeholder.svg"
+      ]
+    },
+    "gep-01": {
+      "catalogNumber": "GEP-001",
+      "availability": "In Stock",
+      "listPrice": "$640.37",
+      "options": [
+        "Standard Kit",
+        "Pro Kit"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High-purity components for robust genome editing",
+        "Complete systems for high-titer virus production",
+        "Scalable solutions for manufacturing",
+        "Custom-designed for targeted gene editing"
+      ],
+      "storageStability": "Store components at specified temperatures. See manual for details.",
+      "performanceData": "Consistently high efficiency and low off-target effects reported in publications.",
+      "manuals": [
+        "Protocol Guide (PDF)",
+        "Troubleshooting (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": true,
+      "contentText": "This technique provides versatile options for attaching selected tags to the 3′ or 5′ ends of customer-specified target genes, enabling precise tracking and functional analysis. Gene knock-in tagging can be applied across a broad range of research areas, including investigating protein localization, studying protein-protein interactions, analyzing gene function and regulation, creating transgenic models, and facilitating drug discovery efforts.\n\n## Technical Background\n\nThe CRISPR-Cas9 system is the core technology behind gene knock-in tagging. It utilizes a guide RNA (gRNA) to direct the Cas9 endonuclease to a specific genomic site, where it generates a double-strand break (DSB). This break is then repaired by either non-homologous end joining (NHEJ) or homology-directed repair (HDR). For knock-in tagging, HDR is the preferred method, where a donor template containing the desired tag, flanked by homology arms, facilitates the precise insertion of the tag at the target locus.\n\n## Key Components\n\n- **Cas9 protein**: Creates a DSB at the target site.\n- **Guide RNA (gRNA)**: Directs Cas9 to the desired genomic locus.\n- **Donor template**: Contains the tag (e.g., GFP, HA tag) along with homology arms to facilitate HDR-mediated knock-in.\n\n## Features of Our Products\n\n- **AI-Assisted Design**: Our CRISPR and donor vectors are AI-assisted, designed to streamline and optimize the process for efficient target gene integration.\n- **User-Friendly Techniques**: Our plasmid kits utilize lab-friendly methods that avoid the need for electroporation, making them easy to use in most labs. They are particularly well-suited for adherent cancer cell lines.\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.",
+      "images": [
+        "/images/products/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg"
       ]
     }
   },
