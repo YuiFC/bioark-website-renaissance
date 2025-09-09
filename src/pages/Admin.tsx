@@ -1050,7 +1050,7 @@ function AddAdminForm({ onAdded }:{ onAdded: (u:any)=>void }){
 function ProductPanel() {
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name:'', description:'', imageUrl:'', imagesText:'', link:'', category:'featured' as 'featured'|'gene-editing' });
+  const [form, setForm] = useState({ name:'', description:'', imagesText:'', link:'', category:'featured' as 'featured'|'gene-editing' });
   const [hidden, setHidden] = useState<string[]>([]);
   const [overrides, setOverrides] = useState<Record<string, any>>({});
   const [custom, setCustom] = useState<any[]>([]);
@@ -1088,13 +1088,6 @@ function ProductPanel() {
     setOverrides(payload.overrides);
     setDetailsOverrides(payload.details);
     setHidden(payload.hidden);
-    // Mirror to LocalStorage as a read cache for existing product readers (temporary shim)
-    try {
-      localStorage.setItem('bioark_products', JSON.stringify(payload.products));
-      localStorage.setItem('bioark_products_overrides', JSON.stringify(payload.overrides));
-      localStorage.setItem('bioark_product_details_overrides', JSON.stringify(payload.details));
-      localStorage.setItem('bioark_products_hidden', JSON.stringify(payload.hidden));
-    } catch {}
     try {
   await fetchJson('/products-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
     } catch (e){ console.error('Save products-config failed', e); }
@@ -1184,12 +1177,12 @@ function ProductPanel() {
   };
 
   const onAdd = () => {
-  const id = `custom-${Date.now()}`;
-  const images = String(form.imagesText||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const payload = { id, name: form.name, description: form.description, imageUrl: form.imageUrl, images: images.length?images:undefined, link: form.link, category: form.category };
+    const id = `custom-${Date.now()}`;
+    const images = String(form.imagesText||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    const payload = { id, name: form.name, description: form.description, imageUrl: images[0] || '', images: images.length?images:undefined, link: form.link, category: form.category } as any;
     saveCustom([payload, ...custom]);
     setShowAdd(false);
-  setForm({ name:'', description:'', imageUrl:'', imagesText:'', link:'', category: 'featured' });
+    setForm({ name:'', description:'', imagesText:'', link:'', category: 'featured' });
   };
 
   const openEditDetails = (p:any) => {
@@ -1201,8 +1194,9 @@ function ProductPanel() {
     const merged = {
       id: p.id,
       name: p.name,
-      description: p.description,
-      imageUrl: p.imageUrl,
+  description: p.description,
+      // Prefer first detailed image as cover; fallback to base/override if missing
+      imageUrl: (Array.isArray(dOv.images) && dOv.images[0]) || p.imageUrl || (dispOv.imageUrl as any) || '',
       link: p.link,
       images: (dOv.images || (base as any)?.images || (p.imageUrl ? [p.imageUrl] : [])),
       catalogNumber: base?.catalogNumber || '',
@@ -1235,13 +1229,14 @@ function ProductPanel() {
   const saveEditDetails = () => {
     if (!editing || !detailsForm) return;
     const id = editing.id;
-    if (!custom.some(c=>c.id===id)) {
-      const nextDisp = { ...overrides, [id]: { ...(overrides[id]||{}), name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } };
-      saveOverrides(nextDisp);
-    } else {
-      const nextCustom = custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, imageUrl: detailsForm.imageUrl, link: detailsForm.link } : c);
-      saveCustom(nextCustom);
-    }
+    const isCustom = custom.some(c=>c.id===id);
+    // Prepare display-level overrides/custom WITH NO imageUrl (cover inferred from images[0])
+    const nextDisp = !isCustom
+      ? { ...overrides, [id]: { ...(overrides[id]||{}), name: detailsForm.name, description: detailsForm.description, link: detailsForm.link } }
+      : overrides;
+    const nextCustom = isCustom
+      ? custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, link: detailsForm.link } : c)
+      : custom;
     const optionPricesMap = (() => {
       const txt = detailsForm.optionPricesText || '';
       const map: Record<string,string> = {};
@@ -1273,7 +1268,12 @@ function ProductPanel() {
       images: String(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean),
     };
     const nextDetails = { ...detailsOverrides, [id]: { ...(detailsOverrides[id]||{}), ...normalized } };
-    saveDetailsOverrides(nextDetails);
+    // Save atomically in one payload to avoid overwriting newer state with stale values
+    void saveAll({
+      products: nextCustom,
+      overrides: nextDisp,
+      details: nextDetails,
+    });
     setEditing(null);
     setDetailsForm(null);
     alert('Saved product details.');
@@ -1362,8 +1362,8 @@ function ProductPanel() {
             <div className="grid gap-3">
               <input className="border rounded-md px-3 py-2" placeholder="Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
               <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
-              <input className="border rounded-md px-3 py-2" placeholder="Cover Image URL (optional when using list below)" value={form.imageUrl} onChange={e=>setForm(f=>({...f,imageUrl:e.target.value}))} />
-              <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="Gallery Images (one URL per line)" value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
+              <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, First Line will be also display on homepage)</span></label>
+              <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="https://example.com/image-1.png\nhttps://example.com/image-2.png" value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
               <input className="border rounded-md px-3 py-2" placeholder="Link (/products/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
               <select className="border rounded-md px-3 py-2" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value as any}))}>
                 <option value="featured">Featured</option>
@@ -1444,19 +1444,13 @@ function ProductPanel() {
                 <label className="text-sm text-muted-foreground">Description</label>
                 <textarea className="border rounded-md px-3 py-2 w-full" rows={3} value={detailsForm.description} onChange={e=>setDetailsForm((f:any)=>({...f,description:e.target.value}))} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground">Image URL</label>
-                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.imageUrl||''} onChange={e=>setDetailsForm((f:any)=>({...f,imageUrl:e.target.value}))} />
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground">Product Link (/products/slug)</label>
-                  <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.link||''} onChange={e=>setDetailsForm((f:any)=>({...f,link:e.target.value}))} />
-                </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Product Link (/products/slug)</label>
+                <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.link||''} onChange={e=>setDetailsForm((f:any)=>({...f,link:e.target.value}))} />
               </div>
                       {/* Images (multiple) */}
                       <div>
-                        <label className="text-sm text-muted-foreground">Gallery Images (one URL per line)</label>
+                        <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, First Line will be also display on homepage)</span></label>
                         <textarea className="border rounded-md px-3 py-2 w-full" rows={4} value={detailsForm.imagesText||''} onChange={e=>setDetailsForm((f:any)=>({...f,imagesText:e.target.value}))} />
                         <p className="text-xs text-muted-foreground mt-1">First line is the cover image. You can upload directly, or paste a URL on the right and click Import URL.</p>
                         <div className="flex items-center gap-2 mt-2">

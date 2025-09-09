@@ -1,6 +1,6 @@
 
 
-import React, { useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -8,6 +8,7 @@ import { featuredProducts, geneEditingProducts, customerSolutions, ShowcaseItem 
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
+import { fetchJson } from '@/lib/api';
 
 interface SectionProps {
   title: string;
@@ -86,6 +87,57 @@ const FeaturedSections = () => {
   const featuredPrevRef = useRef<HTMLButtonElement | null>(null);
   const featuredNextRef = useRef<HTMLButtonElement | null>(null);
   const featuredSwiperRef = useRef<any>(null);
+  const [itemsFeatured, setItemsFeatured] = useState<ShowcaseItem[]>(featuredProducts);
+  const [itemsGeneEditing, setItemsGeneEditing] = useState<ShowcaseItem[]>(geneEditingProducts);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const cfg = await fetchJson<any>('/products-config');
+        const hidden: string[] = Array.isArray(cfg?.hidden) ? cfg.hidden : [];
+        const ov: Record<string, Partial<ShowcaseItem>> = cfg?.overrides || {};
+        const det: Record<string, { images?: string[] }> = cfg?.details || {};
+        const custom: any[] = Array.isArray(cfg?.products) ? cfg.products : [];
+
+        const apply = (base: ShowcaseItem[]): ShowcaseItem[] => {
+          return base
+            .filter(it => !hidden.includes(it.id))
+            .map(it => {
+              const o = ov[it.id] || {};
+              const used = (det[it.id]?.images && det[it.id]?.images[0]) || (o.imageUrl as string) || it.imageUrl;
+              return {
+                ...it,
+                ...o,
+                imageUrl: used,
+              } as ShowcaseItem;
+            });
+        };
+
+        const fromCustom = (cat: 'featured' | 'gene-editing'): ShowcaseItem[] => {
+          return custom
+            .filter(c => !hidden.includes(c.id))
+            .filter(c => c.category === cat)
+            .map(c => ({
+              id: c.id,
+              name: c.name,
+              description: c.description,
+              imageUrl: (c.images && c.images[0]) || c.imageUrl,
+              link: c.link || '#',
+            } as ShowcaseItem));
+        };
+
+        const nextFeatured = [...apply(featuredProducts), ...fromCustom('featured')];
+        const nextGene = [...apply(geneEditingProducts), ...fromCustom('gene-editing')];
+        if (!mounted) return;
+        setItemsFeatured(nextFeatured);
+        setItemsGeneEditing(nextGene);
+      } catch {
+        // ignore; keep defaults
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
   return (
     <>
       {/* Featured Products Section */}
@@ -111,7 +163,7 @@ const FeaturedSections = () => {
               }}
               className="pb-12"
             >
-            {featuredProducts.map(item => (
+            {itemsFeatured.map(item => (
               <SwiperSlide key={item.id} className="h-full pb-2">
                 <ProductCard item={item} />
               </SwiperSlide>
@@ -159,7 +211,7 @@ const FeaturedSections = () => {
               }}
               className="pb-12"
             >
-            {geneEditingProducts.map(item => (
+            {itemsGeneEditing.map(item => (
             <SwiperSlide key={item.id} className="h-full pb-2">
                 <ProductCard item={item} />
               </SwiperSlide>
