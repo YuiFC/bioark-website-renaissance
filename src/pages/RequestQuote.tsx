@@ -19,19 +19,21 @@ const RequestQuote = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const form = new FormData(e.currentTarget);
+      // Capture form element before any awaits to avoid React synthetic event nullification
+      const formEl = e.currentTarget as HTMLFormElement;
+      const formData = new FormData(formEl);
       const payload = {
-        firstName: String(form.get('firstName')||''),
-        lastName: String(form.get('lastName')||''),
-        email: String(form.get('email')||''),
-        phone: String(form.get('phone')||''),
-        company: String(form.get('company')||''),
-        department: String(form.get('department')||''),
-        serviceType: String(form.get('serviceType')||''),
-        timeline: String(form.get('timeline')||''),
-        budget: String(form.get('budget')||''),
-        projectDescription: String(form.get('projectDescription')||''),
-        additionalInfo: String(form.get('additionalInfo')||''),
+        firstName: String(formData.get('firstName')||''),
+        lastName: String(formData.get('lastName')||''),
+        email: String(formData.get('email')||''),
+        phone: String(formData.get('phone')||''),
+        company: String(formData.get('company')||''),
+        department: String(formData.get('department')||''),
+        serviceType: String(formData.get('serviceType')||''),
+        timeline: String(formData.get('timeline')||''),
+        budget: String(formData.get('budget')||''),
+        projectDescription: String(formData.get('projectDescription')||''),
+        additionalInfo: String(formData.get('additionalInfo')||''),
   // user snapshot removed (site-wide login disabled)
       };
 
@@ -39,12 +41,12 @@ const RequestQuote = () => {
 
       await addQuote(payload as any);
 
-      // reset form
-      (e.currentTarget as HTMLFormElement).reset();
-      toast({
-        title: 'Quote Request Submitted',
-        description: "We'll get back to you within 24 hours with a detailed quote.",
-      });
+  // reset form (use captured element to avoid null)
+  formEl.reset();
+      // Align feedback with other quote buttons
+      toast({ title: 'Quote submitted', description: 'We will contact you soon.' });
+    } catch (e: any) {
+      toast({ title: 'Submit failed', description: e?.message || 'Please try again later.', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
