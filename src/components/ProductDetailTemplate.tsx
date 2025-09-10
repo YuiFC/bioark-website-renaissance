@@ -253,9 +253,6 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                         <Button variant="outline" size="icon" className="rounded-l-none" onClick={() => setQty((q)=> Math.min(999, (q||1)+1))}>+</Button>
                       </div>
                     </div>
-                    <Button className="bioark-gradient text-white hover:opacity-90" asChild>
-                      <Link to="/request-quote">Request a Quote</Link>
-                    </Button>
                     <Button className="bg-primary text-white hover:bg-primary/90 px-6" onClick={handleAddToCart}>
                       <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
                     </Button>

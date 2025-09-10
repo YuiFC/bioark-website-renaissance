@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 import { Menu, X, ShoppingCart } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -42,6 +43,8 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { items } = useCart();
+  const cartCount = React.useMemo(() => items.reduce((n, it) => n + (it.quantity || 0), 0), [items]);
   // Dark mode removed; theme toggle no longer used
 
   const externalLinks = [
@@ -220,19 +223,19 @@ const Navigation = () => {
               <Button asChild size="sm">
                 <Link to="/request-quote">Request Quote</Link>
               </Button>
-              {externalLinks.map((link) => {
-                const IconComponent = link.icon;
-                return (
-                  <Link
-                    key={link.name}
-                    to={link.url}
-                    className="p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200"
-                    title={link.name}
-                  >
-                    <IconComponent size={20} />
-                  </Link>
-                );
-              })}
+              {/* Cart icon with dynamic count badge */}
+              <Link
+                to="/cart"
+                className="relative p-2 rounded-md text-inherit opacity-80 hover:text-primary hover:opacity-100 transition-colors duration-200"
+                title="Shopping Cart"
+              >
+                <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[11px] leading-[18px] text-center font-semibold tabular-nums">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
 
@@ -281,21 +284,20 @@ const Navigation = () => {
                 <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Store
                 </p>
-                {externalLinks.map((link) => {
-                  const IconComponent = link.icon;
-                  return (
-                    <a
-                      key={link.name}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200"
-                    >
-                      <IconComponent size={16} />
-                      <span>{link.name}</span>
-                    </a>
-                  );
-                })}
+                {/* Mobile cart link with count badge */}
+                <Link
+                  to="/cart"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200"
+                >
+                  <ShoppingCart size={16} />
+                  <span>Shopping Cart</span>
+                  {cartCount > 0 && (
+                    <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[11px] leading-[18px] text-center font-semibold tabular-nums">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
           </div>
