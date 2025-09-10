@@ -338,6 +338,10 @@ export default function Design() {
                     <div className="text-muted-foreground">Target Sequence</div>
                     <div className="font-medium">{summary.target || '-'}</div>
                   </div>
+                  <div>
+                    <div className="text-muted-foreground">Format</div>
+                    <div className="font-medium">{formats.length ? formats.map(f => FORMAT_INFO[f].label).join(' + ') : '-'}</div>
+                  </div>
                 </div>
 
                 {canAddToCart && (
@@ -507,17 +511,23 @@ export default function Design() {
                     <ChevronLeft className="h-4 w-4 mr-1" /> Back
                   </Button>
                   <div className="flex items-center gap-2">
-          {step < 6 ? (
+                    {step < 6 ? (
                       <Button onClick={goNext} disabled={!canNext} className={`transition-transform ${canNext ? 'hover:translate-x-0.5' : ''}`}>
                         Next <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     ) : canAddToCart ? (
-                      <Button onClick={() => setQuoteOpen(true)}>
-            Submit to Quote
+                      <Button
+                        onClick={() => {
+                          // Only update Summary display; formats already bound to the summary via state.
+                          if (!formats.length) return;
+                          toast({ title: 'Summary Updated', description: 'Your selection has been synchronized to the Summary above.' });
+                        }}
+                      >
+                        Submit to Quote
                       </Button>
                     ) : (
                       <Button disabled title="Complete all selections to proceed">
-                        Complete selections
+                        Submit to Quote
                       </Button>
                     )}
                   </div>

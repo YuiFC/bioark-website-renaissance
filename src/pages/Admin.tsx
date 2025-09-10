@@ -1331,7 +1331,12 @@ function ProductPanel() {
           {items.map(p => (
             <Card key={p.id}>
               <CardContent className="p-4 space-y-3">
-                {((p as any).images?.[0] || p.imageUrl) && <img src={(p as any).images?.[0] || p.imageUrl} alt={p.name} className="w-full h-28 object-cover rounded" />}
+                {(() => {
+                  // Prefer details override images[0] as cover (kept in detailsOverrides), then item.images[0], then imageUrl
+                  const det = detailsOverrides[p.id];
+                  const cover = (det && Array.isArray(det.images) && det.images[0]) || (p as any).images?.[0] || p.imageUrl;
+                  return cover ? (<img src={cover} alt={p.name} className="w-full h-28 object-cover rounded" />) : null;
+                })()}
                 <input className="border rounded-md px-2 py-1 w-full" value={p.name} onChange={e=>onEdit(p,{name:e.target.value})} />
                 <textarea className="border rounded-md px-2 py-1 w-full" rows={3} value={p.description} onChange={e=>onEdit(p,{description:e.target.value})} />
                 <div className="flex justify-between">
