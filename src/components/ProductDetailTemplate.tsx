@@ -393,6 +393,14 @@ const ProductDetailTemplate: React.FC<ProductDetailProps> = ({
                 <DialogDescription>Fill in your contact so we can follow up with your request.</DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
+                {/* Quote Summary */}
+                <div className="rounded-md border p-3 bg-muted/30">
+                  <div className="text-xs uppercase font-semibold text-muted-foreground tracking-wide mb-1">Request Summary</div>
+                  <div className="text-sm leading-6">
+                    <div><span className="text-muted-foreground">Product:</span> <span className="font-medium text-foreground">{parsed.displayName || title}</span></div>
+                    <div><span className="text-muted-foreground">Catalog #:</span> <span className="font-medium text-foreground">{shownCatalog || '-'}</span></div>
+                  </div>
+                </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">Customer name</div>
                   <Input value={custName} onChange={(e)=>setCustName(e.target.value)} placeholder="Your name" />
