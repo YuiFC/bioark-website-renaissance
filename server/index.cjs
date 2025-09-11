@@ -28,24 +28,9 @@ const MODE = process.env.MODE || 'all'; // 'stripe' | 'content' | 'all'
 // Increase JSON body limit to allow base64 image uploads
 app.use(express.json({ limit: '20mb' }));
 
-// CORS: Restrict to configured frontend origins (FRONTEND_ORIGINS or FRONTEND_URL). Fallback to localhost dev origins.
-const FRONTEND_URL = process.env.FRONTEND_URL || '';
-const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGINS || FRONTEND_URL || '')
-  .split(/[\s,]+/)
-  .map(o=>o.trim())
-  .filter(Boolean);
-if (FRONTEND_ORIGINS.length === 0) {
-  FRONTEND_ORIGINS.push('http://localhost:5173','http://127.0.0.1:5173');
-}
-app.use(cors({
-  origin: function(origin, cb){
-    if (!origin) return cb(null, true); // non-browser or same-origin
-    if (FRONTEND_ORIGINS.includes(origin)) return cb(null, true);
-    return cb(new Error('Not allowed by CORS'));
-  },
-  credentials: false,
-}));
-console.log('[CORS] Allowed origins:', FRONTEND_ORIGINS.join(', '));
+// CORS (reverted to permissive: allow all origins). NOTE: For production harden later.
+app.use(cors());
+console.warn('[CORS] Permissive mode enabled (all origins allowed)');
 
 // Serve static frontend (for demo auth.html and assets)
 const PUBLIC_DIR = path.resolve(__dirname, '../public');

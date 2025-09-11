@@ -1103,6 +1103,7 @@ function ProductPanel() {
   const [editing, setEditing] = useState<any|null>(null);
   const [detailsForm, setDetailsForm] = useState<any|null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const [showImportHelp, setShowImportHelp] = useState(false);
   const productImgFileRef = React.useRef<HTMLInputElement|null>(null);
   const [productImportUrl, setProductImportUrl] = useState('');
 
@@ -1413,8 +1414,44 @@ function ProductPanel() {
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search products..." value={q} onChange={e=>setQ(e.target.value)} />
   <Button variant="outline" onClick={exportProducts}>Export</Button>
-  <Button variant="outline" onClick={()=>fileRef.current?.click()}>Import</Button>
+  <Button variant="outline" onClick={()=>setShowImportHelp(true)}>Import</Button>
   <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={onImportFile} />
+  <Dialog open={showImportHelp} onOpenChange={setShowImportHelp}>
+    <DialogContent className="max-w-lg">
+      <DialogHeader>
+        <DialogTitle>Import Products (JSON)</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4 text-sm leading-relaxed max-h-[70vh] overflow-auto pr-1">
+        <p>Please provide a JSON file containing an array of product objects. Only the listed fields will be read; unknown fields are ignored. Existing custom products with the same id (or derived from link slug) will be updated.</p>
+        <div className="bg-muted rounded-md p-3 font-mono text-xs whitespace-pre overflow-auto border">
+{`[
+  {
+    "id": "custom-reagent-001",            // optional; if missing we derive from link or name
+    "name": "Example Reagent A",
+    "description": "Short description...",
+    "category": "reagents-markers",        // reagents-markers | genome-editing | vector-clones | stable-cell-lines | lentivirus
+    "link": "/products/example-reagent-a", // required for detail page routing
+    "images": ["/images/products/a1.png"],
+    "quoteOnly": false,                     // true => quote-only product
+    "options": ["250 μL","1 mL"],
+    "optionPrices": { "250 μL": "$48.00", "1 mL": "$120.00" },
+    "listPrice": "$48.00",
+    "keyFeatures": ["High purity","Ready to use"],
+    "specifications": ["Spec A","Spec B"],
+    "manuals": ["Manual v1"],
+    "manualUrls": ["https://cdn.example.com/manual-a.pdf"],
+    "storeLink": "https://store.example.com/sku-001"
+  }
+]`}
+        </div>
+        <p className="text-xs text-muted-foreground">Tips: Make sure category matches one of the allowed values. images accepts absolute or site-root relative URLs. listPrice and optionPrices values are kept as-is (no currency conversion).</p>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="secondary" onClick={()=>setShowImportHelp(false)}>Back</Button>
+          <Button onClick={()=>{ setShowImportHelp(false); fileRef.current?.click(); }}>Continue Import</Button>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button>Add</Button>
@@ -1425,7 +1462,7 @@ function ProductPanel() {
               <input className="border rounded-md px-3 py-2" placeholder="Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
               <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
               <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, first line is the cover)</span></label>
-              <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="https://example.com/image-1.png\nhttps://example.com/image-2.png" value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
+              <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="/images/products/..." value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
               <div>
                 <input className="border rounded-md px-3 py-2 w-full" placeholder="Link (/products/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
                 <p className="text-xs text-muted-foreground mt-1">Ensure the link follows /products/your-slug. The detail page resolves by this link, even for custom products.</p>
