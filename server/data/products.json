@@ -11,7 +11,68 @@
     "gep-01": {
       "name": "Gene Knock-In & Tagging",
       "description": "Precision services for endogenous gene tagging and reporter knock-in.",
-      "link": "/products/gene-knock-in"
+      "link": "/products/gene-knock-in",
+      "category": "genome-editing"
+    },
+    "fp-bsy3323": {
+      "name": "BSY3323 – 2 × Fast SYBR Green qPCR Master Mix",
+      "description": "Optimized for rapid and accurate quantification of DNA targets in real-time PCR.",
+      "link": "/products/fast-sybr-green-qpcr-mix",
+      "category": "reagents-markers"
+    },
+    "gep-05": {
+      "name": "Targeted Knock-In",
+      "description": "Precise integration to drive robust gene overexpression at safe-harbor or locus-specific sites.",
+      "link": "/products/overexpression-targeted-knock-in",
+      "category": "genome-editing"
+    },
+    "lv-02": {
+      "name": "Lentivirus Control Stock",
+      "description": "Control lentiviral stocks for assay validation and benchmarking.",
+      "link": "/products/lentivirus-control-stock",
+      "category": "lentivirus"
+    },
+    "vc-01": {
+      "name": "cDNA Vector Stock",
+      "description": "Ready-to-use cDNA vector stocks for cloning and expression workflows.",
+      "link": "/products/cdna-vector-stock",
+      "category": "vector-clones"
+    },
+    "sc-01": {
+      "name": "Stable Cell Line Stock",
+      "description": "Ready-to-use stable cell line stocks for research applications.",
+      "link": "/products/stable-cell-line-stock",
+      "category": "stable-cell-lines"
+    },
+    "lv-01": {
+      "name": "cDNA Lentivirus Stock",
+      "description": "cDNA-expressing lentiviral stocks for gene delivery.",
+      "link": "/products/cdna-lentivirus-stock",
+      "category": "lentivirus"
+    },
+    "vc-02": {
+      "name": "Functional Vectors Kits Template",
+      "description": "Templates for building functional vector kits with modular components.",
+      "link": "/products/functional-vectors-kits-template",
+      "category": "vector-clones"
+    },
+    "gep-02": {
+      "name": "Gene Knock-Out Services",
+      "description": "Generate complete loss-of-function models using CRISPR-Cas9 technology.",
+      "link": "/products/gene-knock-out",
+      "category": "genome-editing"
+    },
+    "gep-03": {
+      "name": "Gene Deletion",
+      "description": "Expertly remove large genomic regions to study gene function.",
+      "link": "/products/gene-deletion",
+      "category": "genome-editing"
+    },
+    "gep-04": {
+      "name": "CRISPRi & RNAi Knock-Down",
+      "description": "Modulate gene expression with our reliable RNA interference services.",
+      "link": "/products/crispr-knock-down",
+      "category": "genome-editing"
     }
   },
   "details": {
@@ -518,6 +579,158 @@
       "contentText": "This technique provides versatile options for attaching selected tags to the 3′ or 5′ ends of customer-specified target genes, enabling precise tracking and functional analysis. Gene knock-in tagging can be applied across a broad range of research areas, including investigating protein localization, studying protein-protein interactions, analyzing gene function and regulation, creating transgenic models, and facilitating drug discovery efforts.\n\n## Technical Background\n\nThe CRISPR-Cas9 system is the core technology behind gene knock-in tagging. It utilizes a guide RNA (gRNA) to direct the Cas9 endonuclease to a specific genomic site, where it generates a double-strand break (DSB). This break is then repaired by either non-homologous end joining (NHEJ) or homology-directed repair (HDR). For knock-in tagging, HDR is the preferred method, where a donor template containing the desired tag, flanked by homology arms, facilitates the precise insertion of the tag at the target locus.\n\n## Key Components\n\n- **Cas9 protein**: Creates a DSB at the target site.\n- **Guide RNA (gRNA)**: Directs Cas9 to the desired genomic locus.\n- **Donor template**: Contains the tag (e.g., GFP, HA tag) along with homology arms to facilitate HDR-mediated knock-in.\n\n## Features of Our Products\n\n- **AI-Assisted Design**: Our CRISPR and donor vectors are AI-assisted, designed to streamline and optimize the process for efficient target gene integration.\n- **User-Friendly Techniques**: Our plasmid kits utilize lab-friendly methods that avoid the need for electroporation, making them easy to use in most labs. They are particularly well-suited for adherent cancer cell lines.\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.",
       "images": [
         "/images/products/Product-1-2-Gene-Knock-In-Tagging-300x227.jpg"
+      ]
+    },
+    "custom-1757608878053": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": [
+        "/images/products/1-BSY3320_2__SYBR_Green_qPCR_Master_Mix-300x300.jpg"
+      ]
+    },
+    "custom-1757609198384": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": true,
+      "contentText": "",
+      "images": [
+        "/images/products/1-BSY3323_2__Fast_SYBR_Green_qPCR_Master_Mix-300x300.jpg"
+      ]
+    },
+    "gep-05": {
+      "catalogNumber": "GEP-005",
+      "availability": "In Stock",
+      "listPrice": "$153.10",
+      "options": [
+        "Standard Kit",
+        "Pro Kit"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High-purity components for robust genome editing",
+        "Complete systems for high-titer virus production",
+        "Scalable solutions for manufacturing",
+        "Custom-designed for targeted gene editing"
+      ],
+      "storageStability": "Store components at specified temperatures. See manual for details.",
+      "performanceData": "Consistently high efficiency and low off-target effects reported in publications.",
+      "manuals": [
+        "Protocol Guide (PDF)",
+        "Troubleshooting (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": true,
+      "contentText": "# Safe Harbor Site Gene Integration\n\nThis technique enables the precise integration of target genes or regulatory cassettes into safe harbor sites—genomic regions where foreign DNA can be inserted without disrupting essential endogenous gene functions or causing adverse cellular effects. These sites are widely used in genome engineering for stable gene insertion, ensuring long-term and predictable transgene expression.\n\nCommonly used safe harbor sites include human AAVS1 and CCR5, as well as the mouse ROSA26 locus. Our standard kit utilizes the AAVS1 site as the default insertion locus. For alternative loci or custom services, please contact us at support@bioarktech.com.\n\n## Technical Background\n\nCRISPR-Cas9-mediated targeted knock-in at safe harbor sites involves:\n\n- **Cas9**: An endonuclease that creates a double-strand break (DSB) at the target site.\n- **Guide RNA (gRNA)**: Directs Cas9 to the specific safe harbor locus, such as AAVS1 or the mouse ROSA26 locus.\n- **Donor DNA template**: A construct containing the desired transgene flanked by homology arms complementary to sequences adjacent to the AAVS1 site, facilitating targeted insertion via homology-directed repair (HDR).\n\n## Key Features of Our Products\n\n### Streamlined CRISPR and Donor Vectors\nDesigned for efficient target gene integration, outperforming commercially available alternatives.\n\n### Targeted vs. Random Integration\nMany conventional approaches rely on non-targeting lentiviruses, leading to random gene integration, which can pose safety risks and unpredictable outcomes, particularly in gene therapy and clinical research.\n\nOur vector and virus kits enable precise, targeted integration at safe harbor sites, significantly reducing these risks.\n\n### User-Friendly Plasmid Kits for Broad Accessibility\nUnlike many market solutions that require electroporation—necessitating specialized equipment and techniques—our plasmid-based kits are optimized for ease of use, making them ideal for adherent cancer cell lines.\n\n## Product Catalog\n\n10 entries per page  \nSearch:  \nEdit\n\n| Major Vector | Donor Vector | Scramble Control Vector |\n|--------------|--------------|-------------------------|\n| **Class** | **Product Name** | **SKU** | **Information** | **Donor Name** | **SKU** | **Information** | **Scramble Name** | **SKU** | **Information** |\n| Non-Viral CDS-P011k | CRISPR KN AIO Kit-Gene AAVS1, Vector type | COT-FXD00A-AAVS1gk | The CRISPR tool specifically designed to target and cut human AAVS1 safe harbor site. | AAVS1 Dnr Std Kit | CDS-FX00PA-XXXXXXk | Insert Customer Gene into human AAVS1 site, please specify your genes by clicking the button | GFP Donor Control AAVS1 Dnr Std Ctrl Kit, vector type | CDS-FX0GPA-000000k | Insert GFP into human AAVS1 site as control |\n| Non-Viral CDS-P011k | CRISPR KN AIO Kit-Gene ROSA26, Vector type | COT-FXD00A-ROSA26gk | The CRISPR tool specifically designed to target and cut mouse ROSA26 safe harbor site. | Dnr Std Kit-ROSA26 Site | TBD | Insert Customer Gene into mouse ROSA26 site, please specify your custom gene by clicking the button | GFP Donor Control Dnr Std Kit-ROSA26 Site, vector type | TBD | Insert GFP into mouse ROSA26 site as control |\n\nShowing 1 to 3 of 3 entries\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n",
+      "images": [
+        "/images/products/Product-1-1-Overexpression-Targeted-Knock-In.png"
+      ]
+    },
+    "gep-02": {
+      "catalogNumber": "GEP-002",
+      "availability": "In Stock",
+      "listPrice": "$546.36",
+      "options": [
+        "Standard Kit",
+        "Pro Kit"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High-purity components for robust genome editing",
+        "Complete systems for high-titer virus production",
+        "Scalable solutions for manufacturing",
+        "Custom-designed for targeted gene editing"
+      ],
+      "storageStability": "Store components at specified temperatures. See manual for details.",
+      "performanceData": "Consistently high efficiency and low off-target effects reported in publications.",
+      "manuals": [
+        "Protocol Guide (PDF)",
+        "Troubleshooting (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": true,
+      "contentText": "# CRISPR Knockout (KO) Technique\n\nCRISPR knockout (KO) is a revolutionary gene-editing technique that allows researchers to disrupt or \"knock out\" specific genes within an organism’s genome. The CRISPR-Cas9 system is the most widely used tool for this purpose, harnessing a natural bacterial defense mechanism against viral infections. Our technique provides a rapid and efficient approach to disrupt gene expression for both research and therapeutic applications.\n\n## Technical Background\n\n### Description:\n\n- **spCas9 Protein**: An endonuclease that induces double-strand breaks (DSBs) in DNA at specific genomic loci.\n- **Guide RNA (gRNA)**: A short RNA sequence that guides the Cas9 protein to the target gene through complementary base pairing.\n- **Repair Pathways**: Following the creation of a DSB, the cell’s repair machinery is activated. The primary repair pathways are:\n  - **Non-Homologous End Joining (NHEJ)**: This repair mechanism often results in insertions or deletions (indels) at the break site, leading to frameshift mutations that can disrupt gene function.\n  - **Homology-Directed Repair (HDR)**: Typically used for precise edits, HDR can also be employed when a donor template is provided. Although HDR is less common for knockout purposes, it can be leveraged to integrate exogenous DNA into the genome, facilitating quick screening for knockout stable cell lines.\n\nBy utilizing the NHEJ repair pathway, researchers can efficiently create gene knockouts, resulting in the loss of gene function. On the other hand, using HDR allows for precise integration of exogenous DNA fragments into the genome.\n\n## Features of Our Products\n\n- **Dual Repair Pathways**: Our CRISPR knockout (KN) tool supports both NHEJ and HDR, offering flexibility depending on customer preferences and project requirements.\n- **Two Delivery Options**: We provide two versions of our CRISPR KN tool: lentivirus and regular plasmid, allowing customers to choose the most suitable option for their needs.\n- **Superior Knockout Efficiency**: Our tools deliver enhanced knockout efficiency, leveraging the latest advancements in CRISPR technology, including optimized gRNA scaffold structures and improved gRNA sequence selection.\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n\n---\n\n## Product Catalog\n\n10 entries per page  \nSearch:  \nEdit\n\n| Major Vector | Scramble Control Vector |  |  |  |\n| :--- | :--- | :--- | :--- | :--- |\n| **Class** | **Product Name** | **SKU** | **Information** | **Scramble Name** | **SKU** | **Information** |\n| Non-Viral All-In-one | COT-P031k | CRISPR KN AIO Kit | COT-FXD0PA-XXXXXXk | The non-viral CRISPR kit includes three AI-designed gRNA sites tailored to target the customer-specified genes. Please click button to design the target genes. | Scramble Control CRISPR KN AIO Ctrl Kit, Vector type | COT-FXD0PA-000000k | The scramble sequence are used as non-specific cutting control |\n| Viral All-in-one | COM-P032k | CRISPR KN Lenti-AIO Kit | COM-FXD0PA-XXXXXXl | The CRISPR lentivirus kit packages three AI-designed gRNA sites into a single mixture tube for precise targeting and cutting of customer-specified genes. Please click button to design the target genes. | Scramble Control CRISPR KN Lenti-AIO Ctrl Kit, lentivirus type | COM-FXD0PA-000000l | The scramble sequence are used as non-specific cutting control |\n",
+      "images": [
+        "/images/products/Product-1-3-Gene-Knock-out-300x200.jpg"
+      ]
+    },
+    "gep-03": {
+      "catalogNumber": "GEP-003",
+      "availability": "In Stock",
+      "listPrice": "$320.67",
+      "options": [
+        "Standard Kit",
+        "Pro Kit"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High-purity components for robust genome editing",
+        "Complete systems for high-titer virus production",
+        "Scalable solutions for manufacturing",
+        "Custom-designed for targeted gene editing"
+      ],
+      "storageStability": "Store components at specified temperatures. See manual for details.",
+      "performanceData": "Consistently high efficiency and low off-target effects reported in publications.",
+      "manuals": [
+        "Protocol Guide (PDF)",
+        "Troubleshooting (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": true,
+      "contentText": "CRISPR Genome Knockout Deletion provides an efficient method for deleting genomic fragments of various sizes, ranging from short deletions to large deletions exceeding 10 kb. It is a valuable tool for studying the functions of non-coding regions of the genome, creating disease models such as Huntington’s disease, exploring gene cluster complexities, investigating chromatin architecture, and examining the role of pathogenic copy number variations (CNVs).\n\n \nTechnical Background\nKey Components:\n\nCas9 Protein: A nuclease that creates double-strand breaks (DSBs) at specified genomic locations, guided by a complementary RNA sequence.\nGuide RNA (gRNA): A synthetic RNA molecule designed to bind to a specific target sequence in the genome, directing the Cas9 protein to the desired site.\nDNA Repair Mechanisms: After the DSB is introduced by Cas9, the cell’s natural repair mechanisms take over. The primary repair pathways involved are:\nNon-Homologous End Joining (NHEJ): The predominant pathway for gene knockout, NHEJ can lead to insertions or deletions (indels) at the break site, causing frameshifts or premature stop codons that result in gene knockout.\nHomology-Directed Repair (HDR): Although not commonly used for knockout deletions, HDR can be applied for precise gene editing when a donor template is provided.\n \nFeatures of Our Products\nFlexible Cloning Options: We offer three different cloning methods for the CRISPR deletion kit:\nCas9 vector with a separate gRNA vector.\nTwo distinct Cas9 + gRNA All-in-one vectors. Each vector carries one gRNA.\nA specialized vector designed for the simultaneous delivery of two gRNAs, allowing for the efficient removal of target genomic fragments.\nUser-Friendly Techniques: Our plasmid kits are designed to be lab-friendly, eliminating the need for electroporation and making them easy to use in most lab settings. These kits are particularly well-suited for adherent cancer cell lines.\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.",
+      "images": [
+        "/images/products/Product-1-4-Gene-Deletion-300x180.jpeg"
+      ]
+    },
+    "gep-04": {
+      "catalogNumber": "GEP-004",
+      "availability": "In Stock",
+      "listPrice": "$384.90",
+      "options": [
+        "Standard Kit",
+        "Pro Kit"
+      ],
+      "optionPrices": {},
+      "keyFeatures": [
+        "High-purity components for robust genome editing",
+        "Complete systems for high-titer virus production",
+        "Scalable solutions for manufacturing",
+        "Custom-designed for targeted gene editing"
+      ],
+      "storageStability": "Store components at specified temperatures. See manual for details.",
+      "performanceData": "Consistently high efficiency and low off-target effects reported in publications.",
+      "manuals": [
+        "Protocol Guide (PDF)",
+        "Troubleshooting (PDF)"
+      ],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": true,
+      "contentText": "# CRISPR RNA Knockdown (KD) Technique\n\nThis technique offers a more specific and efficient alternative to traditional RNAi methods for knocking down RNA expression levels. CRISPR RNA knockdown using Cas13 provides a powerful and precise approach to regulate gene expression at the RNA level. Its ability to selectively degrade mRNA transcripts makes it a versatile tool for studying gene function and developing therapeutic strategies across diverse fields, including basic research, applied biotechnology, and medicine.\n\nCRISPR RNA knockdown (KD) is particularly useful for studying gene roles by reducing RNA transcript levels. It can be applied in:\n- Disease models\n- Therapeutic development\n- RNA regulatory mechanisms\n- Customized RNA therapies\n- Antiviral applications\n- High-throughput genetic screening\n\n## Technical Background\n\n### Key Components:\n\n- **RfxCas13d (CasRx) Protein**: A member of the CRISPR family that specifically targets RNA rather than DNA. RfxCas13d is derived from the bacterium *Rhodococcus fascians*.\n- **Guide RNA (gRNA)**: A synthetic RNA molecule designed to bind to the target mRNA. It contains a sequence complementary to the target RNA, guiding Cas13 to the specific mRNA for cleavage.\n\n## Features of Our Products\n\n- **Reduced Off-Target Effects**: Compared to traditional RNA interference (RNAi), this method significantly minimizes off-target activity in cultured cells, offering greater specificity.\n- **Customizable Kits**: We provide two distinct kits—vector kits designed for use with cancer cell lines and virus kits tailored for hard-to-transfect cells.\n\n---\n\n## Product Catalog\n\n10 entries per page  \nSearch:  \nEdit\n\n| Major Vector | Scramble Control Vector |  |  |  |\n| :--- | :--- | :--- | :--- | :--- |\n| **Class** | **Product Name** | **SKU** | **Information** | **Scramble Name** | **SKU** | **Information** |\n| Non-Viral All-In-one | COT-P031k | CRISPR KN AIO Kit | COT-FXD0PA-XXXXXXk | The non-viral CRISPR kit includes three AI-designed gRNA sites tailored to target the customer-specified genes. Please click button to design the target genes. | Scramble Control CRISPR KN AIO Ctrl Kit, Vector type | COT-FXD0PA-000000k | The scramble sequence are used as non-specific cutting control |\n| Viral All-in-one | COM-P032k | CRISPR KN Lenti-AIO Kit | COM-FXD0PA-XXXXXXl | The CRISPR lentivirus kit packages three AI-designed gRNA sites into a single mixture tube for precise targeting and cutting of customer-specified genes. Please click button to design the target genes. | Scramble Control CRISPR KN Lenti-AIO Ctrl Kit, lentivirus type | COM-FXD0PA-000000l | The scramble sequence are used as non-specific cutting control |\n\nShowing 1 to 3 of 3 entries\n\nOur design program assists customers in adjusting vector components and developing specific functions tailored to their unique requirements.\n",
+      "images": [
+        "/images/products/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png"
       ]
     }
   },

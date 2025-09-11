@@ -5,39 +5,41 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { listAllProducts, ProductDetailData } from '@/data/products';
+import { listAllProductsMerged, ProductDetailData } from '@/data/products';
 
-type Category = 'All' | 'Reagents and Markers' | 'Genome Editing' | 'Vector Clones' | 'Stable Cell Lines' | 'Lentivirus';
-
-const deriveCategory = (p: ProductDetailData): Exclude<Category, 'All'> => {
-  const prefix = (p.catalogNumber || '').toUpperCase();
-  if (prefix.startsWith('FP')) return 'Reagents and Markers';
-  if (prefix.startsWith('GEP')) return 'Genome Editing';
-  if (prefix.startsWith('VC')) return 'Vector Clones';
-  if (prefix.startsWith('SC')) return 'Stable Cell Lines';
-  if (prefix.startsWith('LV')) return 'Lentivirus';
-  // Fallback by id as a secondary hint
-  const id = (p.id || '').toLowerCase();
-  if (id.startsWith('fp-')) return 'Reagents and Markers';
-  if (id.startsWith('gep-')) return 'Genome Editing';
-  if (id.startsWith('vc-')) return 'Vector Clones';
-  if (id.startsWith('sc-')) return 'Stable Cell Lines';
-  if (id.startsWith('lv-')) return 'Lentivirus';
-  return 'Reagents and Markers';
+type UiCategory = 'All' | 'Reagents and Markers' | 'Genome Editing' | 'Vector Clones' | 'Stable Cell Lines' | 'Lentivirus';
+const mapRawCategory = (raw?:string): Exclude<UiCategory,'All'> => {
+  switch(raw){
+    case 'genome-editing': return 'Genome Editing';
+    case 'vector-clones': return 'Vector Clones';
+    case 'stable-cell-lines': return 'Stable Cell Lines';
+    case 'lentivirus': return 'Lentivirus';
+    case 'reagents-markers':
+    default: return 'Reagents and Markers';
+  }
 };
 
 const Products = () => {
-  const all = React.useMemo(() => listAllProducts(), []);
+  const [all, setAll] = React.useState<ProductDetailData[]>(() => listAllProductsMerged());
+  React.useEffect(() => {
+    const refresh = () => setAll(listAllProductsMerged());
+    window.addEventListener('bioark:products-changed', refresh as any);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('bioark:products-changed', refresh as any);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
   const [query, setQuery] = React.useState('');
-  const [category, setCategory] = React.useState<Category>('All');
+  const [category, setCategory] = React.useState<UiCategory>('All');
   const [availability, setAvailability] = React.useState<'All' | 'Purchasable' | 'Quote Only'>('All');
 
   const filtered = React.useMemo(() => {
     return all
       .map(p => ({
         ...p,
-        _category: deriveCategory(p),
-        _quoteOnly: deriveCategory(p) !== 'Reagents and Markers',
+  _category: mapRawCategory((p as any).category),
+  _quoteOnly: mapRawCategory((p as any).category) !== 'Reagents and Markers',
       }))
       .filter(p => (category === 'All' ? true : p._category === category))
       .filter(p => {
@@ -55,7 +57,7 @@ const Products = () => {
       });
   }, [all, category, availability, query]);
 
-  const categories: Category[] = ['All', 'Reagents and Markers', 'Genome Editing', 'Vector Clones', 'Stable Cell Lines', 'Lentivirus'];
+  const categories: UiCategory[] = ['All', 'Reagents and Markers', 'Genome Editing', 'Vector Clones', 'Stable Cell Lines', 'Lentivirus'];
 
   return (
     <Layout>
@@ -85,7 +87,7 @@ const Products = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+              <Select value={category} onValueChange={(v) => setCategory(v as UiCategory)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
@@ -115,7 +117,7 @@ const Products = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((p) => {
-                const isQuote = deriveCategory(p) !== 'Reagents and Markers';
+                const isQuote = mapRawCategory((p as any).category) !== 'Reagents and Markers';
                 const img = (p as any).images?.[0] || p.imageUrl || '/placeholder.svg';
                 const to = p.link || '#';
                 return (

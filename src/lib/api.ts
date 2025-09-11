@@ -23,6 +23,15 @@ export async function fetchJson<T=any>(path: string, init?: RequestInit): Promis
     const normalizedPath = shouldPrefixApi ? (`/api${path.startsWith('/') ? '' : '/'}${path}`) : path;
     urlToFetch = `${base}${normalizedPath}`;
   }
+  // Auto attach Authorization header if token present and caller did not override
+  try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('bioark_auth_token') : null;
+    if (token) {
+      const h = new Headers(init?.headers || {} as any);
+      if (!h.has('Authorization')) h.set('Authorization', `Bearer ${token}`);
+      init = { ...(init||{}), headers: h };
+    }
+  } catch {}
   const tryFetch = async (url: string) => {
     const r = await fetch(url, init);
     const d = await r.json().catch(() => ({} as any));

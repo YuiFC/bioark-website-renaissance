@@ -7,6 +7,7 @@ export interface ServiceDetailData extends ShowcaseItem {
   caseStudies?: { title: string; link: string }[];
   relatedProducts?: { name: string; link: string }[];
   markdown?: string; // Optional rich content for services that provide full-page details
+  createdAt?: number; // Optional timestamp for Admin-added items
 }
 
 const allServices: ServiceDetailData[] = [
@@ -297,7 +298,34 @@ export const getAllServices = (): ServiceDetailData[] => {
   return [...baseApplied, ...custom];
 };
 
+function normalizeServiceLink(link: string | undefined): string | undefined {
+  if (!link) return undefined;
+  let s = String(link).trim();
+  if (!s.startsWith('/')) s = '/' + s;
+  if (s.length > 1 && s.endsWith('/')) s = s.slice(0, -1);
+  if (!s.startsWith('/services/')) {
+    if (s.includes('/services/')) {
+      const i = s.indexOf('/services/');
+      s = s.slice(i);
+    } else {
+      s = '/services/' + s.replace(/^\/+/, '');
+    }
+  }
+  return s.toLowerCase();
+}
+
+function extractServiceSlug(link: string | undefined): string | undefined {
+  const norm = normalizeServiceLink(link);
+  if (!norm) return undefined;
+  const idx = norm.indexOf('/services/');
+  if (idx < 0) return undefined;
+  const tail = norm.slice(idx + '/services/'.length);
+  return tail || undefined;
+}
+
 export const getServiceBySlug = (slug: string): ServiceDetailData | undefined => {
   const all = getAllServices();
-  return all.find(s => s.link === `/services/${slug}`);
+  const slugNorm = String(slug).trim().replace(/\/+$/,'').toLowerCase();
+  const pathNorm = normalizeServiceLink(`/services/${slugNorm}`)!;
+  return all.find(s => normalizeServiceLink(s.link) === pathNorm || extractServiceSlug(s.link) === slugNorm);
 };

@@ -4,10 +4,15 @@ import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { customerSolutions } from '@/data/showcase';
+import { getAllServices } from '@/data/services';
 import { ArrowRight } from 'lucide-react';
 
 const Services = () => {
+  const services = React.useMemo(() => {
+    const list = getAllServices();
+    return list.slice().sort((a,b) => (Number(a.createdAt||0) < Number(b.createdAt||0) ? 1 : -1));
+  }, []);
+
   return (
     <Layout>
       <div className="min-h-screen bg-background">
@@ -30,7 +35,7 @@ const Services = () => {
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {customerSolutions.map((service) => {
+              {services.map((service) => {
                 const Icon = service.icon;
                 return (
                   <Card key={service.id} className="group flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300">

@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchJson } from '@/lib/api';
 import { useBlog } from '@/context/BlogProvider';
 import { featuredProducts, geneEditingProducts } from '@/data/showcase';
-import { getProductBySlug, listAllProducts } from '@/data/products';
+import { getProductBySlug, listAllProducts, listAllProductsMerged } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
 import { getAllServices } from '@/data/services';
@@ -24,8 +24,26 @@ const Admin = () => {
   const [unreadQuotes, setUnreadQuotes] = useState<number>(0);
   React.useEffect(()=>{ (async()=>{ try { const n = await getUnreadQuotesCount(); setUnreadQuotes(n); } catch {} })(); },[]);
 
-  const [metrics, setMetrics] = useState<{ pageViews: number; users: number; posts: number }>(()=>({ pageViews: 0, users: 0, posts: posts.length }));
-  React.useEffect(()=>{ (async()=>{ try { const m = await fetchJson<{ pageViews:number }>('/metrics'); setMetrics({ pageViews: Number(m?.pageViews||0), users: 0, posts: posts.length }); } catch {} })(); },[posts.length]);
+  const [metrics, setMetrics] = useState<{ products: number; services: number; posts: number }>(()=>({ products: 0, services: 0, posts: posts.length }));
+  // Recompute products/services counts when underlying LS or events change
+  React.useEffect(()=>{
+    const recompute = () => {
+      try {
+        const allProducts = listAllProductsMerged();
+        const allServices = getAllServices();
+        setMetrics({ products: allProducts.length, services: allServices.length, posts: posts.length });
+      } catch {}
+    };
+    recompute();
+    window.addEventListener('bioark:products-changed', recompute as any);
+    window.addEventListener('bioark:services-changed', recompute as any);
+    window.addEventListener('storage', recompute);
+    return ()=>{
+      window.removeEventListener('bioark:products-changed', recompute as any);
+      window.removeEventListener('bioark:services-changed', recompute as any);
+      window.removeEventListener('storage', recompute);
+    };
+  },[posts.length]);
 
   const handleLogin = async () => {
     try {
@@ -120,7 +138,7 @@ const Admin = () => {
           {active === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[{label:'Page Views',value:metrics.pageViews},{label:'Registered Users',value:metrics.users},{label:'Blog Posts',value:metrics.posts}].map((m,idx)=>(
+                {[{label:'Products',value:metrics.products},{label:'Blog Posts',value:metrics.posts},{label:'Services',value:metrics.services}].map((m,idx)=>(
                   <Card key={idx}>
                     <CardHeader>
                       <CardTitle className="text-sm text-muted-foreground">{m.label}</CardTitle>
@@ -133,7 +151,7 @@ const Admin = () => {
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">Metrics update when the homepage is visited.</p>
-                <Button variant="outline" size="sm" onClick={async()=>{ try { const auth = localStorage.getItem('bioark_auth_token'); const r = await fetchJson<{ok:boolean;pageViews:number}>(('/metrics/reset'), { method:'POST', headers: auth? { Authorization: `Bearer ${auth}` } : undefined as any }); setMetrics(s=>({ ...s, pageViews: r.pageViews||0 })); } catch (e:any){ alert(e?.message||'Reset failed'); } }}>Reset Page Views</Button>
+                {/* Removed Reset Page Views button */}
               </div>
             </div>
           )}
@@ -172,7 +190,13 @@ function ServicesPanel(){
   const [detailForm, setDetailForm] = useState<any|null>(null);
   const MEDIA_KEY = 'bioark_services_media_v2_paths';
   const [media, setMedia] = useState<Record<string, string[]>>({});
-  const saveMedia = async (next: Record<string, string[]>) => { setMedia(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom, media: next }) }); };
+  const saveMedia = async (next: Record<string, string[]>) => {
+    setMedia(next);
+    await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom, media: next }) });
+    localStorage.setItem('bioark_services_overrides', JSON.stringify(overrides||{}));
+    localStorage.setItem('bioark_services_custom', JSON.stringify(custom||[]));
+    localStorage.setItem('bioark_services_media_v2_paths', JSON.stringify(next||{}));
+  };
   const svcFileRef = React.useRef<HTMLInputElement|null>(null);
   const [svcImportUrl, setSvcImportUrl] = useState('');
 
@@ -180,8 +204,20 @@ function ServicesPanel(){
   fetchJson('/services-config').then((cfg:any)=>{ setOverrides(cfg.overrides||{}); setCustom(cfg.custom||[]); setMedia(cfg.media||{}); }).catch(()=>{});
   },[]);
 
-  const saveOverrides = async (next: Record<string, any>) => { setOverrides(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides: next, custom, media }) }); };
-  const saveCustom = async (next: any[]) => { setCustom(next); await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom: next, media }) }); };
+  const saveOverrides = async (next: Record<string, any>) => {
+    setOverrides(next);
+    await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides: next, custom, media }) });
+    localStorage.setItem('bioark_services_overrides', JSON.stringify(next||{}));
+    localStorage.setItem('bioark_services_custom', JSON.stringify(custom||[]));
+    localStorage.setItem('bioark_services_media_v2_paths', JSON.stringify(media||{}));
+  };
+  const saveCustom = async (next: any[]) => {
+    setCustom(next);
+    await fetchJson('/services-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ overrides, custom: next, media }) });
+    localStorage.setItem('bioark_services_overrides', JSON.stringify(overrides||{}));
+    localStorage.setItem('bioark_services_custom', JSON.stringify(next||[]));
+    localStorage.setItem('bioark_services_media_v2_paths', JSON.stringify(media||{}));
+  };
 
   const applyOverrides = (s:Svc) => ({ ...s, ...(overrides[s.id]||{}) });
   const baseApplied = base.map(applyOverrides);
@@ -237,7 +273,7 @@ function ServicesPanel(){
   };
   const onAdd = () => {
     const id = `svc-custom-${Date.now()}`;
-    const payload = { id, ...form, longDescription:'', keyBenefits:[], processOverview:[], relatedProducts:[], caseStudies:[], markdown:'' } as any;
+    const payload = { id, ...form, longDescription:'', keyBenefits:[], processOverview:[], relatedProducts:[], caseStudies:[], markdown:'', createdAt: Date.now() } as any;
     saveCustom([payload, ...custom]);
     setShowAdd(false);
     setForm({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
@@ -1050,7 +1086,16 @@ function AddAdminForm({ onAdded }:{ onAdded: (u:any)=>void }){
 function ProductPanel() {
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name:'', description:'', imagesText:'', link:'', category:'featured' as 'featured'|'gene-editing' });
+  // Product category B layer: reagents-markers | genome-editing | vector-clones | stable-cell-lines | lentivirus
+  type ProductCategory = 'reagents-markers' | 'genome-editing' | 'vector-clones' | 'stable-cell-lines' | 'lentivirus';
+  const mapLegacyCategory = (c:string):ProductCategory => {
+    if (c === 'featured') return 'reagents-markers';
+    if (c === 'gene-editing') return 'genome-editing';
+    // Allow previously saved custom strings to fall back
+    if (['reagents-markers','genome-editing','vector-clones','stable-cell-lines','lentivirus'].includes(c)) return c as ProductCategory;
+    return 'reagents-markers';
+  };
+  const [form, setForm] = useState({ name:'', description:'', imagesText:'', link:'', category:'reagents-markers' as ProductCategory, type:'buy' as 'buy'|'quote' });
   const [hidden, setHidden] = useState<string[]>([]);
   const [overrides, setOverrides] = useState<Record<string, any>>({});
   const [custom, setCustom] = useState<any[]>([]);
@@ -1068,7 +1113,9 @@ function ProductPanel() {
   const cfg = await fetchJson<any>('/products-config');
         setHidden(Array.isArray(cfg.hidden)?cfg.hidden:[]);
         setOverrides(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{});
-        setCustom(Array.isArray(cfg.products)?cfg.products:[]);
+  // Migrate legacy categories inside custom product list
+  const migratedCustom = (Array.isArray(cfg.products)?cfg.products:[]).map(p => ({ ...p, category: mapLegacyCategory(p.category || 'reagents-markers') }));
+  setCustom(migratedCustom);
         setDetailsOverrides(cfg.details&&typeof cfg.details==='object'?cfg.details:{});
       } catch (e) {
         console.warn('Failed to load products-config from backend, fallback to in-memory defaults.', e);
@@ -1090,6 +1137,13 @@ function ProductPanel() {
     setHidden(payload.hidden);
     try {
   await fetchJson('/products-config', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+  // Mirror to LocalStorage for immediate runtime visibility
+  localStorage.setItem('bioark_products', JSON.stringify(payload.products||[]));
+  localStorage.setItem('bioark_products_overrides', JSON.stringify(payload.overrides||{}));
+  localStorage.setItem('bioark_product_details_overrides', JSON.stringify(payload.details||{}));
+  localStorage.setItem('bioark_products_hidden', JSON.stringify(payload.hidden||[]));
+  // Notify runtime listeners (Products page, Navigation) to refresh
+  try { window.dispatchEvent(new Event('bioark:products-changed')); } catch {}
     } catch (e){ console.error('Save products-config failed', e); }
   };
 
@@ -1142,7 +1196,8 @@ function ProductPanel() {
     description: p.description,
     imageUrl: p.imageUrl,
     link: p.link,
-    category: p.id.startsWith('fp-') ? 'featured' : (p.id.startsWith('gep-') ? 'gene-editing' : 'other')
+    // Map original fp- (featured) -> reagents-markers, gep- -> genome-editing; else keep or map to reagents-markers default
+    category: p.id.startsWith('fp-') ? 'reagents-markers' : (p.id.startsWith('gep-') ? 'genome-editing' : 'reagents-markers')
   }));
   const baseApplied = baseAll.filter(p => !hidden.includes(p.id)).map(applyOverrides);
   const customApplied = custom.filter(c => !hidden.includes(c.id));
@@ -1179,10 +1234,10 @@ function ProductPanel() {
   const onAdd = () => {
     const id = `custom-${Date.now()}`;
     const images = String(form.imagesText||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-    const payload = { id, name: form.name, description: form.description, imageUrl: images[0] || '', images: images.length?images:undefined, link: form.link, category: form.category } as any;
+  const payload = { id, name: form.name, description: form.description, imageUrl: images[0] || '', images: images.length?images:undefined, link: form.link, category: form.category, createdAt: Date.now(), __type: form.type } as any;
     saveCustom([payload, ...custom]);
     setShowAdd(false);
-    setForm({ name:'', description:'', imagesText:'', link:'', category: 'featured' });
+  setForm({ name:'', description:'', imagesText:'', link:'', category: 'reagents-markers', type:'buy' });
   };
 
   const openEditDetails = (p:any) => {
@@ -1193,7 +1248,7 @@ function ProductPanel() {
     const dispOv = overrides[p.id] || {};
     const merged = {
       id: p.id,
-      name: p.name,
+  name: p.name,
   description: p.description,
       // Prefer first detailed image as cover; fallback to base/override if missing
       imageUrl: (Array.isArray(dOv.images) && dOv.images[0]) || p.imageUrl || (dispOv.imageUrl as any) || '',
@@ -1218,6 +1273,7 @@ function ProductPanel() {
     };
     setDetailsForm({
       ...merged,
+      category: mapLegacyCategory(p.category || 'reagents-markers'),
   imagesText: (merged.images||[]).join('\n'),
       optionsText: (merged.options||[]).join(', '),
       optionPricesText: Object.entries((merged.optionPrices||{} as any)).map(([k,v])=>`${k}=${v}`).join('\n'),
@@ -1233,10 +1289,10 @@ function ProductPanel() {
     const isCustom = custom.some(c=>c.id===id);
     // Prepare display-level overrides/custom WITH NO imageUrl (cover inferred from images[0])
     const nextDisp = !isCustom
-      ? { ...overrides, [id]: { ...(overrides[id]||{}), name: detailsForm.name, description: detailsForm.description, link: detailsForm.link } }
+      ? { ...overrides, [id]: { ...(overrides[id]||{}), name: detailsForm.name, description: detailsForm.description, link: detailsForm.link, category: detailsForm.category } }
       : overrides;
     const nextCustom = isCustom
-      ? custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, link: detailsForm.link } : c)
+      ? custom.map(c => c.id===id ? { ...c, name: detailsForm.name, description: detailsForm.description, link: detailsForm.link, category: detailsForm.category } : c)
       : custom;
     const optionPricesMap = (() => {
       const txt = detailsForm.optionPricesText || '';
@@ -1368,13 +1424,30 @@ function ProductPanel() {
             <div className="grid gap-3">
               <input className="border rounded-md px-3 py-2" placeholder="Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
               <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
-              <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, First Line will be also display on homepage)</span></label>
+              <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, first line is the cover)</span></label>
               <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="https://example.com/image-1.png\nhttps://example.com/image-2.png" value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
-              <input className="border rounded-md px-3 py-2" placeholder="Link (/products/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
-              <select className="border rounded-md px-3 py-2" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value as any}))}>
-                <option value="featured">Featured</option>
-                <option value="gene-editing">Gene Editing</option>
-              </select>
+              <div>
+                <input className="border rounded-md px-3 py-2 w-full" placeholder="Link (/products/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
+                <p className="text-xs text-muted-foreground mt-1">Ensure the link follows /products/your-slug. The detail page resolves by this link, even for custom products.</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Product Type</label>
+                <select className="border rounded-md px-3 py-2 w-full" value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value as any}))}>
+                  <option value="buy">Purchasable (Reagents and Markers)</option>
+                  <option value="quote">Quote-only (Genome Editing / Services)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Category (Secondary)</label>
+                <select className="border rounded-md px-3 py-2 w-full" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value as ProductCategory}))}>
+                  <option value="reagents-markers">Reagents and Markers</option>
+                  <option value="genome-editing">Genome Editing</option>
+                  <option value="vector-clones">Vector Clones</option>
+                  <option value="stable-cell-lines">Stable Cell Lines</option>
+                  <option value="lentivirus">Lentivirus</option>
+                </select>
+              </div>
+              <p className="text-xs text-muted-foreground">After adding a product, use "Edit details" to fill pricing/options (for Purchasable) or markdown details (for Quote-only). Use the Build button in the header to regenerate static caches if needed.</p>
               <div className="flex justify-end gap-2">
                 <Button variant="secondary" onClick={()=>setShowAdd(false)}>Cancel</Button>
                 <Button onClick={onAdd}>Save</Button>
@@ -1386,14 +1459,19 @@ function ProductPanel() {
 
       {(() => {
         // Determine type for each item based on merged details overrides
-        const withType = filteredAll.map(p => {
+        const withTypeRaw = filteredAll.map(p => {
           const slug = (p.link||'').startsWith('/products/') ? p.link!.replace('/products/','') : '';
           const det = slug ? getProductBySlug(slug) : undefined;
           const byPrefix = det?.catalogNumber ? String(det.catalogNumber).startsWith('FP') : p.id.startsWith('fp-');
           const inferred = !byPrefix; // FP -> purchasable, else quote
-          const quoteOnly = (det as any)?.quoteOnly ?? inferred;
+          // Honor custom hint set when adding (__type)
+          const hint = (custom.find(c=>c.id===p.id) as any)?.__type;
+          const quoteOnly = hint ? (hint === 'quote') : ((det as any)?.quoteOnly ?? inferred);
           return { ...p, __quoteOnly: !!quoteOnly } as any;
         });
+        // Sort by createdAt when available, newest first; fallback keep order
+        const sortByTime = (a:any,b:any) => (Number((detailsOverrides[a.id]||{}).createdAt || a.createdAt || 0) < Number((detailsOverrides[b.id]||{}).createdAt || b.createdAt || 0) ? 1 : -1);
+        const withType = withTypeRaw.slice().sort(sortByTime);
         const purch = withType.filter((x:any)=>!x.__quoteOnly);
         const quote = withType.filter((x:any)=>x.__quoteOnly);
         return (
@@ -1422,6 +1500,20 @@ function ProductPanel() {
                 >
                   <option value="buy">Purchasable (Reagents and Markers)</option>
                   <option value="quote">Quote-only (Genome Editing / Services)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Category (Secondary)</label>
+                <select
+                  className="border rounded-md px-3 py-2 w-full"
+                  value={detailsForm.category}
+                  onChange={e=>setDetailsForm((f:any)=>({ ...f, category: e.target.value }))}
+                >
+                  <option value="reagents-markers">Reagents and Markers</option>
+                  <option value="genome-editing">Genome Editing</option>
+                  <option value="vector-clones">Vector Clones</option>
+                  <option value="stable-cell-lines">Stable Cell Lines</option>
+                  <option value="lentivirus">Lentivirus</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1543,16 +1635,26 @@ function BlogPanel() {
   const [editing, setEditing] = useState<any|null>(null);
   const [editForm, setEditForm] = useState<any|null>(null);
   const [blogMedia, setBlogMedia] = useState<Record<string, string[]>>({});
+  const [sortMode, setSortMode] = useState<'time'|'alpha'>('time');
   React.useEffect(()=>{ fetchJson('/blog-media').then((cfg:any)=>{ setBlogMedia(cfg.media||{}); }).catch(()=>{}); },[]);
   const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); return fetchJson('/blog-media', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ media: next }) }); };
   const blogFileRef = React.useRef<HTMLInputElement|null>(null);
   const [blogImportUrl, setBlogImportUrl] = useState('');
 
   const filtered = useMemo(() => {
-    if (!q.trim()) return posts;
-    const s = q.toLowerCase();
-    return posts.filter(p => p.title.toLowerCase().includes(s) || p.excerpt.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s));
-  }, [q, posts]);
+    const list = (() => {
+      if (!q.trim()) return posts;
+      const s = q.toLowerCase();
+      return posts.filter(p => p.title.toLowerCase().includes(s) || p.excerpt.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s));
+    })();
+    const byTimeDesc = (a:any,b:any) => {
+      const ta = a.date ? new Date(a.date).getTime() : 0;
+      const tb = b.date ? new Date(b.date).getTime() : 0;
+      return tb - ta;
+    };
+    const byAlpha = (a:any,b:any) => String(a.title||'').localeCompare(String(b.title||''));
+    return list.slice().sort(sortMode==='time' ? byTimeDesc : byAlpha);
+  }, [q, posts, sortMode]);
 
   const extractFirstImage = (md: string): string | undefined => {
     const urlMatch = md.match(/https?:\/\/[^\s)"']+\.(?:png|jpe?g|gif|webp|svg)/i);
@@ -1687,7 +1789,7 @@ function BlogPanel() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search blogs..." value={q} onChange={e=>setQ(e.target.value)} />
-  <Button variant="outline" onClick={async()=>{ try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts }) }); alert('Synced to src/data/blog.ts'); } catch (e:any){ alert('Sync failed: ' + (e?.message||'unknown')); } }}>Sync to Source</Button>
+  <Button variant="outline" onClick={()=>setSortMode(m=>m==='time'?'alpha':'time')}>{sortMode==='time'?'Sort: Time':'Sort: A–Z'}</Button>
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button>Add</Button>

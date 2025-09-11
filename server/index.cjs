@@ -28,10 +28,24 @@ const MODE = process.env.MODE || 'all'; // 'stripe' | 'content' | 'all'
 // Increase JSON body limit to allow base64 image uploads
 app.use(express.json({ limit: '20mb' }));
 
-// Allow CORS broadly for development/demo (tighten for production)
-// FRONTEND_URL can be provided in production to construct absolute redirect URLs if needed
+// CORS: Restrict to configured frontend origins (FRONTEND_ORIGINS or FRONTEND_URL). Fallback to localhost dev origins.
 const FRONTEND_URL = process.env.FRONTEND_URL || '';
-app.use(cors({ origin: true, credentials: false }));
+const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGINS || FRONTEND_URL || '')
+  .split(/[\s,]+/)
+  .map(o=>o.trim())
+  .filter(Boolean);
+if (FRONTEND_ORIGINS.length === 0) {
+  FRONTEND_ORIGINS.push('http://localhost:5173','http://127.0.0.1:5173');
+}
+app.use(cors({
+  origin: function(origin, cb){
+    if (!origin) return cb(null, true); // non-browser or same-origin
+    if (FRONTEND_ORIGINS.includes(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  credentials: false,
+}));
+console.log('[CORS] Allowed origins:', FRONTEND_ORIGINS.join(', '));
 
 // Serve static frontend (for demo auth.html and assets)
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
@@ -274,7 +288,7 @@ app.delete('/api/admin/images/:id', (req,res)=>{
 });
 
 // Upload base64 data URL
-app.post('/api/upload-image', async (req,res)=>{
+app.post('/api/upload-image', requireAdmin, async (req,res)=>{
   try {
     const { folder, name, dataUrl } = req.body || {};
     const sub = ensureImagesSubdir(folder||'');
@@ -301,7 +315,7 @@ app.post('/api/upload-image', async (req,res)=>{
 });
 
 // Fetch remote image by URL and save
-app.post('/api/fetch-image', async (req,res)=>{
+app.post('/api/fetch-image', requireAdmin, async (req,res)=>{
   try {
     const { folder, url, name } = req.body || {};
     const sub = ensureImagesSubdir(folder||'');
@@ -327,7 +341,7 @@ app.post('/api/fetch-image', async (req,res)=>{
 });
 
 // List media under public/images
-app.get('/api/media-list', (_req, res) => {
+app.get('/api/media-list', requireAdmin, (_req, res) => {
   try {
     const folders = [];
     if (!fs.existsSync(IMAGES_DIR)) fs.mkdirSync(IMAGES_DIR, { recursive: true });
@@ -369,7 +383,7 @@ app.get('/api/media-list', (_req, res) => {
 });
 
 // Delete an image by folder & name
-app.post('/api/delete-image', (req, res) => {
+app.post('/api/delete-image', requireAdmin, (req, res) => {
   try {
     const { folder, name } = req.body || {};
     const base = sanitizeFilename(name||'');
@@ -436,6 +450,28 @@ function readMetrics(){ try { return JSON.parse(fs.readFileSync(METRICS_FILE,'ut
 function writeMetrics(m){ fs.writeFileSync(METRICS_FILE, JSON.stringify({ pageViews: Number(m.pageViews)||0 }, null, 2), 'utf-8'); }
 
 // SMTP config store
+// SMTP config with simple XOR-based obfuscation of password
+const SMTP_SECRET = process.env.SMTP_SECRET || process.env.SMTP_KEY || 'smtp-secret-fallback';
+function obfuscateSecret(str){
+  if (!str) return '';
+  try {
+    const key = crypto.createHash('sha256').update(SMTP_SECRET).digest();
+    const buf = Buffer.from(String(str), 'utf8');
+    for (let i=0;i<buf.length;i++){ buf[i] = buf[i] ^ key[i % key.length]; }
+    return 'enc:' + buf.toString('base64');
+  } catch { return ''; }
+}
+function deobfuscateSecret(str){
+  if (!str) return '';
+  if (typeof str !== 'string') return '';
+  if (!str.startsWith('enc:')) return str; // legacy plain text or empty
+  try {
+    const raw = Buffer.from(str.slice(4), 'base64');
+    const key = crypto.createHash('sha256').update(SMTP_SECRET).digest();
+    for (let i=0;i<raw.length;i++){ raw[i] = raw[i] ^ key[i % key.length]; }
+    return raw.toString('utf8');
+  } catch { return ''; }
+}
 function readSmtpCfg(){
   const baseDefaults = {
     host:'', port:465, secure:true, user:'', pass:'', fromEmail:'', toEmails:'',
@@ -447,13 +483,20 @@ function readSmtpCfg(){
     bodyTemplateProduct:'<h2>New Product Quote</h2>\n<p><strong>Name:</strong> {{firstName}} {{lastName}}</p>\n<p><strong>Email:</strong> {{email}}</p>\n<hr/>\n<p><strong>Product:</strong> {{projectDescription}}</p>\n{{#if catalogNumber}}<p><strong>Catalog #:</strong> {{catalogNumber}}</p>{{/if}}\n<p><strong>Submitted At:</strong> {{createdAt}}</p>'
   };
   try {
-    const cfg = JSON.parse(fs.readFileSync(SMTP_FILE,'utf-8'));
-    return Object.assign({}, baseDefaults, cfg);
-  } catch {
-    return baseDefaults;
-  }
+    const stored = JSON.parse(fs.readFileSync(SMTP_FILE,'utf-8'));
+    if (stored && stored.pass) stored.pass = deobfuscateSecret(stored.pass);
+    return Object.assign({}, baseDefaults, stored);
+  } catch { return baseDefaults; }
 }
-function writeSmtpCfg(cfg){ fs.writeFileSync(SMTP_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
+function writeSmtpCfg(cfg){
+  const out = Object.assign({}, cfg);
+  if (out.pass) out.pass = obfuscateSecret(out.pass);
+  fs.writeFileSync(SMTP_FILE, JSON.stringify(out, null, 2), 'utf-8');
+}
+function safeSmtpResponse(cfg){
+  const { pass, ...rest } = cfg || {};
+  return Object.assign({}, rest, { hasPass: !!pass });
+}
 
 function hashPassword(pw) {
   return crypto.createHash('sha256').update(String(pw)).digest('hex');
@@ -505,127 +548,57 @@ function runCmd(cmd, args, { cwd, timeoutMs = 60_000, useShell = true } = {}){
   });
 }
 
-// ===== Content APIs (only when not in 'stripe' mode) =====
-if (MODE !== 'stripe') {
-  // Products config APIs
-  app.get('/api/products-config', (_req,res)=>{
-    return res.json(readProductsCfg());
-  });
-  app.put('/api/products-config', (req,res)=>{
-    const { version, products, overrides, details, hidden } = req.body || {};
-    const data = {
-      version: typeof version === 'number' ? version : 1,
-      products: Array.isArray(products) ? products : [],
-      overrides: overrides && typeof overrides === 'object' ? overrides : {},
-      details: details && typeof details === 'object' ? details : {},
-      hidden: Array.isArray(hidden) ? hidden : [],
-    };
-    writeProductsCfg(data);
-    return res.json({ ok: true });
-  });
-
-  // Blog APIs
-  app.get('/api/blog', (_req,res)=>{
-    return res.json(readBlog());
-  });
-  app.put('/api/blog', (req,res)=>{
-    const { version, posts, hidden, overrides } = req.body || {};
-    const data = {
-      version: typeof version === 'string' ? version : 'v1',
-      posts: Array.isArray(posts) ? posts : [],
-      hidden: Array.isArray(hidden) ? hidden : [],
-      overrides: overrides && typeof overrides === 'object' ? overrides : {}
-    };
-    writeBlog(data);
-    return res.json({ ok: true });
-  });
-
-  // Blog media
-  app.get('/api/blog-media', (_req,res)=>{
-    return res.json(readBlogMedia());
-  });
-  app.put('/api/blog-media', (req,res)=>{
-    const { media } = req.body || {};
-    const data = { media: media && typeof media === 'object' ? media : {} };
-    writeBlogMedia(data);
-    return res.json({ ok: true });
-  });
-
-  // Services config APIs
-  app.get('/api/services-config', (_req,res)=>{
-    return res.json(readServicesCfg());
-  });
-  app.put('/api/services-config', (req,res)=>{
-    const { overrides, custom, media } = req.body || {};
-    const data = {
-      overrides: overrides && typeof overrides === 'object' ? overrides : {},
-      custom: Array.isArray(custom) ? custom : [],
-      media: media && typeof media === 'object' ? media : {}
-    };
-    writeServicesCfg(data);
-    return res.json({ ok: true });
-  });
-
-  // SMTP config APIs
-  app.get('/api/smtp-config', (_req,res)=>{
-    return res.json(readSmtpCfg());
-  });
-  app.put('/api/smtp-config', (req,res)=>{
-    const { host, port, secure, user, pass, fromEmail, toEmails, subjectTemplate, bodyTemplate, subjectTemplateFull, bodyTemplateFull, subjectTemplateProduct, bodyTemplateProduct } = req.body || {};
-    const cfg = {
-      host: typeof host === 'string' ? host : '',
-      port: Number.isFinite(Number(port)) ? Number(port) : 465,
-      secure: !!secure,
-      user: typeof user === 'string' ? user : '',
-      pass: typeof pass === 'string' ? pass : '',
-      fromEmail: typeof fromEmail === 'string' ? fromEmail : '',
-      toEmails: typeof toEmails === 'string' ? toEmails : '',
-      subjectTemplate: typeof subjectTemplate === 'string' ? subjectTemplate : undefined,
-      bodyTemplate: typeof bodyTemplate === 'string' ? bodyTemplate : undefined,
-      subjectTemplateFull: typeof subjectTemplateFull === 'string' ? subjectTemplateFull : undefined,
-      bodyTemplateFull: typeof bodyTemplateFull === 'string' ? bodyTemplateFull : undefined,
-      subjectTemplateProduct: typeof subjectTemplateProduct === 'string' ? subjectTemplateProduct : undefined,
-      bodyTemplateProduct: typeof bodyTemplateProduct === 'string' ? bodyTemplateProduct : undefined,
-    };
-    const merged = Object.assign(readSmtpCfg(), cfg);
-    writeSmtpCfg(merged);
-    return res.json({ ok: true });
-  });
-
-  // Metrics APIs (content mode only)
-  app.get('/api/metrics', (_req,res)=>{
-    return res.json(readMetrics());
-  });
-  // Increment page views (homepage hit)
-  app.post('/api/metrics/hit', (_req,res)=>{
-    const m = readMetrics();
-    m.pageViews = (Number(m.pageViews)||0) + 1;
-    writeMetrics(m);
-    return res.json({ ok: true, pageViews: m.pageViews });
-  });
-  // Reset metrics (admin only)
-  app.post('/api/metrics/reset', (req,res)=>{
-    const user = getSessionUserFromReq(req);
-    if (!user || user.role !== 'Admin') return res.status(403).json({ error: 'FORBIDDEN' });
-    const m = { pageViews: 0 };
-    writeMetrics(m);
-    return res.json({ ok: true, pageViews: 0 });
-  });
+// Admin auth middleware
+function requireAdmin(req,res,next){
+  const user = getSessionUserFromReq(req);
+  if (!user || (user.role !== 'Admin' && user.role !== 'Owner')) return res.status(403).json({ error: 'FORBIDDEN' });
+  req.user = user;
+  return next();
 }
-app.get('/api/blog', (_req,res)=>{
-  return res.json(readBlog());
+
+// Protected content/config routes
+app.get('/api/products-config', requireAdmin, (_req,res)=> res.json(readProductsCfg()));
+app.put('/api/products-config', requireAdmin, (req,res)=>{
+  const { version, products, overrides, details, hidden } = req.body || {};
+  const data = { version: typeof version === 'number' ? version : 1, products: Array.isArray(products)?products:[], overrides: overrides&&typeof overrides==='object'?overrides:{}, details: details&&typeof details==='object'?details:{}, hidden: Array.isArray(hidden)?hidden:[] };
+  writeProductsCfg(data);
+  return res.json({ ok:true });
 });
-app.put('/api/blog', (req,res)=>{
+app.get('/api/blog', requireAdmin, (_req,res)=> res.json(readBlog()));
+app.put('/api/blog', requireAdmin, (req,res)=>{
   const { version, posts, hidden, overrides } = req.body || {};
-  const data = {
-    version: typeof version === 'string' ? version : 'v1',
-    posts: Array.isArray(posts) ? posts : [],
-    hidden: Array.isArray(hidden) ? hidden : [],
-    overrides: overrides && typeof overrides === 'object' ? overrides : {}
-  };
-  writeBlog(data);
-  return res.json({ ok: true });
+  const data = { version: typeof version === 'string'?version:'v1', posts:Array.isArray(posts)?posts:[], hidden:Array.isArray(hidden)?hidden:[], overrides: overrides&&typeof overrides==='object'?overrides:{} };
+  writeBlog(data); return res.json({ ok:true });
 });
+app.get('/api/blog-media', requireAdmin, (_req,res)=> res.json(readBlogMedia()));
+app.put('/api/blog-media', requireAdmin, (req,res)=>{ const { media } = req.body || {}; const data = { media: media&&typeof media==='object'?media:{} }; writeBlogMedia(data); return res.json({ ok:true }); });
+app.get('/api/services-config', requireAdmin, (_req,res)=> res.json(readServicesCfg()));
+app.put('/api/services-config', requireAdmin, (req,res)=>{ const { overrides, custom, media } = req.body || {}; const data = { overrides: overrides&&typeof overrides==='object'?overrides:{}, custom:Array.isArray(custom)?custom:[], media: media&&typeof media==='object'?media:{} }; writeServicesCfg(data); return res.json({ ok:true }); });
+app.get('/api/smtp-config', requireAdmin, (_req,res)=> res.json(safeSmtpResponse(readSmtpCfg())));
+app.put('/api/smtp-config', requireAdmin, (req,res)=>{
+  const { host, port, secure, user, pass, fromEmail, toEmails, subjectTemplate, bodyTemplate, subjectTemplateFull, bodyTemplateFull, subjectTemplateProduct, bodyTemplateProduct } = req.body || {};
+  const current = readSmtpCfg();
+  const nextCfg = Object.assign({}, current, {
+    host: typeof host==='string'?host:current.host,
+    port: Number.isFinite(Number(port))?Number(port):current.port,
+    secure: typeof secure==='boolean'?secure:current.secure,
+    user: typeof user==='string'?user:current.user,
+    pass: (typeof pass==='string' && pass!=='') ? pass : current.pass, // blank => keep
+    fromEmail: typeof fromEmail==='string'?fromEmail:current.fromEmail,
+    toEmails: typeof toEmails==='string'?toEmails:current.toEmails,
+    subjectTemplate: typeof subjectTemplate==='string'?subjectTemplate:current.subjectTemplate,
+    bodyTemplate: typeof bodyTemplate==='string'?bodyTemplate:current.bodyTemplate,
+    subjectTemplateFull: typeof subjectTemplateFull==='string'?subjectTemplateFull:current.subjectTemplateFull,
+    bodyTemplateFull: typeof bodyTemplateFull==='string'?bodyTemplateFull:current.bodyTemplateFull,
+    subjectTemplateProduct: typeof subjectTemplateProduct==='string'?subjectTemplateProduct:current.subjectTemplateProduct,
+    bodyTemplateProduct: typeof bodyTemplateProduct==='string'?bodyTemplateProduct:current.bodyTemplateProduct,
+  });
+  writeSmtpCfg(nextCfg);
+  return res.json({ ok:true });
+});
+app.get('/api/metrics', requireAdmin, (_req,res)=> res.json(readMetrics()));
+app.post('/api/metrics/hit', (_req,res)=>{ const m = readMetrics(); m.pageViews=(Number(m.pageViews)||0)+1; writeMetrics(m); return res.json({ ok:true, pageViews:m.pageViews }); });
+app.post('/api/metrics/reset', requireAdmin, (_req,res)=>{ const m={ pageViews:0 }; writeMetrics(m); return res.json({ ok:true, pageViews:0 }); });
 
 // Write current posts into src/data/blog.ts (TypeScript source)
 // body: { posts: BlogPost[] }
@@ -645,50 +618,7 @@ app.post('/api/blog-sync-source', (req,res)=>{
   }
 });
 
-// Blog media
-app.get('/api/blog-media', (_req,res)=>{
-  return res.json(readBlogMedia());
-});
-app.put('/api/blog-media', (req,res)=>{
-  const { media } = req.body || {};
-  const data = { media: media && typeof media === 'object' ? media : {} };
-  writeBlogMedia(data);
-  return res.json({ ok: true });
-});
-
-// ===== Services config APIs =====
-app.get('/api/services-config', (_req,res)=>{
-  return res.json(readServicesCfg());
-});
-app.put('/api/services-config', (req,res)=>{
-  const { overrides, custom, media } = req.body || {};
-  const data = {
-    overrides: overrides && typeof overrides === 'object' ? overrides : {},
-    custom: Array.isArray(custom) ? custom : [],
-    media: media && typeof media === 'object' ? media : {}
-  };
-  writeServicesCfg(data);
-  return res.json({ ok: true });
-});
-
-// SMTP config APIs
-app.get('/api/smtp-config', (_req,res)=>{
-  return res.json(readSmtpCfg());
-});
-app.put('/api/smtp-config', (req,res)=>{
-  const { host, port, secure, user, pass, fromEmail, toEmails } = req.body || {};
-  const cfg = {
-    host: typeof host === 'string' ? host : '',
-    port: Number.isFinite(Number(port)) ? Number(port) : 465,
-    secure: !!secure,
-    user: typeof user === 'string' ? user : '',
-    pass: typeof pass === 'string' ? pass : '',
-    fromEmail: typeof fromEmail === 'string' ? fromEmail : '',
-    toEmails: typeof toEmails === 'string' ? toEmails : ''
-  };
-  writeSmtpCfg(cfg);
-  return res.json({ ok: true });
-});
+// (removed duplicate unprotected blog/services/smtp routes)
 
 // ===== Admin system ops =====
 app.post('/api/admin/restart', async (req, res) => {
@@ -748,9 +678,7 @@ app.delete('/api/users/:email', (req,res)=>{
 });
 
 // ===== Quotes APIs =====
-app.get('/api/quotes', (_req,res)=>{
-  return res.json({ quotes: readQuotes() });
-});
+app.get('/api/quotes', requireAdmin, (_req,res)=>{ return res.json({ quotes: readQuotes() }); });
 // basic template renderer: supports {{key}} and {{#if key}}...{{/if}}
 function renderTemplate(tpl, data){
   if (typeof tpl !== 'string') return '';
@@ -790,7 +718,7 @@ async function trySendQuoteEmail(quote){
     console.warn('[SMTP] Failed to send quote email:', e?.message || e);
   }
 }
-app.post('/api/quotes', async (req,res)=>{
+app.post('/api/quotes', async (req,res)=>{ // public create
   const input = req.body || {};
   const q = Object.assign({}, input, { id: `q_${Date.now()}`, createdAt: new Date().toISOString(), read: false });
   const list = readQuotes();
@@ -799,14 +727,14 @@ app.post('/api/quotes', async (req,res)=>{
   trySendQuoteEmail(q);
   return res.json({ quote: q });
 });
-app.put('/api/quotes/:id/read', (req,res)=>{
+app.put('/api/quotes/:id/read', requireAdmin, (req,res)=>{
   const { id } = req.params;
   const { read } = req.body || {};
   const list = readQuotes().map(q => q.id === id ? Object.assign({}, q, { read: !!read }) : q);
   writeQuotes(list);
   return res.json({ ok: true });
 });
-app.delete('/api/quotes/:id', (req,res)=>{
+app.delete('/api/quotes/:id', requireAdmin, (req,res)=>{
   const { id } = req.params;
   const list = readQuotes().filter(q => q.id !== id);
   writeQuotes(list);
@@ -814,7 +742,7 @@ app.delete('/api/quotes/:id', (req,res)=>{
 });
 
 // SMTP test endpoint: send a test mail with dummy data to verify config
-app.post('/api/smtp-test', async (req,res)=>{
+app.post('/api/smtp-test', requireAdmin, async (req,res)=>{
   try {
     const { type } = req.body || {};
     const isProduct = String(type||'').toLowerCase() === 'product';

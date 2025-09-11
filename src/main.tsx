@@ -25,6 +25,17 @@ async function syncProductsConfigOnce(){
 }
 void syncProductsConfigOnce();
 
+// Sync backend services-config to LocalStorage on app load (compat shim)
+async function syncServicesConfigOnce(){
+  try {
+    const cfg = await fetchJson<any>('/services-config');
+    localStorage.setItem('bioark_services_overrides', JSON.stringify(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{}));
+    localStorage.setItem('bioark_services_custom', JSON.stringify(Array.isArray(cfg.custom)?cfg.custom:[]));
+    localStorage.setItem('bioark_services_media_v2_paths', JSON.stringify(cfg.media&&typeof cfg.media==='object'?cfg.media:{}));
+  } catch {}
+}
+void syncServicesConfigOnce();
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BlogProvider>

@@ -15,6 +15,8 @@ export interface ProductDetailData extends ShowcaseItem {
   storeLink?: string;
   // New: multiple images support (first image can mirror imageUrl)
   images?: string[];
+  // Optional creation timestamp (used for Admin sorting & dynamic menus)
+  createdAt?: number;
 }
 
 // Extra on-the-shelf products accessible via menu only (not shown on homepage)
@@ -275,15 +277,53 @@ function readLS<T>(key: string, fallback: T): T {
   }
 }
 
+function normalizeProductLink(link: string | undefined): string | undefined {
+  if (!link) return undefined;
+  try {
+    let s = String(link).trim();
+    // ensure leading '/'
+    if (!s.startsWith('/')) {
+      s = '/' + s;
+    }
+    // remove trailing slash
+    if (s.length > 1 && s.endsWith('/')) s = s.slice(0, -1);
+    // force products prefix if it's clearly a products detail link without prefix
+    if (!s.startsWith('/products/')) {
+      // if it already includes '/products/' somewhere, keep as is
+      if (s.includes('/products/')) {
+        const i = s.indexOf('/products/');
+        s = s.slice(i);
+      } else {
+        s = '/products/' + s.replace(/^\/+/, '');
+      }
+    }
+    // lower-case for matching consistency
+    return s.toLowerCase();
+  } catch {
+    return link;
+  }
+}
+
+function extractSlugFromLink(link: string | undefined): string | undefined {
+  const norm = normalizeProductLink(link);
+  if (!norm) return undefined;
+  const idx = norm.indexOf('/products/');
+  if (idx < 0) return undefined;
+  const tail = norm.slice(idx + '/products/'.length);
+  return tail || undefined;
+}
+
 export const getProductBySlug = (slug: string): ProductDetailData | undefined => {
-  const path = `/products/${slug}`;
+  const slugNorm = String(slug).trim().replace(/\/+$/,'').toLowerCase();
+  const path = `/products/${slugNorm}`;
+  const pathNorm = normalizeProductLink(path)!;
   // First, try to find from base+file-config catalog
-  let base = baseWithFile.find(p => p.link === path);
+  let base = baseWithFile.find(p => normalizeProductLink(p.link) === pathNorm || extractSlugFromLink(p.link) === slugNorm);
 
   // If not found, try custom products from Admin (bioark_products)
   if (!base) {
-    const customList = readLS<any[]>('bioark_products', []);
-    const found = customList.find(p => p.link === path);
+  const customList = readLS<any[]>('bioark_products', []);
+  const found = customList.find(p => normalizeProductLink(p.link) === pathNorm || extractSlugFromLink(p.link) === slugNorm);
     if (found) {
       base = {
         id: found.id,
@@ -291,7 +331,7 @@ export const getProductBySlug = (slug: string): ProductDetailData | undefined =>
         description: found.description,
         imageUrl: found.imageUrl,
   images: (found as any).images && (found as any).images.length ? (found as any).images : (found.imageUrl ? [found.imageUrl] : undefined),
-        link: found.link,
+    link: normalizeProductLink(found.link) || `/products/${slugNorm}`,
         catalogNumber: '',
         availability: 'In Stock',
         listPrice: '',
@@ -328,4 +368,48 @@ export const getProductBySlug = (slug: string): ProductDetailData | undefined =>
   optionPrices: (detPatch as any).optionPrices ?? (base as any).optionPrices,
   images: (detPatch as any).images ?? (dispPatch as any).images ?? (base as any).images,
   } as ProductDetailData;
+};
+
+// Return all products including runtime (LocalStorage) custom entries and overrides, minus hidden
+export const listAllProductsMerged = (): ProductDetailData[] => {
+  // Runtime localStorage state
+  const hiddenLS = new Set(readLS<string[]>('bioark_products_hidden', []));
+  const dispOv = readLS<Record<string, Partial<ProductDetailData>>>('bioark_products_overrides', {});
+  const custom = readLS<any[]>('bioark_products', []);
+
+  // Base + file-config with runtime display overrides, excluding hidden
+  const baseMerged: ProductDetailData[] = baseWithFile
+    .filter(p => !hiddenLS.has(p.id))
+    .map(p => ({
+      ...p,
+      ...(dispOv[p.id] || {}),
+    }));
+
+  // Map runtime custom into ProductDetailData-like items, excluding hidden
+  const customMapped: ProductDetailData[] = (Array.isArray(custom) ? custom : [])
+    .filter(c => c && !hiddenLS.has(c.id))
+    .map(c => ({
+      id: c.id,
+      name: c.name || '',
+      description: c.description || '',
+      imageUrl: c.imageUrl || '/placeholder.svg',
+      images: (c as any).images && (c as any).images.length ? (c as any).images : (c.imageUrl ? [c.imageUrl] : undefined),
+      link: c.link || '',
+      catalogNumber: '',
+      availability: 'In Stock',
+      listPrice: '',
+      options: [],
+      keyFeatures: [],
+      storageStability: '',
+      performanceData: '',
+      manuals: [],
+      manualUrls: [],
+      storeLink: 'https://store.bioarktech.com/cart',
+      createdAt: Number(c.createdAt) || undefined,
+  // carry custom hints for grouping (not part of interface, but harmless at runtime)
+  ...(c.__type ? { __type: c.__type } : {}),
+  ...(c.category ? { category: c.category } : {}),
+    } as ProductDetailData));
+
+  return [...baseMerged, ...customMapped];
 };

@@ -14,6 +14,8 @@ import {
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import { featuredProducts, geneEditingProducts, customerSolutions } from '../data/showcase';
+import { getAllServices } from '@/data/services';
+import { listAllProductsMerged } from '@/data/products';
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -118,38 +120,54 @@ const Navigation = () => {
                         'Stable Cell Lines',
                         'Lentivirus',
                       ] as const;
+            // Dynamically build items from merged product list so new Admin-added entries appear automatically
+            const [navProductsVersion, setNavProductsVersion] = React.useState(0);
+            React.useEffect(()=>{
+              const h = () => setNavProductsVersion(v=>v+1);
+              window.addEventListener('bioark:products-changed', h);
+              return ()=>window.removeEventListener('bioark:products-changed', h);
+            },[]);
+            const merged = React.useMemo(()=> listAllProductsMerged(), [navProductsVersion]);
+            const inferType = (p: any) => {
+              // Purchasable if catalogNumber starts with FP; otherwise quote-only
+              if ((p as any).__type === 'buy' || (p as any).__type === 'quote') return (p as any).__type;
+              const byPrefix = p.catalogNumber ? String(p.catalogNumber).startsWith('FP') : p.id?.startsWith('fp-');
+              return byPrefix ? 'buy' : 'quote';
+            };
+            const lists: Record<string, { title: string; href: string; createdAt?: number }[]> = {
+              'Reagents and Markers': [],
+              'Genome Editing': [],
+              'Vector Clones': [],
+              'Stable Cell Lines': [],
+              'Lentivirus': [],
+            };
+            const mapCat = (raw: string|undefined): keyof typeof lists => {
+              switch(raw){
+                case 'reagents-markers': return 'Reagents and Markers';
+                case 'genome-editing': return 'Genome Editing';
+                case 'vector-clones': return 'Vector Clones';
+                case 'stable-cell-lines': return 'Stable Cell Lines';
+                case 'lentivirus': return 'Lentivirus';
+                default: return 'Reagents and Markers';
+              }
+            };
+            merged.forEach(p => {
+              const link = p.link || '';
+              if (!link.startsWith('/products/')) return;
+              const cat = mapCat((p as any).category);
+              lists[cat].push({ title: displayTitle(p.name || '—'), href: link, createdAt: (p as any).createdAt });
+            });
+            // Sort each list by createdAt desc, fallback keep order
+            (Object.keys(lists) as (keyof typeof lists)[]).forEach(k => {
+              lists[k] = lists[k].slice().sort((a, b) => (Number(a.createdAt || 0) < Number(b.createdAt || 0) ? 1 : -1));
+            });
             const items: Record<string, {title:string; href:string}[]> = {
-                        'Reagents and Markers': [
-                          { title: 'GN8K DNA Marker', href: '/products/gn8k-dna-marker' },
-                          { title: 'GN10K DNA Marker', href: '/products/gn10k-dna-marker' },
-                          { title: 'GN15K DNA Marker', href: '/products/gn15k-dna-marker' },
-              { title: 'BioArkLipo© In Vitro Transfection Kit (Ver.II)', href: '/products/bioarklipo-in-vitro-transfection-kit' },
-                          { title: 'BAJet® In Vitro DNA Transfection Reagent', href: '/products/bajet-transfection-reagent' },
-                          { title: 'BAPoly® In Vitro DNA Transfection Reagent', href: '/products/bapoly-transfection-reagent' },
-                          { title: 'Prestained Protein Marker IV', href: '/products/prestained-protein-marker-iv' },
-              { title: 'Western Protein MarkerI(Exposure)', href: '/products/western-protein-marker-i' },
-              { title: '2 x SYBR Green qPCR Master Mix', href: '/products/sybr-green-qpcr-mix' },
-              { title: '2 x Fast SYBR Green qPCR Master Mix', href: '/products/fast-sybr-green-qpcr-mix' },
-                        ],
-                        'Genome Editing': [
-                          { title: 'Overexpression Targeted Knock-In', href: '/products/overexpression-targeted-knock-in' },
-                          { title: 'Gene Knock-In Tagging', href: '/products/gene-knock-in' },
-              { title: 'Gene Knock-Out Kit', href: '/products/gene-knock-out' },
-              { title: 'Genome Deletion', href: '/products/gene-deletion' },
-                          { title: 'CRISPR RNA Knock-down', href: '/products/crispr-knock-down' },
-                        ],
-                        'Vector Clones': [
-                          { title: 'cDNA Vector Stock', href: '/products/cdna-vector-stock' },
-                          { title: 'Functional Vectors Kits Template', href: '/products/functional-vectors-kits-template' },
-                        ],
-                        'Stable Cell Lines': [
-                          { title: 'Stable Cell Line Stock', href: '/products/stable-cell-line-stock' },
-                        ],
-                        'Lentivirus': [
-                          { title: 'cDNA Lentivirus Stock', href: '/products/cdna-lentivirus-stock' },
-                          { title: 'Lentivirus Control Stock', href: '/products/lentivirus-control-stock' },
-                        ],
-                      };
+              'Reagents and Markers': lists['Reagents and Markers'],
+              'Genome Editing': lists['Genome Editing'],
+              'Vector Clones': lists['Vector Clones'],
+              'Stable Cell Lines': lists['Stable Cell Lines'],
+              'Lentivirus': lists['Lentivirus'],
+            };
                       const [activeCat, setActiveCat] = React.useState<typeof categories[number]>('Reagents and Markers');
                       return (
                         <div className="grid grid-cols-[240px_minmax(400px,1fr)] gap-6 p-4 w-[860px] lg:w-[980px]">
@@ -174,7 +192,7 @@ const Navigation = () => {
 
                           {/* Right: items of active category */}
                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 pr-1">
-                            {items[activeCat].map((it) => (
+                            {(items[activeCat] && items[activeCat].length ? items[activeCat] : []).map((it) => (
                               <ListItem
                                 key={it.href}
                                 title={it.title}
@@ -182,6 +200,9 @@ const Navigation = () => {
                                 className="space-y-0 p-1.5 lg:p-2 rounded-sm"
                               />
                             ))}
+                            {!items[activeCat] || items[activeCat].length === 0 ? (
+                              <div className="text-sm text-muted-foreground px-2 py-1">No items yet.</div>
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -190,12 +211,12 @@ const Navigation = () => {
                 </NavigationMenuItem>
 
         {/* Services Dropdown */}
-                <NavigationMenuItem>
+        <NavigationMenuItem>
                   <NavigationMenuTrigger>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     {(() => {
-          // Use customerSolutions directly to avoid duplicates
-          const navServices = customerSolutions;
+      // Build Services dynamically so Admin-added entries show up immediately
+      const navServices = getAllServices().slice().sort((a,b)=> (Number(a.createdAt||0) < Number(b.createdAt||0) ? 1 : -1));
                       return (
                         <ul className="grid w-[360px] gap-3 p-4 md:w-[440px] md:grid-cols-2 lg:w-[520px]">
                           {navServices.map((s) => (
