@@ -15,6 +15,19 @@ export interface BlogPost {
 
 export const mockBlogPosts: BlogPost[] = [
   {
+    "id": 1757773389524,
+    "slug": "test",
+    "title": "test",
+    "excerpt": "—",
+    "content": "# New Post\n\nDraft content...\n",
+    "author": "Admin",
+    "date": "2025-09-13T14:23:09.524Z",
+    "category": "General",
+    "readTime": 5,
+    "views": 0,
+    "tags": []
+  },
+  {
     "id": 4,
     "slug": "vlp-delivery-envlpe-plus-prime-editing",
     "title": "VLPs vs AAVs: ENVLPE+ Advances for CRISPR RNP and Prime Editing Delivery",

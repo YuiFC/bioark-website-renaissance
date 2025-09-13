@@ -22,8 +22,10 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     (async () => {
       try {
-        // 1) Load from server
-  const server = await fetchJson<any>('/blog');
+    // 1) Load from server (prefer public endpoint so new posts appear across browsers)
+    let server: any = null;
+    try { server = await fetchJson<any>('/public/blog'); } catch {}
+    if (!server) server = await fetchJson<any>('/blog');
         const sOverrides: Record<number, Partial<BlogPost>> = server.overrides || {};
         const sHidden: number[] = server.hidden || [];
         const sSaved: BlogPost[] = server.posts || [];
@@ -92,6 +94,25 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         setPosts(mockBlogPosts);
       }
     })();
+    const handler = async () => {
+      try {
+        let server: any = null;
+        try { server = await fetchJson<any>('/public/blog'); } catch {}
+        if (!server) return; // do not fallback here to avoid auth requirement in other tabs
+        const sOverrides: Record<number, Partial<BlogPost>> = server.overrides || {};
+        const sHidden: number[] = server.hidden || [];
+        const sSaved: BlogPost[] = server.posts || [];
+        let base = mockBlogPosts.map(p => ({ ...p, ...(sOverrides[p.id] || {}) }));
+        base = base.filter(p => !sHidden.includes(p.id));
+        const seen = new Set<number>();
+        const all: BlogPost[] = [];
+        for (const p of [...base, ...sSaved]) { if (!seen.has(p.id)) { seen.add(p.id); all.push(p); } }
+        all.sort((a,b)=> new Date(b.date).getTime() - new Date(a.date).getTime());
+        setPosts(all);
+      } catch {}
+    };
+    window.addEventListener('bioark:blog-changed', handler);
+    return () => { window.removeEventListener('bioark:blog-changed', handler); };
   }, []);
 
   const addPost = (post: BlogPost) => {
@@ -118,6 +139,7 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
           try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
           try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
           try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: updated }) }); } catch {}
+          try { window.dispatchEvent(new Event('bioark:blog-changed')); } catch {}
         })();
         return updated;
       }
@@ -134,6 +156,7 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
   // Also best-effort write to source file for persistence in repo
   try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
+    try { window.dispatchEvent(new Event('bioark:blog-changed')); } catch {}
       })();
       // Final defensive dedupe + sort
       const seenFinal = new Set<number>();
@@ -165,6 +188,7 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
   // Also best-effort write to source file
   try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
+    try { window.dispatchEvent(new Event('bioark:blog-changed')); } catch {}
       })();
       return next;
     });
@@ -193,6 +217,7 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
   // Also best-effort write to source file
   try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
+    try { window.dispatchEvent(new Event('bioark:blog-changed')); } catch {}
       })();
       return next;
     });

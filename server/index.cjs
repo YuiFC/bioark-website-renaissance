@@ -659,6 +659,15 @@ app.put('/api/blog', requireAdmin, (req,res)=>{
   const data = { version: typeof version === 'string'?version:'v1', posts:Array.isArray(posts)?posts:[], hidden:Array.isArray(hidden)?hidden:[], overrides: overrides&&typeof overrides==='object'?overrides:{} };
   writeBlog(data); return res.json({ ok:true });
 });
+// Public readonly blog snapshot (for visitors / non-admin browsers)
+app.get('/api/public/blog', (_req,res)=>{
+  try {
+    const { version, posts, hidden, overrides } = readBlog();
+    return res.json({ version, posts:Array.isArray(posts)?posts:[], hidden:Array.isArray(hidden)?hidden:[], overrides: overrides||{} });
+  } catch (e){
+    return res.status(500).json({ error: 'Failed to read blog' });
+  }
+});
 app.get('/api/blog-media', requireAdmin, (_req,res)=> res.json(readBlogMedia()));
 app.put('/api/blog-media', requireAdmin, (req,res)=>{ const { media } = req.body || {}; const data = { media: media&&typeof media==='object'?media:{} }; writeBlogMedia(data); return res.json({ ok:true }); });
 app.get('/api/services-config', requireAdmin, (_req,res)=> res.json(readServicesCfg()));
