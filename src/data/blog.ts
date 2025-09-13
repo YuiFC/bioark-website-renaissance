@@ -15,39 +15,21 @@ export interface BlogPost {
 
 export const mockBlogPosts: BlogPost[] = [
   {
-    "id": 1,
-    "slug": "stitchr-retrotransposon-precision-integration",
-    "title": "STITCHR: A New Gene Editing Platform for Scarless Large-Fragment Integration",
-    "excerpt": "Harvard-led team unveils STITCHR, enabling scarless insertion up to 12.7 kb with high precision and cell-cycle independence.",
-    "content": "A Harvard-led team (Jonathan S. Gootenberg and Omar O. Abudayyeh) reported a programmable retrotransposon platform named STITCHR in Nature (“Reprogramming site-specific retrotransposon activity to new DNA sites”). The system couples CRISPR targeting with retrotransposon template-primed reverse transcription (TPRT) to enable scarless integration of DNA fragments ranging from single bases to >10 kb.\n\n> Note: STITCHR is distinct from a similarly named “StitchR” approach that uses ribozyme-mediated mRNA trans-ligation to deliver large genes. The two technologies address different delivery challenges.\n\n## What is STITCHR?\nSTITCHR reprograms an R2-like retrotransposon to insert payload DNA at CRISPR-specified genomic sites. A Cas9 H840A nickase introduces a single-strand nick to expose a 3' end that primes reverse transcription of the donor template, leading to homology-guided, scarless integration.\n\n### How it works (high level)\n- Cas9 H840A nickase targets the site, generating a nick and a 3' OH for priming.\n- The retrotransposon reverse transcriptase extends from the nick into the donor template.\n- Homology sequences guide precise ligation and completion, yielding seamless integration.\n\n## Why it matters\n- Scarless, seamless insertion up to ~12.7 kb: expands edits beyond the ~<500 bp typical for base/prime editing.\n- High targeting precision with low off-target activity: nickase + TPRT pairing improves specificity versus classical double-strand breaks.\n- Cell-cycle independence: maintains activity even when division is blocked (e.g., doxorubicin), enabling edits in non-dividing cells like neurons.\n\n## Key capabilities\n- Single-nucleotide edits, short tags, and full-length gene replacement within one platform.\n- Potential compatibility with diverse cell types and tissues.\n- Modular donor design with homology handles for flexible targeting.\n\n## Technical challenges and open questions\n### 1) Deliverability and construct size\nThe current fusion payload is large (Cas9 ~4.1 kb + retrotransposon components ~3.6 kb), which complicates in vivo delivery. RNA-formulated versions and LNP delivery are being explored, though RNA typically shows lower efficiency than plasmid/viral methods. A complementary direction is mRNA trans-ligation (the separate StitchR line of work) to handle very large cargos.\n\n### 2) Mechanism: second-strand synthesis and completion\nDetails of in vivo second-strand DNA synthesis during homology-guided TPRT remain to be clarified. Better mechanistic insight should improve efficiency and fidelity.\n\n### 3) Efficiency evolution\nHomology-directed TPRT alone can be <1% but rises to ~3–11% when paired with Cas9 H840A in STITCHR. There is room to engineer both the TPRT module and CRISPR partner for higher rates.\n\n## Early applications to watch\n- Precise knock-ins for reporter tags and epitope fusions.\n- Scarless correction or replacement of disease alleles.\n- Installation of complex gene circuits without residual sequence scars.\n\n## Outlook\nSTITCHR adds a much-needed option for large, precise, and potentially cell-cycle-agnostic integrations. Continued work on delivery (smaller constructs, RNA/LNP), mechanistic tuning, and donor design should determine how quickly the platform moves toward preclinical use.\n\n",
+    "id": 4,
+    "slug": "vlp-delivery-envlpe-plus-prime-editing",
+    "title": "VLPs vs AAVs: ENVLPE+ Advances for CRISPR RNP and Prime Editing Delivery",
+    "excerpt": "ENVLPE+ boosts VLP packaging, stability, and delivery for prime editing, pointing to safer, modular gene therapy vectors.",
+    "content": "Compared with adeno‑associated viruses (AAVs), virus‑like particles (VLPs) can deliver CRISPR ribonucleoproteins (RNPs) transiently with lower immunogenicity, flexible tropism via pseudotyping, and strong specificity. Remaining hurdles—RNP stability, packaging efficiency, and potency—are being addressed by new engineering strategies.\n\nOne such advance is ENVLPE+ (Cell: “Engineered nucleocytosolic vehicles for loading of programmable editors,” Truong, Geilenkeuser et al.), which improves packaging and delivery of prime editing effectors.\n\n## What is ENVLPE+?\nENVLPE+ retools the Gag‑Pol framework and RNA scaffolds to increase cargo loading, stabilize pegRNA, and enhance budding and particle yield.\n\n### Key components\n- Optimized Gag–Pol fusion with enhanced nucleo‑cytoplasmic shuttling tags and a PCP–aptamer system to export RNPs to the cytoplasm for packaging.\n- PP7–C4‑Q1 scaffold that stabilizes pegRNA and maintains complex integrity during assembly.\n- Engineered coiled‑coil domains for Gag–PCP oligomerization, boosting budding and packaging efficiency.\n- MiniENVLPE: a highly truncated design (<13% of HIV‑1 Gag) that preserves most editing/packaging function—promising for low‑immunogenicity vectors.\n\n## Why it matters for prime editing\n- Higher RNP/pegRNA stability improves edit rates while keeping exposure transient.\n- Modular envelopes allow tissue targeting by pseudotyping.\n- Truncated backbones point toward safer clinical translation.\n\n## Research opportunities\n1. All‑in‑one CRISPR VLPs that co‑deliver RNPs and donor DNA.\n2. Systematically combine gRNA stabilization and Cas9 loading motifs for maximal potency.\n3. MiniENVLPE‑based variants optimized for low immunogenicity.\n4. Expanded pseudotype library to reach difficult tissues.\n\n## Outlook\nVLPs are emerging as a practical, safer alternative to integrating viral vectors for genome editing. With designs like ENVLPE+, the field is moving toward programmable, modular vehicles that can deliver prime editors with higher efficiency and better control.",
     "author": "BioArk Editorial Team",
-    "date": "2025-04-22T00:00:00.000Z",
-    "category": "BioArk Insights",
-    "coverImage": "/images/blog/Blog-1-20250422.png",
-    "readTime": 9,
+    "date": "2025-06-17T00:00:00.000Z",
+    "category": "Latest News",
+    "coverImage": "/images/blog/Blog-4-20250617.png",
+    "readTime": 8,
     "views": 0,
     "tags": [
-      "CRISPR",
-      "Retrotransposon",
-      "Large Insertion"
-    ]
-  },
-  {
-    "id": 2,
-    "slug": "car-t-autologous-universal-in-vivo-and-crispr",
-    "title": "CAR-T Therapies: Autologous, Universal, and In Vivo Approaches",
-    "excerpt": "From autologous to universal and in vivo CAR-T, CRISPR innovations are reshaping integration, safety, and scalability.",
-    "content": "CAR-T therapies have transformed oncology, particularly for hematologic malignancies. Today’s development landscape spans three approaches—autologous, universal (allogeneic), and in vivo—each with distinct trade-offs in speed, cost, safety, and scalability.\n\n## Three approaches at a glance\n### Autologous (patient-derived)\n- Pros: Proven efficacy; lower graft-versus-host risk; established regulatory precedents.\n- Cons: Expensive and slow (bespoke manufacturing); variable starting material quality; challenging for rapidly progressing disease.\n\n### Universal / Allogeneic (donor-derived, off‑the‑shelf)\n- Pros: Batch manufacturing, lower cost of goods, faster turnaround; scalable logistics.\n- Cons: Requires edits to reduce graft-versus-host and host-vs-graft rejection (e.g., TRAC, B2M, HLA); persistent immunogenicity risks.\n\n### In vivo (edited inside the patient)\n- Pros: Eliminates ex vivo manufacturing; potential for broad access and rapid deployment.\n- Cons: Delivery remains the central challenge (viral vectors, VLPs, LNPs); dosing control and safety switching are active areas of research.\n\n## How CRISPR is reshaping CAR-T\n- Targeted integration: Site-specific insertion (e.g., TRAC, CCR5, PDCD1) improves expression uniformity and reduces insertional mutagenesis risk.\n- Multiplex edits: Knockout of endogenous TCR and HLA to enable universal products; edits to resist exhaustion and immunosuppression.\n- Built-in safety features: Inducible kill switches, suicide genes, and logic-gated CARs to mitigate severe adverse events.\n- Epigenetic tuning: dCas-based regulators can modulate checkpoint genes and cytokines to improve persistence.\n\n## Manufacturing, scale, and quality\n- Autologous: vein-to-vein time is the bottleneck; orchestration and analytics (QC release) drive cost.\n- Allogeneic: scale helps COGS, but genome engineering and release testing must assure product consistency.\n- In vivo: analytics shift to biodistribution, persistence, and on/off-target profiling of the delivery system.\n\n## Safety and regulatory considerations\n- Genomic safety: minimize off-target edits; leverage validated safe-harbor loci and orthogonal nucleases.\n- Immunogenicity: reduce alloreactivity and anti-product responses; consider humanized components.\n- Pharmacology: dose control and reversibility (e.g., small-molecule gated CARs) for severe toxicity management.\n\n## Outlook\nCRISPR-enabled CAR-T is moving beyond “insert a CAR” to programmable cell therapies with multiplex edits and tunable function. In vivo editing could unlock true global scale if delivery hurdles are solved. Collaboration across delivery, editing, and manufacturing will determine how quickly the field expands from blood cancers into solid tumors.",
-    "author": "BioArk Editorial Team",
-    "date": "2025-05-04T00:00:00.000Z",
-    "category": "BioArk Insights",
-    "coverImage": "/images/blog/Blog-2-20250504.jpg",
-    "readTime": 7,
-    "views": 0,
-    "tags": [
-      "CAR-T",
-      "CRISPR",
-      "Oncology"
+      "VLP",
+      "AAV",
+      "Prime Editing"
     ]
   },
   {
@@ -69,21 +51,39 @@ export const mockBlogPosts: BlogPost[] = [
     ]
   },
   {
-    "id": 4,
-    "slug": "vlp-delivery-envlpe-plus-prime-editing",
-    "title": "VLPs vs AAVs: ENVLPE+ Advances for CRISPR RNP and Prime Editing Delivery",
-    "excerpt": "ENVLPE+ boosts VLP packaging, stability, and delivery for prime editing, pointing to safer, modular gene therapy vectors.",
-    "content": "Compared with adeno‑associated viruses (AAVs), virus‑like particles (VLPs) can deliver CRISPR ribonucleoproteins (RNPs) transiently with lower immunogenicity, flexible tropism via pseudotyping, and strong specificity. Remaining hurdles—RNP stability, packaging efficiency, and potency—are being addressed by new engineering strategies.\n\nOne such advance is ENVLPE+ (Cell: “Engineered nucleocytosolic vehicles for loading of programmable editors,” Truong, Geilenkeuser et al.), which improves packaging and delivery of prime editing effectors.\n\n## What is ENVLPE+?\nENVLPE+ retools the Gag‑Pol framework and RNA scaffolds to increase cargo loading, stabilize pegRNA, and enhance budding and particle yield.\n\n### Key components\n- Optimized Gag–Pol fusion with enhanced nucleo‑cytoplasmic shuttling tags and a PCP–aptamer system to export RNPs to the cytoplasm for packaging.\n- PP7–C4‑Q1 scaffold that stabilizes pegRNA and maintains complex integrity during assembly.\n- Engineered coiled‑coil domains for Gag–PCP oligomerization, boosting budding and packaging efficiency.\n- MiniENVLPE: a highly truncated design (<13% of HIV‑1 Gag) that preserves most editing/packaging function—promising for low‑immunogenicity vectors.\n\n## Why it matters for prime editing\n- Higher RNP/pegRNA stability improves edit rates while keeping exposure transient.\n- Modular envelopes allow tissue targeting by pseudotyping.\n- Truncated backbones point toward safer clinical translation.\n\n## Research opportunities\n1. All‑in‑one CRISPR VLPs that co‑deliver RNPs and donor DNA.\n2. Systematically combine gRNA stabilization and Cas9 loading motifs for maximal potency.\n3. MiniENVLPE‑based variants optimized for low immunogenicity.\n4. Expanded pseudotype library to reach difficult tissues.\n\n## Outlook\nVLPs are emerging as a practical, safer alternative to integrating viral vectors for genome editing. With designs like ENVLPE+, the field is moving toward programmable, modular vehicles that can deliver prime editors with higher efficiency and better control.",
+    "id": 2,
+    "slug": "car-t-autologous-universal-in-vivo-and-crispr",
+    "title": "CAR-T Therapies: Autologous, Universal, and In Vivo Approaches",
+    "excerpt": "From autologous to universal and in vivo CAR-T, CRISPR innovations are reshaping integration, safety, and scalability.",
+    "content": "CAR-T therapies have transformed oncology, particularly for hematologic malignancies. Today’s development landscape spans three approaches—autologous, universal (allogeneic), and in vivo—each with distinct trade-offs in speed, cost, safety, and scalability.\n\n## Three approaches at a glance\n### Autologous (patient-derived)\n- Pros: Proven efficacy; lower graft-versus-host risk; established regulatory precedents.\n- Cons: Expensive and slow (bespoke manufacturing); variable starting material quality; challenging for rapidly progressing disease.\n\n### Universal / Allogeneic (donor-derived, off‑the‑shelf)\n- Pros: Batch manufacturing, lower cost of goods, faster turnaround; scalable logistics.\n- Cons: Requires edits to reduce graft-versus-host and host-vs-graft rejection (e.g., TRAC, B2M, HLA); persistent immunogenicity risks.\n\n### In vivo (edited inside the patient)\n- Pros: Eliminates ex vivo manufacturing; potential for broad access and rapid deployment.\n- Cons: Delivery remains the central challenge (viral vectors, VLPs, LNPs); dosing control and safety switching are active areas of research.\n\n## How CRISPR is reshaping CAR-T\n- Targeted integration: Site-specific insertion (e.g., TRAC, CCR5, PDCD1) improves expression uniformity and reduces insertional mutagenesis risk.\n- Multiplex edits: Knockout of endogenous TCR and HLA to enable universal products; edits to resist exhaustion and immunosuppression.\n- Built-in safety features: Inducible kill switches, suicide genes, and logic-gated CARs to mitigate severe adverse events.\n- Epigenetic tuning: dCas-based regulators can modulate checkpoint genes and cytokines to improve persistence.\n\n## Manufacturing, scale, and quality\n- Autologous: vein-to-vein time is the bottleneck; orchestration and analytics (QC release) drive cost.\n- Allogeneic: scale helps COGS, but genome engineering and release testing must assure product consistency.\n- In vivo: analytics shift to biodistribution, persistence, and on/off-target profiling of the delivery system.\n\n## Safety and regulatory considerations\n- Genomic safety: minimize off-target edits; leverage validated safe-harbor loci and orthogonal nucleases.\n- Immunogenicity: reduce alloreactivity and anti-product responses; consider humanized components.\n- Pharmacology: dose control and reversibility (e.g., small-molecule gated CARs) for severe toxicity management.\n\n## Outlook\nCRISPR-enabled CAR-T is moving beyond “insert a CAR” to programmable cell therapies with multiplex edits and tunable function. In vivo editing could unlock true global scale if delivery hurdles are solved. Collaboration across delivery, editing, and manufacturing will determine how quickly the field expands from blood cancers into solid tumors.",
     "author": "BioArk Editorial Team",
-    "date": "2025-06-17T00:00:00.000Z",
-    "category": "Latest News",
-    "coverImage": "/images/blog/Blog-4-20250617.png",
-    "readTime": 8,
+    "date": "2025-05-04T00:00:00.000Z",
+    "category": "BioArk Insights",
+    "coverImage": "/images/blog/Blog-2-20250504.jpg",
+    "readTime": 7,
     "views": 0,
     "tags": [
-      "VLP",
-      "AAV",
-      "Prime Editing"
+      "CAR-T",
+      "CRISPR",
+      "Oncology"
+    ]
+  },
+  {
+    "id": 1,
+    "slug": "stitchr-retrotransposon-precision-integration",
+    "title": "STITCHR: A New Gene Editing Platform for Scarless Large-Fragment Integration",
+    "excerpt": "Harvard-led team unveils STITCHR, enabling scarless insertion up to 12.7 kb with high precision and cell-cycle independence.",
+    "content": "A Harvard-led team (Jonathan S. Gootenberg and Omar O. Abudayyeh) reported a programmable retrotransposon platform named STITCHR in Nature (“Reprogramming site-specific retrotransposon activity to new DNA sites”). The system couples CRISPR targeting with retrotransposon template-primed reverse transcription (TPRT) to enable scarless integration of DNA fragments ranging from single bases to >10 kb.\n\n> Note: STITCHR is distinct from a similarly named “StitchR” approach that uses ribozyme-mediated mRNA trans-ligation to deliver large genes. The two technologies address different delivery challenges.\n\n## What is STITCHR?\nSTITCHR reprograms an R2-like retrotransposon to insert payload DNA at CRISPR-specified genomic sites. A Cas9 H840A nickase introduces a single-strand nick to expose a 3' end that primes reverse transcription of the donor template, leading to homology-guided, scarless integration.\n\n### How it works (high level)\n- Cas9 H840A nickase targets the site, generating a nick and a 3' OH for priming.\n- The retrotransposon reverse transcriptase extends from the nick into the donor template.\n- Homology sequences guide precise ligation and completion, yielding seamless integration.\n\n## Why it matters\n- Scarless, seamless insertion up to ~12.7 kb: expands edits beyond the ~<500 bp typical for base/prime editing.\n- High targeting precision with low off-target activity: nickase + TPRT pairing improves specificity versus classical double-strand breaks.\n- Cell-cycle independence: maintains activity even when division is blocked (e.g., doxorubicin), enabling edits in non-dividing cells like neurons.\n\n## Key capabilities\n- Single-nucleotide edits, short tags, and full-length gene replacement within one platform.\n- Potential compatibility with diverse cell types and tissues.\n- Modular donor design with homology handles for flexible targeting.\n\n## Technical challenges and open questions\n### 1) Deliverability and construct size\nThe current fusion payload is large (Cas9 ~4.1 kb + retrotransposon components ~3.6 kb), which complicates in vivo delivery. RNA-formulated versions and LNP delivery are being explored, though RNA typically shows lower efficiency than plasmid/viral methods. A complementary direction is mRNA trans-ligation (the separate StitchR line of work) to handle very large cargos.\n\n### 2) Mechanism: second-strand synthesis and completion\nDetails of in vivo second-strand DNA synthesis during homology-guided TPRT remain to be clarified. Better mechanistic insight should improve efficiency and fidelity.\n\n### 3) Efficiency evolution\nHomology-directed TPRT alone can be <1% but rises to ~3–11% when paired with Cas9 H840A in STITCHR. There is room to engineer both the TPRT module and CRISPR partner for higher rates.\n\n## Early applications to watch\n- Precise knock-ins for reporter tags and epitope fusions.\n- Scarless correction or replacement of disease alleles.\n- Installation of complex gene circuits without residual sequence scars.\n\n## Outlook\nSTITCHR adds a much-needed option for large, precise, and potentially cell-cycle-agnostic integrations. Continued work on delivery (smaller constructs, RNA/LNP), mechanistic tuning, and donor design should determine how quickly the platform moves toward preclinical use.\n\n",
+    "author": "BioArk Editorial Team",
+    "date": "2025-04-22T00:00:00.000Z",
+    "category": "BioArk Insights",
+    "coverImage": "/images/blog/Blog-1-20250422.png",
+    "readTime": 9,
+    "views": 0,
+    "tags": [
+      "CRISPR",
+      "Retrotransposon",
+      "Large Insertion"
     ]
   }
 ];

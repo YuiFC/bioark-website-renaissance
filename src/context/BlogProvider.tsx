@@ -57,7 +57,14 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
         // 4) Build display list
         let base = mockBlogPosts.map(p => ({ ...p, ...(mergedOverrides[p.id] || {}) }));
         base = base.filter(p => !mergedHidden.includes(p.id));
-        const all = [...base, ...mergedSaved];
+        // Merge base + saved, but avoid duplicate IDs (can happen after /blog-sync-source overwrites mockBlogPosts including custom posts)
+        const seen = new Set<number>();
+        const all: BlogPost[] = [];
+        for (const p of [...base, ...mergedSaved]) {
+          if (!seen.has(p.id)) { seen.add(p.id); all.push(p); }
+        }
+        // Sort by date desc for stable ordering
+        all.sort((a,b)=> new Date(b.date).getTime() - new Date(a.date).getTime());
         setPosts(all);
 
         // 5) Persist merged both locally and back to server (best-effort)
@@ -75,7 +82,9 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
             const saved: BlogPost[] = data.posts || [];
             let base = mockBlogPosts.map(p => ({ ...p, ...(overrides[p.id] || {}) }));
             base = base.filter(p => !hidden.includes(p.id));
-            const all = [...base, ...saved];
+            const seenFb = new Set<number>();
+            const all = [...base, ...saved].filter(p=>{ if(seenFb.has(p.id)) return false; seenFb.add(p.id); return true; });
+            all.sort((a,b)=> new Date(b.date).getTime() - new Date(a.date).getTime());
             setPosts(all);
             return;
           }
@@ -87,7 +96,35 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
 
   const addPost = (post: BlogPost) => {
     setPosts(prev => {
-      const next = [post, ...prev];
+      // Normalize slug once here to avoid slightly different duplicates
+      const normSlug = post.slug.toLowerCase();
+      post = { ...post, slug: normSlug };
+      // If a duplicate (same slug different id) already exists, adjust slug
+      const slugSet = new Set(prev.map(p=>p.slug));
+      if (slugSet.has(normSlug) && !prev.some(p=>p.id===post.id && p.slug===normSlug)) {
+        let base = normSlug.replace(/-\d+$/,'');
+        let c = 2;
+        let nextSlug = `${base}-${c}`;
+        while (slugSet.has(nextSlug)) { c++; nextSlug = `${base}-${c}`; }
+        post.slug = nextSlug;
+      }
+      // Remove any pre-existing item with same id to prevent duplicate rendering side-effects
+      const filteredPrev = prev.filter(p=>p.id !== post.id);
+      // If id already exists, treat as update instead of duplicating
+      if (prev.some(p=>p.id === post.id)) {
+        const updated = filteredPrev.concat([post]).sort((a,b)=> new Date(b.date).getTime() - new Date(a.date).getTime());
+        (async ()=>{ 
+          const payload = { version: DATA_VERSION, posts: updated.filter(p=>!mockBlogPosts.some(b=>b.id===p.id)), hidden: [], overrides: {} };
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
+          try { await fetchJson('/blog', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); } catch {}
+          try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: updated }) }); } catch {}
+        })();
+        return updated;
+      }
+      const next = [post, ...filteredPrev].reduce((acc, cur)=>{
+        if (!acc.some(p=>p.id===cur.id)) acc.push(cur); // keep first occurrence
+        return acc;
+      }, [] as BlogPost[]);
       // Persist full blog state
       (async ()=>{ 
         const payload = { version: DATA_VERSION, posts: next.filter(p=>!mockBlogPosts.some(b=>b.id===p.id)), hidden: [], overrides: {} };
@@ -98,7 +135,11 @@ export const BlogProvider = ({ children }: { children: ReactNode }) => {
   // Also best-effort write to source file for persistence in repo
   try { await fetchJson('/blog-sync-source', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: next }) }); } catch {}
       })();
-      return next;
+      // Final defensive dedupe + sort
+      const seenFinal = new Set<number>();
+      const deduped = next.filter(p=>{ if(seenFinal.has(p.id)) return false; seenFinal.add(p.id); return true; });
+      deduped.sort((a,b)=> new Date(b.date).getTime() - new Date(a.date).getTime());
+      return deduped;
     });
   };
 

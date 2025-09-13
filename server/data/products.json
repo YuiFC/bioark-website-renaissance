@@ -6,7 +6,8 @@
       "name": "BADM3362 – GN8K DNA Marker (100-8000bp)",
       "description": "GN8K DNA Marker consists of 10 linear double-stranded DNA (100 bp, 250 bp, 500 bp, 750 bp, 1000 bp, 1500 bp, 2000 bp, 3000 bp, 5000 bp, 8000 bp) bands mixed with 1×DNA Loading Buffer containing blue indicator dye, and is suitable for the analysis of DNA bands in agarose gel electrophoresis. This product is ready-to-use, according to the experimental needs, directly take 5-10 μL for electrophoresis, easy to use, clear electrophoresis bands, easy to accurately determine the content of the target product DNA. The 500 bp band in the GN8K DNA Marker has a DNA concentration of 100 ng/5 μL and shows a bright band; the remaining bands have a DNA concentration of 50 ng/5 μL.",
       "imageUrl": "/images/products/BADM3362_GN8K_DNA_Marker-1-300x300.jpg",
-      "link": "/products/gn8k-dna-marker"
+      "link": "/products/gn8k-dna-marker",
+      "category": "reagents-markers"
     },
     "gep-01": {
       "name": "Gene Knock-In & Tagging",
@@ -73,6 +74,48 @@
       "description": "Modulate gene expression with our reliable RNA interference services.",
       "link": "/products/crispr-knock-down",
       "category": "genome-editing"
+    },
+    "fp-bapm2086": {
+      "name": "BAPM2086 – Western Protein Marker I (Exposure)",
+      "description": "High-quality protein standard for accurate molecular weight estimation.",
+      "link": "/products/western-protein-marker-i",
+      "category": "reagents-markers"
+    },
+    "fp-bapm2083": {
+      "name": "BAPM2083 – Prestained Protein Marker IV (8-200 kDa)",
+      "description": "This product, Prestained Protein Marker IV, is composed of 11 highly pure and pre-stained recombinant proteins. It indicates a molecular weight range of 8-200 kDa in Tris-Glycine gel (~8, ~13, ~20, ~30, ~40, ~55, ~68, ~90, ~110, ~140, ~200 kDa), with the 90, 30, and 8 kDa markers appearing as pink bands, while the others appear as blue bands. This allows for the dynamic observation of protein electrophoresis or the assessment of protein transfer efficiency. It is suitable as a protein molecular weight standard for SDS-PAGE and Western blot.",
+      "link": "/products/prestained-protein-marker-iv",
+      "category": "reagents-markers"
+    },
+    "fp-bal100688": {
+      "name": "BAL100688 – BAPoly® In Vitro DNA Transfection Reagent",
+      "description": "BAPoly® In Vitro DNA Transfection Reagent is a biodegradable polymer-based reagent designed for efficient and reproducible transfection of a broad range of mammalian cells, including hard-to-transfect cell lines. It offers high transfection efficiency, minimal cytotoxicity, and rapid polymer degradation after endocytosis. The reagent is effective for both single and multiple DNA transfections, supporting high recombinant protein and virus production.",
+      "link": "/products/bapoly-transfection-reagent",
+      "category": "reagents-markers"
+    },
+    "fp-bal100668": {
+      "name": "BAL100668 – BAJet® In Vitro DNA Transfection Reagent",
+      "description": "BAJet® (Ver. II) is a second-generation liposome-based transfection reagent developed using proprietary lipid conjugation technology. It offers exceptionally high transfection efficiency for HEK293 and other mammalian cells with reduced cytotoxicity. The reagent is particularly effective for gene delivery, knockout, and co-transfection applications, making it a top choice for hard-to-transfect cells and high-titer virus production.",
+      "link": "/products/bajet-transfection-reagent",
+      "category": "reagents-markers"
+    },
+    "fp-bal100468": {
+      "name": "BAL100468 – BioArkLipo® In Vitro Transfection Kit (Ver. II)",
+      "description": "The BioArkLipo® In Vitro Transfection Kit (Ver. II) is a lipid-based gene delivery tool designed for efficient and low-toxicity transfection of plasmid DNA and siRNA into mammalian cells. Developed with a proprietary fluorinated cationic lipid formulation, it offers superior transfection efficiency compared to competing products, while reducing cytotoxicity.",
+      "link": "/products/bioarklipo-in-vitro-transfection-kit",
+      "category": "reagents-markers"
+    },
+    "fp-badm3364": {
+      "name": "BADM3364 – GN15K DNA Marker (500-15000bp)",
+      "description": "The GN15K DNA Marker consists of 9 linear double-stranded DNA (containing 500 bp, 1000 bp, 1500 bp, 2000 bp, 3000 bp, 5000 bp, 7500 bp, 10000 bp, 15000 bp) bands, which have been mixed with 1×DNA Loading Buffer containing a blue indicator dye. It is suitable for analyzing DNA bands in agarose gel electrophoresis. This product is ready-to-use, according to the experimental needs, directly take 5-10 μL for electrophoresis, easy to use, clear electrophoresis bands, easy to accurately determine the content of the target product DNA. The 2000 bp band in GN15K DNA Marker with a DNA concentration of 100 ng/5 μL shows bright bands; the remaining bands have a DNA concentration of 50 ng/5 μL.",
+      "link": "/products/gn15k-dna-marker",
+      "category": "reagents-markers"
+    },
+    "fp-badm3363": {
+      "name": "BADM3363 – GN10K DNA Marker (300-10000bp)",
+      "description": "This product, GN10K DNA Marker, consists of 10 linear double-stranded DNA (containing 300 bp, 500 bp, 800 bp, 1000 bp, 1500 bp, 2000 bp, 3000 bp, 5000 bp, 7500 bp, and 10,000 bp) bands, which have been mixed with 1×DNA Loading Buffer containing a blue indicator dye and is suitable for analyzing DNA bands in agarose gel electrophoresis. This product is ready-to-use, according to the experimental needs, directly take 5-10 μL for electrophoresis, easy to use, clear electrophoresis bands, easy to accurately determine the content of the target product DNA. The 800 bp, 2000 bp band in the GN10K DNA Marker has a DNA concentration of 100 ng/5 μL and shows a bright band; the remaining bands have a DNA concentration of 50 ng/5 μL.",
+      "link": "/products/gn10k-dna-marker",
+      "category": "reagents-markers"
     }
   },
   "details": {
@@ -732,6 +775,86 @@
       "images": [
         "/images/products/Product-1-5-CRISPR-RNA-Knock-Down-300x128.png"
       ]
+    },
+    "custom-1757746922797": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": []
+    },
+    "custom-1757747120684": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": []
+    },
+    "custom-1757747406537": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": []
+    },
+    "custom-1757747796374": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": []
+    },
+    "custom-1757748063327": {
+      "catalogNumber": "",
+      "availability": "In Stock",
+      "listPrice": "$75.00",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "quoteOnly": false,
+      "contentText": "",
+      "images": []
     }
   },
   "hidden": []

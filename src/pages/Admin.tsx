@@ -181,6 +181,7 @@ function ServicesPanel(){
   const base = getAllServices();
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
   const [overrides, setOverrides] = useState<Record<string, any>>({});
   const [custom, setCustom] = useState<any[]>([]);
@@ -1233,12 +1234,39 @@ function ProductPanel() {
   };
 
   const onAdd = () => {
-    const id = `custom-${Date.now()}`;
+    // Helper to build a safe slug
+    const slugify = (s:string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    const name = form.name.trim();
+    const description = form.description.trim();
+    if (!name) { alert('Name is required'); return; }
+    const derivedSlugBase = slugify(name) || `p-${Date.now()}`;
+    // Build existing slugs set
+    const existingSlugs = new Set<string>([
+      ...listAllProducts().map(p => (p.link||'').replace('/products/','')).filter(Boolean),
+      ...custom.map(c => (c.link||'').replace('/products/','')).filter(Boolean),
+    ]);
+    let uniqueSlug = derivedSlugBase;
+    let counter = 2;
+    while (existingSlugs.has(uniqueSlug)) {
+      uniqueSlug = `${derivedSlugBase}-${counter++}`;
+    }
+    const link = `/products/${uniqueSlug}`;
     const images = String(form.imagesText||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const payload = { id, name: form.name, description: form.description, imageUrl: images[0] || '', images: images.length?images:undefined, link: form.link, category: form.category, createdAt: Date.now(), __type: form.type } as any;
+    const id = `custom-${Date.now()}`;
+    const payload = {
+      id,
+      name,
+      description,
+      imageUrl: images[0] || '',
+      images: images.length ? images : undefined,
+      link,
+      category: form.category,
+      createdAt: Date.now(),
+      __type: form.type,
+    } as any;
     saveCustom([payload, ...custom]);
     setShowAdd(false);
-  setForm({ name:'', description:'', imagesText:'', link:'', category: 'reagents-markers', type:'buy' });
+    setForm({ name:'', description:'', imagesText:'', link:'', category: 'reagents-markers', type:'buy' });
   };
 
   const openEditDetails = (p:any) => {
@@ -1363,7 +1391,7 @@ function ProductPanel() {
   const handleProductImportFromUrl = async () => {
     if (!detailsForm) return;
     const url = productImportUrl.trim();
-    if (!url) { alert('请输入图片 URL'); return; }
+    if (!url) { alert('Upload your images URL'); return; }
     try {
       const img = await importImage(url);
       const list = String(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean);
@@ -1463,9 +1491,12 @@ function ProductPanel() {
               <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
               <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, first line is the cover)</span></label>
               <textarea className="border rounded-md px-3 py-2" rows={3} placeholder="/images/products/..." value={form.imagesText} onChange={e=>setForm(f=>({...f,imagesText:e.target.value}))} />
-              <div>
-                <input className="border rounded-md px-3 py-2 w-full" placeholder="Link (/products/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
-                <p className="text-xs text-muted-foreground mt-1">Ensure the link follows /products/your-slug. The detail page resolves by this link, even for custom products.</p>
+              <div className="bg-muted rounded-md px-3 py-2 text-sm text-muted-foreground">
+                {(() => {
+                  const slugify = (s:string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+                  const base = slugify(form.name||'');
+                  return base ? `Preview Link: /products/${base}` : 'Enter a Name to generate product link automatically';
+                })()}
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Product Type</label>
@@ -1484,7 +1515,7 @@ function ProductPanel() {
                   <option value="lentivirus">Lentivirus</option>
                 </select>
               </div>
-              <p className="text-xs text-muted-foreground">After adding a product, use "Edit details" to fill pricing/options (for Purchasable) or markdown details (for Quote-only). Use the Build button in the header to regenerate static caches if needed.</p>
+              <p className="text-xs text-muted-foreground">After adding a product, use "Edit details" to fill pricing & options (Purchasable) or rich markdown details (Quote-only). You can later adjust images and advanced fields there.</p>
               <div className="flex justify-end gap-2">
                 <Button variant="secondary" onClick={()=>setShowAdd(false)}>Cancel</Button>
                 <Button onClick={onAdd}>Save</Button>
@@ -1635,10 +1666,6 @@ function ProductPanel() {
                     <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.manualUrlsText||''} onChange={e=>setDetailsForm((f:any)=>({...f,manualUrlsText:e.target.value}))} />
                     <p className="text-xs text-muted-foreground mt-1">Tip: Manuals and Links should have the same count; if a link is missing, the manual text will be displayed without a hyperlink.</p>
                   </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Store Link</label>
-                    <input className="border rounded-md px-3 py-2 w-full" value={detailsForm.storeLink||''} onChange={e=>setDetailsForm((f:any)=>({...f,storeLink:e.target.value}))} />
-                  </div>
                 </>
               )}
 
@@ -1673,16 +1700,21 @@ function BlogPanel() {
   const [editForm, setEditForm] = useState<any|null>(null);
   const [blogMedia, setBlogMedia] = useState<Record<string, string[]>>({});
   const [sortMode, setSortMode] = useState<'time'|'alpha'>('time');
+  const [adding, setAdding] = useState(false);
   React.useEffect(()=>{ fetchJson('/blog-media').then((cfg:any)=>{ setBlogMedia(cfg.media||{}); }).catch(()=>{}); },[]);
   const saveBlogMedia = (next: Record<string, string[]>) => { setBlogMedia(next); return fetchJson('/blog-media', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ media: next }) }); };
   const blogFileRef = React.useRef<HTMLInputElement|null>(null);
   const [blogImportUrl, setBlogImportUrl] = useState('');
 
   const filtered = useMemo(() => {
+    // Deduplicate by id (first occurrence kept)
+    const uniq: any[] = [];
+    const seen = new Set<number>();
+    for (const p of posts) { if (!seen.has(p.id)) { seen.add(p.id); uniq.push(p); } }
     const list = (() => {
-      if (!q.trim()) return posts;
+      if (!q.trim()) return uniq;
       const s = q.toLowerCase();
-      return posts.filter(p => p.title.toLowerCase().includes(s) || p.excerpt.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s));
+      return uniq.filter(p => p.title.toLowerCase().includes(s) || p.excerpt.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s));
     })();
     const byTimeDesc = (a:any,b:any) => {
       const ta = a.date ? new Date(a.date).getTime() : 0;
@@ -1701,13 +1733,24 @@ function BlogPanel() {
   const fallbackImage = '/placeholder.svg';
 
   const onAdd = () => {
-    const id = Date.now();
-    const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    if (adding) return;
+    const title = form.title.trim();
+    if (!title) { alert('Title is required'); return; }
+    setAdding(true);
+    const baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || `post-${Date.now()}`;
+    const existingSlugs = new Set(posts.map(p=>p.slug));
+    let slug = baseSlug;
+    let i = 2;
+    while (existingSlugs.has(slug)) slug = `${baseSlug}-${i++}`;
+    // Prefer time-based id but ensure no collision
+    let id = Date.now();
+    const existingIds = new Set(posts.map(p=>p.id));
+    while (existingIds.has(id)) id++;
     addPost({
       id,
       slug,
-      title: form.title,
-      excerpt: form.excerpt || '—',
+      title,
+      excerpt: form.excerpt.trim() || '—',
       content: '# New Post\n\nDraft content...\n',
       author: 'Admin',
       date: new Date().toISOString(),
@@ -1719,6 +1762,7 @@ function BlogPanel() {
     } as any);
     setShowAdd(false);
     setForm({ title:'', excerpt:'', coverImage:'', category:'General' });
+    setTimeout(()=>setAdding(false), 50);
   };
 
   const openEdit = (post:any) => {
@@ -1840,7 +1884,7 @@ function BlogPanel() {
               <input className="border rounded-md px-3 py-2" placeholder="Category" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} />
               <div className="flex justify-end gap-2">
                 <Button variant="secondary" onClick={()=>setShowAdd(false)}>Cancel</Button>
-                <Button onClick={onAdd}>Save</Button>
+                <Button onClick={onAdd} disabled={adding}>{adding? 'Saving...' : 'Save'}</Button>
               </div>
             </div>
           </DialogContent>

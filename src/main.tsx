@@ -21,9 +21,38 @@ async function syncProductsConfigOnce(){
     localStorage.setItem('bioark_products_overrides', JSON.stringify(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{}));
     localStorage.setItem('bioark_product_details_overrides', JSON.stringify(cfg.details&&typeof cfg.details==='object'?cfg.details:{}));
     localStorage.setItem('bioark_products_hidden', JSON.stringify(Array.isArray(cfg.hidden)?cfg.hidden:[]));
-  } catch {}
+    try { window.dispatchEvent(new Event('bioark:products-changed')); } catch {}
+  } catch {
+    // Fallback to public read-only endpoint (no auth required)
+    try {
+      const cfg = await fetchJson<any>('/public/products');
+      localStorage.setItem('bioark_products', JSON.stringify(Array.isArray(cfg.products)?cfg.products:[]));
+      localStorage.setItem('bioark_products_overrides', JSON.stringify(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{}));
+      localStorage.setItem('bioark_product_details_overrides', JSON.stringify(cfg.details&&typeof cfg.details==='object'?cfg.details:{}));
+      localStorage.setItem('bioark_products_hidden', JSON.stringify(Array.isArray(cfg.hidden)?cfg.hidden:[]));
+      try { window.dispatchEvent(new Event('bioark:products-changed')); } catch {}
+    } catch {}
+  }
 }
 void syncProductsConfigOnce();
+
+// Periodic lightweight poll to catch updates from other sessions (public endpoint, no auth) every 60s
+setInterval(()=>{
+  (async()=>{
+    try {
+      const cfg = await fetchJson<any>('/public/products');
+      const prev = localStorage.getItem('bioark_products');
+      const nextStr = JSON.stringify(Array.isArray(cfg.products)?cfg.products:[]);
+      if (prev !== nextStr){
+        localStorage.setItem('bioark_products', nextStr);
+        localStorage.setItem('bioark_products_overrides', JSON.stringify(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{}));
+        localStorage.setItem('bioark_product_details_overrides', JSON.stringify(cfg.details&&typeof cfg.details==='object'?cfg.details:{}));
+        localStorage.setItem('bioark_products_hidden', JSON.stringify(Array.isArray(cfg.hidden)?cfg.hidden:[]));
+        try { window.dispatchEvent(new Event('bioark:products-changed')); } catch {}
+      }
+    } catch {}
+  })();
+}, 60000);
 
 // Sync backend services-config to LocalStorage on app load (compat shim)
 async function syncServicesConfigOnce(){
@@ -32,7 +61,9 @@ async function syncServicesConfigOnce(){
     localStorage.setItem('bioark_services_overrides', JSON.stringify(cfg.overrides&&typeof cfg.overrides==='object'?cfg.overrides:{}));
     localStorage.setItem('bioark_services_custom', JSON.stringify(Array.isArray(cfg.custom)?cfg.custom:[]));
     localStorage.setItem('bioark_services_media_v2_paths', JSON.stringify(cfg.media&&typeof cfg.media==='object'?cfg.media:{}));
-  } catch {}
+  } catch {
+    // (Optional) if later we expose public services, attempt fallback here.
+  }
 }
 void syncServicesConfigOnce();
 

@@ -32,6 +32,18 @@ app.use(express.json({ limit: '20mb' }));
 app.use(cors());
 console.warn('[CORS] Permissive mode enabled (all origins allowed)');
 
+// --- Compatibility path rewrite ---
+// Frontend默认 API Base = '/content-api' 且 fetchJson 会再自动加 '/api' 前缀，
+// 形成 '/content-api/api/xxx'，而当前后端只注册了 '/api/xxx' 路由，导致 404 无法保存。
+// 这里做一次轻量级重写，将 '/content-api/api/*' 映射为 '/api/*'，不影响 '/content-api/uploads'.
+app.use((req, _res, next) => {
+  // 仅当以 /content-api/api/ 开头且后面还有内容时重写
+  if (req.url.startsWith('/content-api/api/')) {
+    req.url = req.url.slice('/content-api'.length); // 去掉前缀 => /api/...
+  }
+  next();
+});
+
 // Serve static frontend (for demo auth.html and assets)
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -56,6 +68,11 @@ const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 // Images DB (admin-managed assets)
 const IMAGES_DB_FILE = path.join(DATA_DIR, 'images.json');
 
+// ===== Live update channels (SSE clients) =====
+const sseClients = {
+  products: new Set(), // Set<res>
+};
+
 function ensureDataFiles() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '[]', 'utf-8');
@@ -71,6 +88,19 @@ function ensureDataFiles() {
   if (!fs.existsSync(IMAGES_DB_FILE)) fs.writeFileSync(IMAGES_DB_FILE, JSON.stringify({ images: [] }, null, 2), 'utf-8');
 }
 ensureDataFiles();
+
+// Watch products file for external edits to trigger SSE updates
+try {
+  fs.watch(PRODUCTS_FILE, { persistent: false }, () => {
+    try {
+      const cfg = readProductsCfg();
+      const payload = JSON.stringify({ type: 'products:file', version: cfg.version, count: Array.isArray(cfg.products)?cfg.products.length:0, ts: Date.now() });
+      for (const client of sseClients.products) {
+        try { client.write(`event: update\ndata: ${payload}\n\n`); } catch {}
+      }
+    } catch {}
+  });
+} catch {}
 
 // Serve uploaded files under /uploads/*
 app.use('/uploads', express.static(UPLOADS_DIR));
@@ -547,7 +577,81 @@ app.put('/api/products-config', requireAdmin, (req,res)=>{
   const { version, products, overrides, details, hidden } = req.body || {};
   const data = { version: typeof version === 'number' ? version : 1, products: Array.isArray(products)?products:[], overrides: overrides&&typeof overrides==='object'?overrides:{}, details: details&&typeof details==='object'?details:{}, hidden: Array.isArray(hidden)?hidden:[] };
   writeProductsCfg(data);
+  // Broadcast SSE update
+  try {
+    const payload = JSON.stringify({ type: 'products:update', version: data.version, count: data.products.length, ts: Date.now() });
+    for (const client of sseClients.products) {
+      try { client.write(`event: update\ndata: ${payload}\n\n`); } catch {}
+    }
+  } catch {}
   return res.json({ ok:true });
+});
+// Public read-only snapshot of products-config (no admin auth) so that visitors can see dynamic products/navigation.
+// Strips potentially sensitive future fields; currently we just passthrough the same structure.
+app.get('/api/public/products', (_req,res)=>{
+  try {
+    const cfg = readProductsCfg();
+    // Only expose needed fields
+    const { version, products, overrides, details, hidden } = cfg || {};
+    return res.json({ version, products: Array.isArray(products)?products:[], overrides: overrides||{}, details: details||{}, hidden: Array.isArray(hidden)?hidden:[] });
+  } catch (e){
+    return res.status(500).json({ error: 'Failed to read products' });
+  }
+});
+
+// Aggregated categories -> products list (public)
+// Response: { categories: { [category: string]: { id, name, link, createdAt? }[] }, ordered: string[] }
+app.get('/api/public/products/categories', (_req,res)=>{
+  try {
+    const cfg = readProductsCfg();
+    const hidden = new Set(Array.isArray(cfg.hidden)?cfg.hidden:[]);
+    const productsArr = Array.isArray(cfg.products)?cfg.products:[]; // canonical entries (may be empty)
+    const overrideEntries = (cfg.overrides && typeof cfg.overrides === 'object')
+      ? Object.entries(cfg.overrides).map(([id, v]) => ({ id, ...(v||{}) })) : [];
+    // 合并：products 中的条目优先；overrides 中若有同 id 补充缺失字段
+    const mergedById = new Map();
+    for (const p of overrideEntries){ if (p && p.id && !mergedById.has(p.id)) mergedById.set(p.id, p); }
+    for (const p of productsArr){ if (p && p.id){ mergedById.set(p.id, { ...(mergedById.get(p.id)||{}), ...p }); } }
+    // 统一生成 list
+    const list = Array.from(mergedById.values());
+    const categories = {};
+    for (const p of list){
+      if (!p || hidden.has(p.id)) continue;
+      const link = p.link || '';
+      if (!link.startsWith('/products/')) continue;
+      const catRaw = (p.category || '').toString().trim().toLowerCase();
+      const cat = catRaw || 'uncategorized';
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push({ id: p.id, name: p.name, link, createdAt: p.createdAt });
+    }
+    // Sort each category by createdAt desc
+    Object.keys(categories).forEach(c => {
+      categories[c] = categories[c].slice().sort((a,b)=> (Number(a.createdAt||0) < Number(b.createdAt||0) ? 1 : -1));
+    });
+    const ordered = Object.keys(categories).sort();
+    return res.json({ categories, ordered });
+  } catch (e){
+    return res.status(500).json({ error: 'Failed to aggregate categories' });
+  }
+});
+
+// Server-Sent Events stream for product changes
+app.get('/api/public/products/stream', (req,res)=>{
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+  const client = res;
+  sseClients.products.add(client);
+  // Heartbeat keep-alive every 25s
+  const hb = setInterval(()=>{ try { client.write('event: ping\ndata: {}\n\n'); } catch {} }, 25000);
+  // Initial snapshot event (lightweight)
+  try {
+    const cfg = readProductsCfg();
+    const { version } = cfg || {}; // avoid sending entire list repeatedly at open
+    client.write(`event: hello\ndata: ${JSON.stringify({ version: version||1, ts: Date.now() })}\n\n`);
+  } catch {}
+  req.on('close', ()=>{ clearInterval(hb); sseClients.products.delete(client); });
 });
 app.get('/api/blog', requireAdmin, (_req,res)=> res.json(readBlog()));
 app.put('/api/blog', requireAdmin, (req,res)=>{
