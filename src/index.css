@@ -71,6 +71,10 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 20% 88%;
     --sidebar-ring: 209 72% 18%;  /* Deep Ocean Blue */
+
+    /* Header/Footer theming (used by Navigation & Footer) */
+    --header-footer-background: var(--card);
+    --header-footer-foreground: var(--card-foreground);
   }
 
   .dark {
@@ -118,6 +122,10 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 209 72% 8%;
     --sidebar-border: 209 72% 20%;  /* Dark Ocean Blue borders */
     --sidebar-ring: 213 93% 60%;  /* Tech Blue */
+
+    /* Header/Footer theming for dark mode */
+    --header-footer-background: var(--card);
+    --header-footer-foreground: var(--card-foreground);
   }
 }
 

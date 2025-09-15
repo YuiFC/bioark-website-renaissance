@@ -2,13 +2,50 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Linkedin, Twitter, Youtube } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const Footer = () => {
   return (
     <footer className="border-t bg-muted/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        {/* Top links: expanded and left-aligned */}
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 w-full">
+        {/* Mobile: accordion */}
+        <div className="block sm:hidden">
+          <Accordion type="multiple" className="w-full">
+            <AccordionItem value="explore">
+              <AccordionTrigger className="text-left text-sm uppercase tracking-widest text-muted-foreground">Explore</AccordionTrigger>
+              <AccordionContent>
+                <ul className="space-y-2 text-sm pt-2">
+                  <li><Link to="/products" className="hover:text-primary transition-colors">Products</Link></li>
+                  <li><Link to="/services" className="hover:text-primary transition-colors">Services</Link></li>
+                  <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+                  <li><Link to="/request-quote" className="hover:text-primary transition-colors">Request Quote</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="company">
+              <AccordionTrigger className="text-left text-sm uppercase tracking-widest text-muted-foreground">Company</AccordionTrigger>
+              <AccordionContent>
+                <ul className="space-y-2 text-sm pt-2">
+                  <li><Link to="/why-bioark" className="hover:text-primary transition-colors">Why BioArk</Link></li>
+                  <li><Link to="/investors" className="hover:text-primary transition-colors">Investors</Link></li>
+                  <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="store">
+              <AccordionTrigger className="text-left text-sm uppercase tracking-widest text-muted-foreground">Store</AccordionTrigger>
+              <AccordionContent>
+                <ul className="space-y-2 text-sm pt-2">
+                  <li><Link to="/cart" className="hover:text-primary transition-colors">Shopping Cart</Link></li>
+                  <li><Link to="/design" className="hover:text-primary transition-colors">Gene Design</Link></li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+
+        {/* Tablet/Desktop: 3-column lists */}
+        <div className="hidden sm:grid grid-cols-3 gap-8 md:gap-12 w-full">
           {/* Explore */}
           <div>
             <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-4">Explore</h3>

@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useBlog } from '../context/BlogProvider';
 import { Button } from '../components/ui/button';
-import { Search, Clock, Eye } from 'lucide-react';
+import { Search, Clock, Eye, Filter } from 'lucide-react';
 
 const Blog = () => {
   const { posts } = useBlog();
@@ -46,9 +46,33 @@ const Blog = () => {
       </section>
 
       <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-14 md:py-16">
+        {/* Mobile filters bar */}
+        <div className="lg:hidden -mt-2 mb-6 space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => { setLimit(6); setQuery(e.target.value); }}
+              placeholder="Search blog posts..."
+              className="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-base outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setLimit(6); setCategory(cat); }}
+                className={`shrink-0 px-3 py-1.5 rounded-full border text-sm transition-colors ${category===cat ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:bg-muted'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">
-          {/* Sidebar: Search + Categories */}
-      <aside className="border rounded-lg h-fit sticky top-24 p-4 bg-white">
+          {/* Sidebar: Search + Categories (desktop/tablet only) */}
+      <aside className="hidden lg:block border rounded-lg h-fit sticky top-24 p-4 bg-white">
             <div className="space-y-5">
               <div>
         <div className="text-base font-semibold mb-2">Search</div>

@@ -298,6 +298,11 @@ export const getAllServices = (): ServiceDetailData[] => {
   return [...baseApplied, ...custom];
 };
 
+// Base-only list (no localStorage custom merge). Useful for Admin composition.
+export const getBaseServices = (): ServiceDetailData[] => {
+  return allServices.slice();
+};
+
 function normalizeServiceLink(link: string | undefined): string | undefined {
   if (!link) return undefined;
   let s = String(link).trim();

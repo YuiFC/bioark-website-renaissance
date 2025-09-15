@@ -8,7 +8,7 @@ import { featuredProducts, geneEditingProducts } from '@/data/showcase';
 import { getProductBySlug, listAllProducts, listAllProductsMerged } from '@/data/products';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getQuotes, getUnreadQuotesCount, markAllQuotesRead, markQuoteRead, deleteQuote } from '@/lib/quotes';
-import { getAllServices } from '@/data/services';
+import { getAllServices, getBaseServices } from '@/data/services';
 import { restartContentApi } from '@/lib/admin';
 // Old media upload helpers removed in favor of new images API
 
@@ -18,6 +18,8 @@ const Admin = () => {
   const navigate = useNavigate();
   const { posts } = useBlog();
   const [authed, setAuthed] = useState<boolean>(() => !!localStorage.getItem('bioark_admin_token') && !!localStorage.getItem('bioark_auth_token'));
+  // New: session-expired modal state
+  const [sessionExpired, setSessionExpired] = useState<boolean>(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [active, setActive] = useState<'overview'|'user'|'product'|'services'|'blog'|'quotes'|'email'|'media'>('overview');
@@ -45,6 +47,23 @@ const Admin = () => {
     };
   },[posts.length]);
 
+  // New: verify token on mount and listen for global expired event
+  React.useEffect(() => {
+    let mounted = true;
+    const check = async () => {
+      if (!authed) return;
+      try {
+        await fetchJson('/me');
+      } catch (e: any) {
+        if (mounted) setSessionExpired(true);
+      }
+    };
+    check();
+    const onExpired = () => setSessionExpired(true);
+    window.addEventListener('bioark:admin-expired', onExpired as any);
+    return () => { mounted = false; window.removeEventListener('bioark:admin-expired', onExpired as any); };
+  }, [authed]);
+
   const handleLogin = async () => {
     try {
       const { token, user } = await fetchJson<{ token: string; user: { name: string; email: string; role: string } }>(
@@ -56,6 +75,7 @@ const Admin = () => {
         localStorage.setItem('bioark_admin_token', 'ok');
         localStorage.setItem('bioark_auth_token', token);
         setAuthed(true);
+        setSessionExpired(false);
       } else {
         alert('You are not authorized to access Admin Portal.');
       }
@@ -66,8 +86,9 @@ const Admin = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('bioark_admin_token');
-  localStorage.removeItem('bioark_auth_token');
+    localStorage.removeItem('bioark_auth_token');
     setAuthed(false);
+    setSessionExpired(false);
     navigate('/');
   };
 
@@ -92,6 +113,21 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background grid grid-rows-[56px_minmax(0,1fr)]">
+      {/* Session expired dialog */}
+      <Dialog open={sessionExpired} onOpenChange={(o)=>{ if(!o) setSessionExpired(false); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Session expired</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Your admin session has expired. Please sign in again to continue managing the site.</p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+              <Button onClick={() => { setSessionExpired(false); setAuthed(false); }}>Sign in again</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <header className="border-b">
         <div className="px-3 sm:px-4 h-14 w-full flex items-center justify-between">
           <div className="font-semibold">Admin Portal</div>
@@ -177,12 +213,14 @@ import { listUsers as apiListUsers, upsertUser as apiUpsertUser, deleteUser as a
 
 // ===== Services Panel (manage Services data locally) =====
 function ServicesPanel(){
-  type Svc = ReturnType<typeof getAllServices>[number];
-  const base = getAllServices();
+  type Svc = ReturnType<typeof getBaseServices>[number];
+  // Use base-only services to avoid duplicating custom entries from localStorage
+  const base = getBaseServices();
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
+  const [linkEdited, setLinkEdited] = useState(false);
   const [overrides, setOverrides] = useState<Record<string, any>>({});
   const [custom, setCustom] = useState<any[]>([]);
   const [editing, setEditing] = useState<any|null>(null);
@@ -274,10 +312,25 @@ function ServicesPanel(){
   };
   const onAdd = () => {
     const id = `svc-custom-${Date.now()}`;
-    const payload = { id, ...form, longDescription:'', keyBenefits:[], processOverview:[], relatedProducts:[], caseStudies:[], markdown:'', createdAt: Date.now() } as any;
+    // Build a unique slug similar to ProductPanel
+    const desired = (ensureLink(form.link, form.name) || '/services/');
+    const basePrefix = '/services/';
+    const desiredSlug = (desired.startsWith(basePrefix) ? desired.slice(basePrefix.length) : desired) || slugify(form.name||'') || `svc-${Date.now()}`;
+    const existingSlugs = new Set<string>([
+      ...getBaseServices().map(s => (s.link||'').replace(basePrefix,'')).filter(Boolean),
+      ...custom.map(c => (c.link||'').replace(basePrefix,'')).filter(Boolean),
+    ]);
+    let uniqueSlug = desiredSlug;
+    let counter = 2;
+    while (existingSlugs.has(uniqueSlug)) {
+      uniqueSlug = `${desiredSlug}-${counter++}`;
+    }
+    const finalLink = `${basePrefix}${uniqueSlug}`;
+    const payload = { id, ...form, link: finalLink, longDescription:'', keyBenefits:[], processOverview:[], relatedProducts:[], caseStudies:[], markdown:'', createdAt: Date.now() } as any;
     saveCustom([payload, ...custom]);
     setShowAdd(false);
     setForm({ name:'', description:'', link:'/services/', imageUrl:'', icon:'' });
+    setLinkEdited(false);
   };
 
   // Open detail editor with full fields
@@ -398,24 +451,96 @@ function ServicesPanel(){
     }
   };
 
+  // Helpers for generating a usable slug and link
+  // Match ProductPanel's ASCII-only slug rules for consistency
+  const slugify = (s:string) => (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  const ensureLink = (link:string, name:string) => {
+    const base = '/services/';
+    const nameSlug = slugify(name);
+    const fallback = () => base + (nameSlug || `svc-${Date.now()}`);
+    if (!link || link === base) return fallback();
+    if (link.startsWith(base)) {
+      const rest = link.slice(base.length);
+      const restSlug = slugify(rest);
+      return base + (restSlug || nameSlug || `svc-${Date.now()}`);
+    }
+    const slug = slugify(link);
+    return base + (slug || nameSlug || `svc-${Date.now()}`);
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search services..." value={q} onChange={e=>setQ(e.target.value)} />
-        <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <Dialog open={showAdd} onOpenChange={(o)=>{ setShowAdd(o); if(o){ setLinkEdited(false); } }}>
           <DialogTrigger asChild>
             <Button>Add</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Add Service</DialogTitle></DialogHeader>
             <div className="grid gap-3">
-              <input className="border rounded-md px-3 py-2" placeholder="Name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
-              <textarea className="border rounded-md px-3 py-2" placeholder="Description" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} />
-              <input className="border rounded-md px-3 py-2" placeholder="Link (/services/slug)" value={form.link} onChange={e=>setForm(f=>({...f,link:e.target.value}))} />
-              <input className="border rounded-md px-3 py-2" placeholder="Image URL (optional)" value={form.imageUrl} onChange={e=>setForm(f=>({...f,imageUrl:e.target.value}))} />
+              <div>
+                <label className="text-sm text-muted-foreground">Name</label>
+                <input
+                  className="border rounded-md px-3 py-2 w-full"
+                  placeholder="Service name"
+                  value={form.name}
+                  onChange={e=>{
+                    const val = e.target.value;
+                    setForm(prev=>{
+                      const next = { ...prev, name: val };
+                      if (!linkEdited) {
+                        const base = slugify(val||'');
+                        next.link = base ? `/services/${base}` : '/services/';
+                      }
+                      return next;
+                    });
+                  }}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Description</label>
+                <textarea
+                  className="border rounded-md px-3 py-2 w-full"
+                  placeholder="Short description"
+                  value={form.description}
+                  onChange={e=>setForm(f=>({ ...f, description: e.target.value }))}
+                />
+              </div>
+              <div className="bg-muted rounded-md px-3 py-2 text-sm text-muted-foreground">
+                {(() => {
+                  const base = slugify(form.name||'');
+                  return base ? `Preview Link: /services/${base}` : 'Enter a Name to generate service link automatically';
+                })()}
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Link (/services/slug)</label>
+                <input
+                  className="border rounded-md px-3 py-2 w-full"
+                  placeholder="/services/your-slug"
+                  value={form.link}
+                  onChange={e=>{ setLinkEdited(true); setForm(f=>({ ...f, link: e.target.value })); }}
+                  onBlur={e=>{
+                    const val = e.target.value;
+                    setForm(f=>({ ...f, link: ensureLink(val, f.name) }));
+                  }}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Image URL (optional)</label>
+                <input
+                  className="border rounded-md px-3 py-2 w-full"
+                  placeholder="https://.../image.png"
+                  value={form.imageUrl}
+                  onChange={e=>setForm(f=>({ ...f, imageUrl: e.target.value }))}
+                />
+              </div>
               <div className="flex justify-end gap-2">
-                <Button variant="secondary" onClick={()=>setShowAdd(false)}>Cancel</Button>
-                <Button onClick={onAdd}>Save</Button>
+                <Button variant="secondary" onClick={()=>{ setShowAdd(false); }}>Cancel</Button>
+                <Button onClick={()=>{
+                  setForm(f=>({ ...f, link: ensureLink(f.link, f.name) }));
+                  onAdd();
+                }} disabled={!form.name.trim()}>Save</Button>
               </div>
             </div>
           </DialogContent>
@@ -1472,7 +1597,7 @@ function ProductPanel() {
   }
 ]`}
         </div>
-        <p className="text-xs text-muted-foreground">Tips: Make sure category matches one of the allowed values. images accepts absolute or site-root relative URLs. listPrice and optionPrices values are kept as-is (no currency conversion).</p>
+        <p className="text-xs text-muted-foreground mt-1">Tips: Make sure category matches one of the allowed values. images accepts absolute or site-root relative URLs. listPrice and optionPrices values are kept as-is (no currency conversion).</p>
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="secondary" onClick={()=>setShowImportHelp(false)}>Back</Button>
           <Button onClick={()=>{ setShowImportHelp(false); fileRef.current?.click(); }}>Continue Import</Button>
@@ -1820,7 +1945,7 @@ function BlogPanel() {
         const list = blogMedia[key] || [];
         const next = { ...blogMedia, [key]: [url, ...list.filter(x=>x!==url)] };
         await saveBlogMedia(next);
-      } catch (err:any){
+      } catch (err:any) {
         alert('Upload failed: ' + (err?.message||String(err)));
       } finally { e.target.value=''; }
     } finally {

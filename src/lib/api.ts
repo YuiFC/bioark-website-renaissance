@@ -41,6 +41,14 @@ export async function fetchJson<T=any>(path: string, init?: RequestInit): Promis
     const { r, d } = await tryFetch(urlToFetch);
     if (r.ok) return d as T;
     const msg = (d && (d.error || d.message)) || `HTTP ${r.status}`;
+    // New: if this is a protected API (not /public/) and got 401/403, broadcast session expiration
+    try {
+      const isApi = /\/api\//.test(urlToFetch);
+      const isPublic = /\/api\/public\//.test(urlToFetch);
+      if (isApi && !isPublic && (r.status === 401 || r.status === 403)) {
+        window.dispatchEvent(new CustomEvent('bioark:admin-expired', { detail: { status: r.status, url: urlToFetch, message: msg } }));
+      }
+    } catch {}
     throw new Error(msg);
   } catch (e) {
     throw e;

@@ -249,20 +249,27 @@ const Navigation: React.FC = () => {
             <Button variant="ghost" size="sm" onClick={toggleMenu}>{isMenuOpen ? <X size={20} /> : <Menu size={20} />}</Button>
           </div>
         </div>
+        {/* Backdrop for mobile menu */}
+        {isMenuOpen && (
+          <div
+            className="fixed inset-0 top-16 bg-black/30 backdrop-blur-[1px] lg:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
         {isMenuOpen && (
           <div className="lg:hidden absolute top-16 left-0 right-0 bg-[hsl(var(--header-footer-background))] border-t shadow-lg">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link to="/" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Home</Link>
-              <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/products') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Products</Link>
-              <Link to="/services" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/services') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Services</Link>
-              <Link to="/design" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/design') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Design</Link>
-              <Link to="/blog" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/blog') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Blog</Link>
-              <Link to="/investors" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/investors') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Investors</Link>
-              <Link to="/why-bioark" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/why-bioark') ? 'text-primary bg-white/10' : 'text-inherit opacity-80 hover:text-primary hover:bg-white/5'}`}>Why BioArk</Link>
+              <Link to="/" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Home</Link>
+              <Link to="/products" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/products') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Products</Link>
+              <Link to="/services" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/services') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Services</Link>
+              <Link to="/design" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/design') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Design</Link>
+              <Link to="/blog" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/blog') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Blog</Link>
+              <Link to="/investors" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/investors') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Investors</Link>
+              <Link to="/why-bioark" onClick={() => setIsMenuOpen(false)} className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActivePath('/why-bioark') ? 'text-primary bg-muted' : 'text-inherit opacity-90 hover:text-primary hover:bg-muted/60'}`}>Why BioArk</Link>
               <div className="px-3 pt-4"><Button asChild className="w-full"><Link to="/request-quote" onClick={() => setIsMenuOpen(false)}>Request Quote</Link></Button></div>
               <div className="border-t border-border mt-2 pt-2">
                 <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Store</p>
-                <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-inherit opacity-80 hover:text-primary hover:bg-white/5 transition-colors duration-200">
+                <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-inherit opacity-90 hover:text-primary hover:bg-muted/60 transition-colors duration-200">
                   <ShoppingCart size={16} />
                   <span>Shopping Cart</span>
                   {cartCount > 0 && <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[11px] leading-[18px] text-center font-semibold tabular-nums">{cartCount > 99 ? '99+' : cartCount}</span>}
