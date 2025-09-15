@@ -2,19 +2,6 @@
   "version": "2025-08-29-1",
   "posts": [
     {
-      "id": 1757920738457,
-      "slug": "a-sample-blog",
-      "title": "A sample blog",
-      "excerpt": "—",
-      "content": "# New Post\n\nDraft content...\n",
-      "author": "Admin",
-      "date": "2025-09-15T07:18:58.457Z",
-      "category": "General",
-      "readTime": 5,
-      "views": 0,
-      "tags": []
-    },
-    {
       "id": 4,
       "slug": "vlp-delivery-envlpe-plus-prime-editing",
       "title": "VLPs vs AAVs: ENVLPE+ Advances for CRISPR RNP and Prime Editing Delivery",
