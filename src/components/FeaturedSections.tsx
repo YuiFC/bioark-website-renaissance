@@ -8,7 +8,7 @@ import { featuredProducts, geneEditingProducts, customerSolutions, ShowcaseItem 
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
-import { fetchJson } from '@/lib/api';
+import { fetchJson, getApiBase } from '@/lib/api';
 
 interface SectionProps {
   title: string;
@@ -92,13 +92,15 @@ const FeaturedSections = () => {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    let es: EventSource | null = null;
+
+    const load = async () => {
       try {
-        const cfg = await fetchJson<any>('/products-config');
+        const cfg = await fetchJson<any>('/public/products');
         const hidden: string[] = Array.isArray(cfg?.hidden) ? cfg.hidden : [];
         const ov: Record<string, Partial<ShowcaseItem>> = cfg?.overrides || {};
         const det: Record<string, { images?: string[] }> = cfg?.details || {};
-        const custom: any[] = Array.isArray(cfg?.products) ? cfg.products : [];
+        const productsArr: any[] = Array.isArray(cfg?.products) ? cfg.products : [];
 
         const apply = (base: ShowcaseItem[]): ShowcaseItem[] => {
           return base
@@ -106,37 +108,55 @@ const FeaturedSections = () => {
             .map(it => {
               const o = ov[it.id] || {};
               const used = (det[it.id]?.images && det[it.id]?.images[0]) || (o.imageUrl as string) || it.imageUrl;
-              return {
-                ...it,
-                ...o,
-                imageUrl: used,
-              } as ShowcaseItem;
+              return { ...it, ...o, imageUrl: used } as ShowcaseItem;
             });
         };
 
-        const fromCustom = (cat: 'featured' | 'gene-editing'): ShowcaseItem[] => {
-          return custom
-            .filter(c => !hidden.includes(c.id))
-            .filter(c => c.category === cat)
+        const pickCustom = (category: 'reagents-markers' | 'genome-editing') => {
+          return productsArr
+            .filter(c => c && !hidden.includes(c.id))
+            .filter(c => c.category === category)
             .map(c => ({
               id: c.id,
               name: c.name,
               description: c.description,
-              imageUrl: (c.images && c.images[0]) || c.imageUrl,
+              imageUrl: (det?.[c.id]?.images && det[c.id].images[0]) || c.imageUrl || '/placeholder.svg',
               link: c.link || '#',
             } as ShowcaseItem));
         };
 
-        const nextFeatured = [...apply(featuredProducts), ...fromCustom('featured')];
-        const nextGene = [...apply(geneEditingProducts), ...fromCustom('gene-editing')];
+        // Append purchasable (reagents-markers) to Featured at the end
+        const nextFeatured = [...apply(featuredProducts), ...pickCustom('reagents-markers')];
+        // Gene editing section appends genome-editing
+        const nextGene = [...apply(geneEditingProducts), ...pickCustom('genome-editing')];
         if (!mounted) return;
         setItemsFeatured(nextFeatured);
         setItemsGeneEditing(nextGene);
       } catch {
         // ignore; keep defaults
       }
-    })();
-    return () => { mounted = false; };
+    };
+
+    load();
+
+    // Live updates via SSE
+    try {
+      const base = getApiBase();
+      es = new EventSource(`${base}/api/public/products/stream`);
+      es.addEventListener('update', () => { load(); });
+    } catch {}
+
+    // Also react to in-app changes
+    const onLocal = () => load();
+    window.addEventListener('bioark:products-changed', onLocal as any);
+    window.addEventListener('storage', onLocal);
+
+    return () => {
+      mounted = false;
+      try { es?.close(); } catch {}
+      window.removeEventListener('bioark:products-changed', onLocal as any);
+      window.removeEventListener('storage', onLocal);
+    };
   }, []);
   return (
     <>

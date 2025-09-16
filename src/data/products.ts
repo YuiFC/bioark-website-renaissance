@@ -375,6 +375,7 @@ export const listAllProductsMerged = (): ProductDetailData[] => {
   // Runtime localStorage state
   const hiddenLS = new Set(readLS<string[]>('bioark_products_hidden', []));
   const dispOv = readLS<Record<string, Partial<ProductDetailData>>>('bioark_products_overrides', {});
+  const detOv = readLS<Record<string, Partial<ProductDetailData>>>('bioark_product_details_overrides', {});
   const custom = readLS<any[]>('bioark_products', []);
 
   // Base + file-config with runtime display overrides, excluding hidden
@@ -383,6 +384,7 @@ export const listAllProductsMerged = (): ProductDetailData[] => {
     .map(p => ({
       ...p,
       ...(dispOv[p.id] || {}),
+      ...(detOv[p.id] || {}),
     }));
 
   // Map runtime custom into ProductDetailData-like items, excluding hidden
@@ -392,8 +394,10 @@ export const listAllProductsMerged = (): ProductDetailData[] => {
       id: c.id,
       name: c.name || '',
       description: c.description || '',
-      imageUrl: c.imageUrl || '/placeholder.svg',
-      images: (c as any).images && (c as any).images.length ? (c as any).images : (c.imageUrl ? [c.imageUrl] : undefined),
+      // Prefer detail override images (Admin Details) then fallback to product entry
+      imageUrl: (detOv[c.id] as any)?.imageUrl || c.imageUrl || '/placeholder.svg',
+      images: (detOv[c.id] as any)?.images
+        || ((c as any).images && (c as any).images.length ? (c as any).images : (c.imageUrl ? [c.imageUrl] : undefined)),
       link: c.link || '',
       catalogNumber: '',
       availability: 'In Stock',

@@ -1,6 +1,27 @@
 {
   "version": 1,
-  "products": [],
+  "products": [
+    {
+      "id": "custom-1758011101707",
+      "name": "test-gene-editing-product",
+      "description": "This is a test Gene-editing-product",
+      "imageUrl": "",
+      "link": "/products/test-gene-editing-product",
+      "category": "genome-editing",
+      "createdAt": 1758011101707,
+      "__type": "buy"
+    },
+    {
+      "id": "custom-1758008919675",
+      "name": "test-Products",
+      "description": "This is a test Products",
+      "imageUrl": "",
+      "link": "/products/test-products",
+      "category": "reagents-markers",
+      "createdAt": 1758008919675,
+      "__type": "buy"
+    }
+  ],
   "overrides": {
     "fp-badm3362": {
       "name": "BADM3362 – GN8K DNA Marker (100-8000bp)",
@@ -855,6 +876,44 @@
       "quoteOnly": false,
       "contentText": "",
       "images": []
+    },
+    "custom-1758008919675": {
+      "quoteOnly": false,
+      "createdAt": 1758008919675,
+      "catalogNumber": "TEST-01",
+      "availability": "In Stock",
+      "listPrice": "$42.00",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "contentText": "",
+      "images": [
+        "https://i.ibb.co/dsb8PkdM/Google-Veo-3-Logo-PNG.jpg"
+      ]
+    },
+    "custom-1758011101707": {
+      "quoteOnly": false,
+      "createdAt": 1758011101707,
+      "catalogNumber": "TEST-02",
+      "availability": "In Stock",
+      "listPrice": "$42",
+      "options": [],
+      "optionPrices": {},
+      "keyFeatures": [],
+      "storageStability": "",
+      "performanceData": "",
+      "manuals": [],
+      "manualUrls": [],
+      "storeLink": "https://store.bioarktech.com/cart",
+      "contentText": "",
+      "images": [
+        "https://i.ibb.co/dsb8PkdM/Google-Veo-3-Logo-PNG.jpg"
+      ]
     }
   },
   "hidden": []

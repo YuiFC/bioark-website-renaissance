@@ -1,3 +1,16 @@
 {
-  "images": []
+  "images": [
+    {
+      "id": 1,
+      "status": "completed",
+      "altText": null,
+      "fileName": "Logo Transparent.png",
+      "mimeType": "image/png",
+      "size": 23657,
+      "variants": {
+        "original": "/content-api/uploads/originals/9f952ad5-7e67-426e-8697-200883f9a982.png"
+      },
+      "createdAt": "2025-09-16T06:50:24.739Z"
+    }
+  ]
 }

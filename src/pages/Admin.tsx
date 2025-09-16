@@ -613,11 +613,10 @@ function ServicesPanel(){
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium">Images</div>
-          <div className="text-xs text-muted-foreground">Upload or paste an image URL on the right and click Import URL. Cards show the file name as the title and the full path below.</div>
+          <div className="text-xs text-muted-foreground">Upload images; cards show the file name as the title and the full path below.</div>
                   </div>
                   <div className="flex items-center gap-2">
           <input className="border rounded-md px-2 py-1 text-sm w-64" placeholder="https://example.com/image.png" value={svcImportUrl} onChange={e=>setSvcImportUrl(e.target.value)} />
-          <Button size="sm" variant="outline" onClick={handleSvcImportFromUrl}>Import URL</Button>
           <Button size="sm" variant="outline" onClick={handleSvcChooseFile}>Upload</Button>
                   </div>
                 </div>
@@ -647,7 +646,7 @@ function ServicesPanel(){
                     </div>
                   ))}
                   {!(media[detailForm.id]||[]).length && (
-                    <div className="text-xs text-muted-foreground">No images yet. Use Upload or paste a URL and click Import URL.</div>
+                    <div className="text-xs text-muted-foreground">No images yet. Use Upload to get started.</div>
                   )}
                 </div>
               </div>
@@ -901,6 +900,14 @@ function MediaPanel(){
     const md = `\n\n![${alt}](${url})\n\n`;
     try { await navigator.clipboard.writeText(md); alert('Markdown copied.'); } catch { alert('Copy failed.'); }
   };
+  const copyPath = async (img: ImageAsset) => {
+    const url = img.variants?.webp || img.variants?.original || '';
+    let path = url;
+    try {
+      if (/^https?:\/\//i.test(url)) { path = new URL(url).pathname; }
+    } catch {}
+    try { await navigator.clipboard.writeText(path); alert('Path copied.'); } catch { alert('Copy failed.'); }
+  };
   const del = async (img: ImageAsset) => {
     if (!confirm(`Delete ${img.fileName}?`)) return;
     try { await deleteImageAsset(img.id); setAssets(prev=>prev.filter(x=>x.id!==img.id)); } catch (e:any){ alert('Delete failed: '+(e?.message||'unknown')); }
@@ -910,14 +917,13 @@ function MediaPanel(){
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <input className="border rounded-md px-3 py-2 w-full max-w-md" placeholder="Search by name or URL" value={q} onChange={e=>setQ(e.target.value)} />
-        <button className="border rounded px-3 py-2" onClick={chooseUpload}>Upload</button>
-        <button className="border rounded px-3 py-2" onClick={importFromUrl}>Import URL</button>
+  <button className="border rounded px-3 py-2" onClick={chooseUpload}>Upload</button>
         <button className="border rounded px-3 py-2" onClick={refresh} disabled={loading}>{loading?'Refreshing...':'Refresh'}</button>
         <input ref={upFileRef} type="file" accept="image/*" className="hidden" onChange={onUploadChange} />
       </div>
 
       {!filtered.length && !loading && (
-        <p className="text-sm text-muted-foreground">No images yet. Upload or import to get started.</p>
+        <p className="text-sm text-muted-foreground">No images yet. Click Upload to get started.</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -933,6 +939,7 @@ function MediaPanel(){
                 {img.status==='processing' && <span className="text-xs text-amber-600">processing…</span>}
               </div>
               <div className="mt-2 flex flex-wrap gap-2 justify-end">
+                <Button size="sm" variant="outline" onClick={()=>copyPath(img)}>Copy Path</Button>
                 <Button size="sm" variant="outline" onClick={()=>copyMarkdown(img)}>Copy Markdown</Button>
                 <Button size="sm" variant="destructive" onClick={()=>del(img)}>Delete</Button>
               </div>
@@ -1231,7 +1238,7 @@ function ProductPanel() {
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [showImportHelp, setShowImportHelp] = useState(false);
   const productImgFileRef = React.useRef<HTMLInputElement|null>(null);
-  const [productImportUrl, setProductImportUrl] = useState('');
+  // removed: productImportUrl state (paste URLs directly into textarea)
 
   // Load products config from backend
   React.useEffect(()=>{
@@ -1349,12 +1356,18 @@ function ProductPanel() {
   };
 
   const onDelete = (item: any) => {
-    if (!confirm(`Delete product "${item.name}"? This can be restored by code or by clearing hidden list.`)) return;
-    if (custom.some(c => c.id === item.id)) {
-      const next = custom.filter(c => c.id !== item.id);
-      saveCustom(next);
+    if (!confirm(`Delete product "${item.name}"?`)) return;
+    const id = item.id;
+    if (custom.some(c => c.id === id)) {
+      const nextProducts = custom.filter(c => c.id !== id);
+      const nextDetails = { ...detailsOverrides }; delete nextDetails[id];
+      const nextOverrides = { ...overrides }; delete nextOverrides[id];
+      void saveAll({ products: nextProducts, details: nextDetails, overrides: nextOverrides });
     } else {
-      if (!hidden.includes(item.id)) saveHidden([...hidden, item.id]);
+      const nextHidden = hidden.includes(id) ? hidden : [...hidden, id];
+      const nextOverrides = { ...overrides }; delete nextOverrides[id];
+      const nextDetails = { ...detailsOverrides }; delete nextDetails[id];
+      void saveAll({ hidden: nextHidden, overrides: nextOverrides, details: nextDetails });
     }
   };
 
@@ -1378,18 +1391,29 @@ function ProductPanel() {
     const link = `/products/${uniqueSlug}`;
     const images = String(form.imagesText||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
     const id = `custom-${Date.now()}`;
-    const payload = {
+    const createdAt = Date.now();
+    // Canonical product entry (match existing schema)
+    const productEntry = {
       id,
       name,
       description,
       imageUrl: images[0] || '',
-      images: images.length ? images : undefined,
       link,
       category: form.category,
-      createdAt: Date.now(),
+      createdAt,
       __type: form.type,
     } as any;
-    saveCustom([payload, ...custom]);
+    // Store images and type into details overrides
+    const nextDetails = {
+      ...detailsOverrides,
+      [id]: {
+        ...(detailsOverrides[id]||{}),
+        images: images.length ? images : undefined,
+        quoteOnly: form.type === 'quote',
+        createdAt,
+      }
+    } as Record<string, any>;
+    void saveAll({ products: [productEntry, ...custom], details: nextDetails });
     setShowAdd(false);
     setForm({ name:'', description:'', imagesText:'', link:'', category: 'reagents-markers', type:'buy' });
   };
@@ -1513,22 +1537,7 @@ function ProductPanel() {
       // no-op
     }
   };
-  const handleProductImportFromUrl = async () => {
-    if (!detailsForm) return;
-    const url = productImportUrl.trim();
-    if (!url) { alert('Upload your images URL'); return; }
-    try {
-      const img = await importImage(url);
-      const list = String(detailsForm.imagesText||'').split(/\r?\n/).map((s:string)=>s.trim()).filter(Boolean);
-      const nextName = img.variants?.original || url;
-      const next = [nextName, ...list.filter((x:string)=>x!==nextName)].join('\n');
-      setDetailsForm((df:any)=>({ ...df, imagesText: next, imageUrl: nextName }));
-      setProductImportUrl('');
-      alert('Imported.');
-    } catch (err:any) {
-      alert('Import failed: ' + (err?.message||String(err)));
-    }
-  };
+  // Import URL removed: paste URLs directly into textarea
 
   const Section = ({title, items}:{title:string, items:any[]}) => (
     <Card>
@@ -1743,10 +1752,8 @@ function ProductPanel() {
                       <div>
                         <label className="text-sm text-muted-foreground">Gallery Images <span className="text-[11px]">(One URL per line, First Line will be also display on homepage)</span></label>
                         <textarea className="border rounded-md px-3 py-2 w-full" rows={4} value={detailsForm.imagesText||''} onChange={e=>setDetailsForm((f:any)=>({...f,imagesText:e.target.value}))} />
-                        <p className="text-xs text-muted-foreground mt-1">First line is the cover image. You can upload directly, or paste a URL on the right and click Import URL.</p>
+                        <p className="text-xs text-muted-foreground mt-1">First line is the cover image. You can upload directly, or paste image URLs into the textarea (one per line).</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <input className="border rounded-md px-2 py-1 text-sm w-64" placeholder="https://example.com/image.png" value={productImportUrl} onChange={e=>setProductImportUrl(e.target.value)} />
-                          <Button size="sm" variant="outline" onClick={handleProductImportFromUrl}>Import URL</Button>
                           <Button size="sm" variant="outline" onClick={handleProductChooseFile}>Upload</Button>
                         </div>
                         <input ref={productImgFileRef} type="file" accept="image/*" className="hidden" onChange={handleProductFileChange} />
